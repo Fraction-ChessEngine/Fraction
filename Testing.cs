@@ -347,7 +347,7 @@ namespace fraction
             sw.Start();
             for (int i = 0; i < n; i++)
             {
-                MoveGen.generateBoards(chessboards[i], true);
+                MoveGen.GenerateBoards(chessboards[i], true);
             }
             sw.Stop();
 
@@ -368,10 +368,10 @@ namespace fraction
             sw.Start();
 
             Chessboard b = new Chessboard();
-            float eval = Minimax.miniMax(b, depth, -10000, 10000, true);
+            float eval = Minimax.MiniMax(b, depth, -10000, 10000, true);
             Console.WriteLine("Eval = " + (float)eval);
             Console.WriteLine("Depth = " + (float)depth);
-           // Console.WriteLine("Nodes = " + (float)Minimax.noahTest);
+            // Console.WriteLine("Nodes = " + (float)Minimax.noahTest);
 
             sw.Stop();
 

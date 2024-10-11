@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Numerics;
 using System.Linq;
+using System.Numerics;
 
 namespace fraction
 {
@@ -12,7 +12,8 @@ namespace fraction
     /// </summary>
     class Vision
     {
-        public int PosIndex, setBits;
+        public int PosIndex,
+            setBits;
         public ulong MoveBB;
         public Piece pieceType;
 
@@ -33,7 +34,8 @@ namespace fraction
         {
             foreach (Vision m in moves)
             {
-                if (m == null) return;
+                if (m == null)
+                    return;
                 m.PrintBB();
             }
         }
@@ -41,7 +43,7 @@ namespace fraction
 
     static class MoveGen
     {
-        /* 
+        /*
         Architektur:
         -funktion die einmal über das board loopt und für alle sqrs die mgl moves berechnet
         suboptimale performance, muss aber nur 1x pro board executed werden
@@ -52,9 +54,15 @@ namespace fraction
 
 
 
-        ==> muss sehr intensiv gebenchmarked werden 
+        ==> muss sehr intensiv gebenchmarked werden
         */
-        static void generateMovesForDoublePiece(Chessboard b, ulong pieceBB, bool forWhite, ref Vision[] possibleMoves, ref int currIndex)
+        static void generateMovesForDoublePiece(
+            Chessboard b,
+            ulong pieceBB,
+            bool forWhite,
+            ref Vision[] possibleMoves,
+            ref int currIndex
+        )
         {
             int amount = Eval.NumberOfSetBits(pieceBB);
             switch (amount)
@@ -62,12 +70,14 @@ namespace fraction
                 case 1:
                     int i1 = Utility.FindSingleSetBit(pieceBB);
                     Vision v = getVisionForPieceAt(b, i1);
-                    if (v.MoveBB == 0ul) break;
+                    if (v.MoveBB == 0ul)
+                        break;
                     possibleMoves[currIndex] = v;
                     currIndex++;
                     break;
                 case 2:
-                    int j1, j2;
+                    int j1,
+                        j2;
                     Utility.FindTwoSetBits(pieceBB, out j1, out j2);
                     Vision v1 = getVisionForPieceAt(b, j1);
                     Vision v2 = getVisionForPieceAt(b, j2);
@@ -92,14 +102,32 @@ namespace fraction
 
         public static Vision[] generateMoves(Chessboard b, bool forWhite)
         {
-            Vision[] possibleMoves = new Vision[16];//weil maximal 16 pieces die je ein "Moves" bekommen
+            Vision[] possibleMoves = new Vision[16]; //weil maximal 16 pieces die je ein "Moves" bekommen
             int currIndex = 0;
 
             if (forWhite)
             {
-                generateMovesForDoublePiece(b, b.wRookBB, forWhite, ref possibleMoves, ref currIndex);
-                generateMovesForDoublePiece(b, b.wKnightBB, forWhite, ref possibleMoves, ref currIndex);
-                generateMovesForDoublePiece(b, b.wBishopBB, forWhite, ref possibleMoves, ref currIndex);
+                generateMovesForDoublePiece(
+                    b,
+                    b.wRookBB,
+                    forWhite,
+                    ref possibleMoves,
+                    ref currIndex
+                );
+                generateMovesForDoublePiece(
+                    b,
+                    b.wKnightBB,
+                    forWhite,
+                    ref possibleMoves,
+                    ref currIndex
+                );
+                generateMovesForDoublePiece(
+                    b,
+                    b.wBishopBB,
+                    forWhite,
+                    ref possibleMoves,
+                    ref currIndex
+                );
 
                 //pawns
                 int pawns = Eval.NumberOfSetBits(b.wPawnBB);
@@ -108,7 +136,8 @@ namespace fraction
                 for (int i = 0; i < pawns; i++)
                 {
                     Vision v = getVisionForPieceAt(b, pawnArr[i]);
-                    if (v.MoveBB == 0) continue;
+                    if (v.MoveBB == 0)
+                        continue;
                     possibleMoves[currIndex] = v;
                     currIndex++;
                 }
@@ -123,7 +152,6 @@ namespace fraction
                     currIndex++;
                 }
 
-
                 //queens, es kann maximal 8 geben
                 int queens = Eval.NumberOfSetBits(b.wQueenBB);
                 int[] queenArr = Utility.FindSetBitsMax(b.wQueenBB, queens);
@@ -131,16 +159,35 @@ namespace fraction
                 for (int i = 0; i < queens; i++)
                 {
                     Vision v = getVisionForPieceAt(b, queenArr[i]);
-                    if (v.MoveBB == 0) continue;
+                    if (v.MoveBB == 0)
+                        continue;
                     possibleMoves[currIndex] = v;
                     currIndex++;
                 }
             }
             else
             {
-                generateMovesForDoublePiece(b, b.bRookBB, forWhite, ref possibleMoves, ref currIndex);
-                generateMovesForDoublePiece(b, b.bKnightBB, forWhite, ref possibleMoves, ref currIndex);
-                generateMovesForDoublePiece(b, b.bBishopBB, forWhite, ref possibleMoves, ref currIndex);
+                generateMovesForDoublePiece(
+                    b,
+                    b.bRookBB,
+                    forWhite,
+                    ref possibleMoves,
+                    ref currIndex
+                );
+                generateMovesForDoublePiece(
+                    b,
+                    b.bKnightBB,
+                    forWhite,
+                    ref possibleMoves,
+                    ref currIndex
+                );
+                generateMovesForDoublePiece(
+                    b,
+                    b.bBishopBB,
+                    forWhite,
+                    ref possibleMoves,
+                    ref currIndex
+                );
 
                 //pawns
                 int pawns = Eval.NumberOfSetBits(b.bPawnBB);
@@ -149,7 +196,8 @@ namespace fraction
                 for (int i = 0; i < pawns; i++)
                 {
                     Vision v = getVisionForPieceAt(b, pawnArr[i]);
-                    if (v.MoveBB == 0) continue;
+                    if (v.MoveBB == 0)
+                        continue;
                     possibleMoves[currIndex] = v;
                     currIndex++;
                 }
@@ -164,7 +212,6 @@ namespace fraction
                     currIndex++;
                 }
 
-
                 //queens, es kann maximal 8 geben
                 int queens = Eval.NumberOfSetBits(b.bQueenBB);
                 int[] queenArr = Utility.FindSetBitsMax(b.bQueenBB, queens);
@@ -172,18 +219,17 @@ namespace fraction
                 for (int i = 0; i < queens; i++)
                 {
                     Vision v = getVisionForPieceAt(b, queenArr[i]);
-                    if (v.MoveBB == 0) continue;
+                    if (v.MoveBB == 0)
+                        continue;
                     possibleMoves[currIndex] = v;
                     currIndex++;
                 }
             }
 
-
             return possibleMoves;
         }
 
-
-        public static Chessboard[] generateBoards(Chessboard b, bool whitesTurn)
+        public static Chessboard[] GenerateBoards(Chessboard b, bool whitesTurn)
         {
             Vision[] visions = generateMoves(b, whitesTurn);
 
@@ -212,7 +258,7 @@ namespace fraction
                 int[] moveArr = Utility.FindSetBitsMax(v.MoveBB, v.setBits);
                 for (int j = 0; j < v.setBits; j++)
                 {
-                    boards[index] = b.generateBoardWithMove(v.PosIndex, moveArr[j], v.pieceType);
+                    boards[index] = b.GenerateBoardWithMove(v.PosIndex, moveArr[j], v.pieceType);
                     index++;
                 }
             }

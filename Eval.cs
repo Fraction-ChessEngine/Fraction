@@ -8,7 +8,7 @@ namespace fraction
     static class Eval
     {
         //31 mio iterations /second, dh kein bottleneck
-        public static float basicStaticEval(Chessboard b)
+        public static float BasicStaticEval(Chessboard b)
         {
             float white = 0;
             white += NumberOfSetBits(b.wKingBB) * 10000f;
@@ -17,12 +17,12 @@ namespace fraction
             white += NumberOfSetBits(b.wKnightBB) * 2.8f;
             white += NumberOfSetBits(b.wQueenBB) * 9f;
             white += NumberOfSetBits(b.wPawnBB);
-            white += relativeValue(b.wPawnBB, Piece.wPawn);
-            white += relativeValue(b.wRookBB, Piece.wRook);
-            white += relativeValue(b.wBishopBB, Piece.wBishop);
-            white += relativeValue(b.wKingBB, Piece.wKing);
-            white += relativeValue(b.wKnightBB, Piece.wKnight);
-            white += relativeValue(b.wQueenBB, Piece.wQueen);
+            white += RelativeValue(b.wPawnBB, Piece.wPawn);
+            white += RelativeValue(b.wRookBB, Piece.wRook);
+            white += RelativeValue(b.wBishopBB, Piece.wBishop);
+            white += RelativeValue(b.wKingBB, Piece.wKing);
+            white += RelativeValue(b.wKnightBB, Piece.wKnight);
+            white += RelativeValue(b.wQueenBB, Piece.wQueen);
 
             float black = 0;
             black += NumberOfSetBits(b.bKingBB) * 10000f;
@@ -31,12 +31,12 @@ namespace fraction
             black += NumberOfSetBits(b.bKnightBB) * 2.8f;
             black += NumberOfSetBits(b.bQueenBB) * 9f;
             black += NumberOfSetBits(b.bPawnBB);
-            black += relativeValue(b.bPawnBB, Piece.bPawn);
-            black += relativeValue(b.bRookBB, Piece.bRook);
-            black += relativeValue(b.bBishopBB, Piece.bBishop);
-            black += relativeValue(b.bKingBB, Piece.bKing);
-            black += relativeValue(b.bKnightBB, Piece.bKnight);
-            black += relativeValue(b.bQueenBB, Piece.bQueen);
+            black += RelativeValue(b.bPawnBB, Piece.bPawn);
+            black += RelativeValue(b.bRookBB, Piece.bRook);
+            black += RelativeValue(b.bBishopBB, Piece.bBishop);
+            black += RelativeValue(b.bKingBB, Piece.bKing);
+            black += RelativeValue(b.bKnightBB, Piece.bKnight);
+            black += RelativeValue(b.bQueenBB, Piece.bQueen);
 
             return white - black;
         }
@@ -111,7 +111,7 @@ namespace fraction
         };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static float relativeValue(ulong bb, Piece type)
+        static float RelativeValue(ulong bb, Piece type)
         {
             float value =
                 NumberOfSetBits(bb & pieceMasks1[(int)type]) * pieceFightValue[(int)type] * 0.1f;
