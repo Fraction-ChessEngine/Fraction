@@ -1,0 +1,32 @@
+{
+    "actionButtons": {
+        "defaultColor": "#ff0034", // Can also use string color names.
+        "loadNpmCommands": false, // Disables automatic generation of actions for npm commands.
+        "reloadButton": "♻️", // Custom reload button text or icon (default ↻). null value enables automatic reload on configuration change
+        "commands": [
+            {
+                "cwd": "${workspaceFolder}", // Terminal initial folder ${workspaceFolder} and os user home as defaults
+                "name": "[-dotnet run-]",
+                "color": "green",
+                "singleInstance": true,
+                "command": "dotnet run", // This is executed in the terminal.
+            },
+            {
+                "name": "[-dotnet build-]",
+                "color": "red",
+                "command": "dotnet build",
+            },
+            {
+                "name": "[-dotnet list reference-]",
+                "color": "cyan",
+                "command": "dotnet list reference",
+            },
+            {
+                "name": "[-dotnet restore-]",
+                "color": "cyan",
+                "command": "dotnet restore",
+            },
+        ]
+    },
+    "omnisharp.enableEditorConfigSupport": false,
+}
