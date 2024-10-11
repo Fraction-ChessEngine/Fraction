@@ -211,6 +211,93 @@ namespace fraction
             Console.WriteLine("Sum: " + sum + " with depth = " + d);
         }
 
+        private static void perft2(int d)
+        {
+            Chessboard b1 = new Chessboard(
+                Utility.FENtoPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
+            );
+            b1 = b1.GenerateBoardWithMove(
+                Utility.ANtoPos("e2"),
+                Utility.ANtoPos("e4"),
+                Piece.wPawn
+            );
+            Minimax.positions = 0;
+            /* Minimax.miniMax(b1, d, float.MinValue, float.MaxValue, false);
+            Console.WriteLine(Minimax.positions); */
+            string l = "abcdefgh";
+
+            int sum = 0;
+
+            Minimax.positions = 0;
+            var n1 = b1.GenerateBoardWithMove(
+                Utility.ANtoPos("b8"),
+                Utility.ANtoPos("a6"),
+                Piece.bKnight
+            );
+            Minimax.MiniMax(n1, d, float.MinValue, float.MaxValue, true);
+            Console.WriteLine("Na6: " + Minimax.positions);
+            sum += Minimax.positions;
+
+            //DisplayBoard(n1);
+
+            //return;
+
+            Minimax.positions = 0;
+            n1 = b1.GenerateBoardWithMove(
+                Utility.ANtoPos("b8"),
+                Utility.ANtoPos("c6"),
+                Piece.bKnight
+            );
+            Minimax.MiniMax(n1, d, float.MinValue, float.MaxValue, true);
+            Console.WriteLine("Nc6: " + Minimax.positions);
+            sum += Minimax.positions;
+
+            Minimax.positions = 0;
+            n1 = b1.GenerateBoardWithMove(
+                Utility.ANtoPos("g8"),
+                Utility.ANtoPos("f6"),
+                Piece.bKnight
+            );
+            Minimax.MiniMax(n1, d, float.MinValue, float.MaxValue, true);
+            Console.WriteLine("Nf6: " + Minimax.positions);
+            sum += Minimax.positions;
+
+            Minimax.positions = 0;
+            n1 = b1.GenerateBoardWithMove(
+                Utility.ANtoPos("g8"),
+                Utility.ANtoPos("h6"),
+                Piece.bKnight
+            );
+            Minimax.MiniMax(n1, d, float.MinValue, float.MaxValue, true);
+            Console.WriteLine("Nh6: " + Minimax.positions);
+            sum += Minimax.positions;
+
+            foreach (char c in l)
+            {
+                Minimax.positions = 0;
+                var a3 = b1.GenerateBoardWithMove(
+                    Utility.ANtoPos(c + "7"),
+                    Utility.ANtoPos(c + "6"),
+                    Piece.bPawn
+                );
+                Minimax.MiniMax(a3, d, float.MinValue, float.MaxValue, true);
+                Console.WriteLine(c + "6: " + Minimax.positions);
+                sum += Minimax.positions;
+
+                Minimax.positions = 0;
+                a3 = b1.GenerateBoardWithMove(
+                    Utility.ANtoPos(c + "7"),
+                    Utility.ANtoPos(c + "5"),
+                    Piece.bPawn
+                );
+                Minimax.MiniMax(a3, d, float.MinValue, float.MaxValue, true);
+                Console.WriteLine(c + "5: " + Minimax.positions);
+                sum += Minimax.positions;
+            }
+
+            Console.WriteLine("Sum: " + sum);
+        }
+
         static Chessboard? visualBoard; //board auf dem die "wahre" position gespeichert wird
 
         static void Main(string[] args)
