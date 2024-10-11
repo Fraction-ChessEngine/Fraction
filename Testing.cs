@@ -363,7 +363,7 @@ namespace fraction
         {
             Stopwatch sw = new Stopwatch();
 
-            int depth = 7;
+            int depth = 6;
 
             sw.Start();
 
