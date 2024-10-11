@@ -56,7 +56,7 @@ namespace fraction
 
         ==> muss sehr intensiv gebenchmarked werden
         */
-        static void generateMovesForDoublePiece(
+        static void GenerateMovesForDoublePiece(
             Chessboard b,
             ulong pieceBB,
             bool forWhite,
@@ -69,7 +69,7 @@ namespace fraction
             {
                 case 1:
                     int i1 = Utility.FindSingleSetBit(pieceBB);
-                    Vision v = getVisionForPieceAt(b, i1);
+                    Vision v = GetVisionForPieceAt(b, i1);
                     if (v.MoveBB == 0ul)
                         break;
                     possibleMoves[currIndex] = v;
@@ -79,8 +79,8 @@ namespace fraction
                     int j1,
                         j2;
                     Utility.FindTwoSetBits(pieceBB, out j1, out j2);
-                    Vision v1 = getVisionForPieceAt(b, j1);
-                    Vision v2 = getVisionForPieceAt(b, j2);
+                    Vision v1 = GetVisionForPieceAt(b, j1);
+                    Vision v2 = GetVisionForPieceAt(b, j2);
 
                     if (v1.MoveBB != 0ul)
                     {
@@ -100,28 +100,28 @@ namespace fraction
             }
         }
 
-        public static Vision[] generateMoves(Chessboard b, bool forWhite)
+        public static Vision[] GenerateMoves(Chessboard b, bool forWhite)
         {
             Vision[] possibleMoves = new Vision[16]; //weil maximal 16 pieces die je ein "Moves" bekommen
             int currIndex = 0;
 
             if (forWhite)
             {
-                generateMovesForDoublePiece(
+                GenerateMovesForDoublePiece(
                     b,
                     b.wRookBB,
                     forWhite,
                     ref possibleMoves,
                     ref currIndex
                 );
-                generateMovesForDoublePiece(
+                GenerateMovesForDoublePiece(
                     b,
                     b.wKnightBB,
                     forWhite,
                     ref possibleMoves,
                     ref currIndex
                 );
-                generateMovesForDoublePiece(
+                GenerateMovesForDoublePiece(
                     b,
                     b.wBishopBB,
                     forWhite,
@@ -135,7 +135,7 @@ namespace fraction
 
                 for (int i = 0; i < pawns; i++)
                 {
-                    Vision v = getVisionForPieceAt(b, pawnArr[i]);
+                    Vision v = GetVisionForPieceAt(b, pawnArr[i]);
                     if (v.MoveBB == 0)
                         continue;
                     possibleMoves[currIndex] = v;
@@ -145,7 +145,7 @@ namespace fraction
                 //king, es kann nur einen geben
                 int kingIndex = Utility.FindSingleSetBit(b.wKingBB);
 
-                Vision vKing = getVisionForPieceAt(b, kingIndex);
+                Vision vKing = GetVisionForPieceAt(b, kingIndex);
                 if (vKing.MoveBB != 0)
                 {
                     possibleMoves[currIndex] = vKing;
@@ -158,7 +158,7 @@ namespace fraction
 
                 for (int i = 0; i < queens; i++)
                 {
-                    Vision v = getVisionForPieceAt(b, queenArr[i]);
+                    Vision v = GetVisionForPieceAt(b, queenArr[i]);
                     if (v.MoveBB == 0)
                         continue;
                     possibleMoves[currIndex] = v;
@@ -167,21 +167,21 @@ namespace fraction
             }
             else
             {
-                generateMovesForDoublePiece(
+                GenerateMovesForDoublePiece(
                     b,
                     b.bRookBB,
                     forWhite,
                     ref possibleMoves,
                     ref currIndex
                 );
-                generateMovesForDoublePiece(
+                GenerateMovesForDoublePiece(
                     b,
                     b.bKnightBB,
                     forWhite,
                     ref possibleMoves,
                     ref currIndex
                 );
-                generateMovesForDoublePiece(
+                GenerateMovesForDoublePiece(
                     b,
                     b.bBishopBB,
                     forWhite,
@@ -195,7 +195,7 @@ namespace fraction
 
                 for (int i = 0; i < pawns; i++)
                 {
-                    Vision v = getVisionForPieceAt(b, pawnArr[i]);
+                    Vision v = GetVisionForPieceAt(b, pawnArr[i]);
                     if (v.MoveBB == 0)
                         continue;
                     possibleMoves[currIndex] = v;
@@ -205,7 +205,7 @@ namespace fraction
                 //king, es kann nur einen geben
                 int kingIndex = Utility.FindSingleSetBit(b.bKingBB);
 
-                Vision vKing = getVisionForPieceAt(b, kingIndex);
+                Vision vKing = GetVisionForPieceAt(b, kingIndex);
                 if (vKing.MoveBB != 0)
                 {
                     possibleMoves[currIndex] = vKing;
@@ -218,7 +218,7 @@ namespace fraction
 
                 for (int i = 0; i < queens; i++)
                 {
-                    Vision v = getVisionForPieceAt(b, queenArr[i]);
+                    Vision v = GetVisionForPieceAt(b, queenArr[i]);
                     if (v.MoveBB == 0)
                         continue;
                     possibleMoves[currIndex] = v;
@@ -231,7 +231,7 @@ namespace fraction
 
         public static Chessboard[] GenerateBoards(Chessboard b, bool whitesTurn)
         {
-            Vision[] visions = generateMoves(b, whitesTurn);
+            Vision[] visions = GenerateMoves(b, whitesTurn);
 
             //gesamtlänge des endarrays wird bestimmt
             int endLength = 0;
@@ -266,7 +266,7 @@ namespace fraction
             return boards;
         }
 
-        public static Vision getVisionForPieceAt(Chessboard b, int i)
+        public static Vision GetVisionForPieceAt(Chessboard b, int i)
         {
             Piece pieceType;
             ulong bb = MoveSets.getPseudoLegalMoves_bb(b, i, out pieceType);

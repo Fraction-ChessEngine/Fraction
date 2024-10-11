@@ -14,13 +14,12 @@ namespace fraction
             out Piece pieceType
         )
         {
-            //bei allen bitboards überprüfen ob die am posIndex True sind um den typ des pieces zu finden
-
-            //zuerst das vorberechnete bitboard (posIndex, piece) aufrufen um alle mgl theorethischen targetsrs zu berechnen
-            //mit bit operationen die sqrs finden wo pieces (egal welcher farbe) in seinem attackPattern stehen
-            //mit isolate() funktion in den geraden und diagonalen die sqrs entfernen die es nicht sehen kann
-            //wir entfernen die bits wo pieces der selben farbe stehen
-            //===> wir haben ein bitboard mit sqrs die das piece effektiv angreifen kann
+            /*
+            Algorithm:
+            Find out which Piecetype we are currently handling
+            Dependent on piecetype and position on the board, a bitboard with the sightlines of the given piece at the given position is chosen
+            -> Some bit manipulations result in a bitboard which contains all squares that the given piece can (pseudolegally) move to
+            */
 
             bool isWhite = IsBitSet(board.whitePiecesBB, posIndex);
             ulong sameColorPieces = isWhite ? board.whitePiecesBB : board.blackPiecesBB;
