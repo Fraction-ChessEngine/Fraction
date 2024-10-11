@@ -14,7 +14,6 @@ using System.Security.Cryptography.X509Certificates;
 
 */
 
-
 namespace fraction
 {
     public enum Piece : int
@@ -74,7 +73,7 @@ namespace fraction
         static string GetPlayerMove()
         {
             Console.Write("My move is: \n");
-            return Console.ReadLine();
+            return Console.ReadLine() ?? "";
         }
 
         /// <summary>
@@ -222,7 +221,7 @@ Sum: 197742
             Console.WriteLine("Sum: " + sum + " with depth = " + d);
         }
 
-        static Chessboard visualBoard; //board auf dem die "wahre" position gespeichert wird
+        static Chessboard? visualBoard; //board auf dem die "wahre" position gespeichert wird
 
         static void Main(string[] args)
         {
