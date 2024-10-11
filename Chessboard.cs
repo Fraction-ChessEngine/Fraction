@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using System.Windows.Forms;
 
 namespace fraction
 {
