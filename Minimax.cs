@@ -23,7 +23,7 @@ namespace fraction
                 pos.quiescenceSearchPlies++;
                 depth++;
             }
-
+/* ayo das hier ist ein commit test, wenn du ihn siehst entfern ihn */
 
             if (depth == 0)
             {
