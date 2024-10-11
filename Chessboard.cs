@@ -39,18 +39,18 @@ namespace fraction
         public Chessboard(Dictionary<int, Piece> pieces_)
         {
             //bitboards müssen generiert werden
-            bPawnBB = Utility.getBBofPosition(pieces_, Piece.bPawn);
-            wPawnBB = Utility.getBBofPosition(pieces_, Piece.wPawn);
-            bBishopBB = Utility.getBBofPosition(pieces_, Piece.bBishop);
-            wBishopBB = Utility.getBBofPosition(pieces_, Piece.wBishop);
-            bQueenBB = Utility.getBBofPosition(pieces_, Piece.bQueen);
-            wQueenBB = Utility.getBBofPosition(pieces_, Piece.wQueen);
-            bKingBB = Utility.getBBofPosition(pieces_, Piece.bKing);
-            wKingBB = Utility.getBBofPosition(pieces_, Piece.wKing);
-            bKnightBB = Utility.getBBofPosition(pieces_, Piece.bKnight);
-            wKnightBB = Utility.getBBofPosition(pieces_, Piece.wKnight);
-            bRookBB = Utility.getBBofPosition(pieces_, Piece.bRook);
-            wRookBB = Utility.getBBofPosition(pieces_, Piece.wRook);
+            bPawnBB = Utility.GetBBofPosition(pieces_, Piece.bPawn);
+            wPawnBB = Utility.GetBBofPosition(pieces_, Piece.wPawn);
+            bBishopBB = Utility.GetBBofPosition(pieces_, Piece.bBishop);
+            wBishopBB = Utility.GetBBofPosition(pieces_, Piece.wBishop);
+            bQueenBB = Utility.GetBBofPosition(pieces_, Piece.bQueen);
+            wQueenBB = Utility.GetBBofPosition(pieces_, Piece.wQueen);
+            bKingBB = Utility.GetBBofPosition(pieces_, Piece.bKing);
+            wKingBB = Utility.GetBBofPosition(pieces_, Piece.wKing);
+            bKnightBB = Utility.GetBBofPosition(pieces_, Piece.bKnight);
+            wKnightBB = Utility.GetBBofPosition(pieces_, Piece.wKnight);
+            bRookBB = Utility.GetBBofPosition(pieces_, Piece.bRook);
+            wRookBB = Utility.GetBBofPosition(pieces_, Piece.wRook);
 
             whitePiecesBB = wPawnBB | wBishopBB | wKingBB | wKnightBB | wRookBB | wQueenBB;
             blackPiecesBB = bPawnBB | bBishopBB | bKingBB | bKnightBB | bRookBB | bQueenBB;
@@ -175,38 +175,38 @@ namespace fraction
                 Environment.Exit(0);
             } */
 
-            ulong wKingBB_ = Utility.setBBtoNullAt(wKingBB, endIndex);
-            ulong bKingBB_ = Utility.setBBtoNullAt(bKingBB, endIndex);
-            ulong wKnightBB_ = Utility.setBBtoNullAt(wKnightBB, endIndex);
-            ulong bKnightBB_ = Utility.setBBtoNullAt(bKnightBB, endIndex);
-            ulong wQueenBB_ = Utility.setBBtoNullAt(wQueenBB, endIndex);
-            ulong bQueenBB_ = Utility.setBBtoNullAt(bQueenBB, endIndex);
-            ulong wRookBB_ = Utility.setBBtoNullAt(wRookBB, endIndex);
-            ulong bRookBB_ = Utility.setBBtoNullAt(bRookBB, endIndex);
-            ulong wBishopBB_ = Utility.setBBtoNullAt(wBishopBB, endIndex);
-            ulong bBishopBB_ = Utility.setBBtoNullAt(bBishopBB, endIndex);
-            ulong wPawnBB_ = Utility.setBBtoNullAt(wPawnBB, endIndex);
-            ulong bPawnBB_ = Utility.setBBtoNullAt(bPawnBB, endIndex);
+            ulong wKingBB_ = Utility.SetBBtoNullAt(wKingBB, endIndex);
+            ulong bKingBB_ = Utility.SetBBtoNullAt(bKingBB, endIndex);
+            ulong wKnightBB_ = Utility.SetBBtoNullAt(wKnightBB, endIndex);
+            ulong bKnightBB_ = Utility.SetBBtoNullAt(bKnightBB, endIndex);
+            ulong wQueenBB_ = Utility.SetBBtoNullAt(wQueenBB, endIndex);
+            ulong bQueenBB_ = Utility.SetBBtoNullAt(bQueenBB, endIndex);
+            ulong wRookBB_ = Utility.SetBBtoNullAt(wRookBB, endIndex);
+            ulong bRookBB_ = Utility.SetBBtoNullAt(bRookBB, endIndex);
+            ulong wBishopBB_ = Utility.SetBBtoNullAt(wBishopBB, endIndex);
+            ulong bBishopBB_ = Utility.SetBBtoNullAt(bBishopBB, endIndex);
+            ulong wPawnBB_ = Utility.SetBBtoNullAt(wPawnBB, endIndex);
+            ulong bPawnBB_ = Utility.SetBBtoNullAt(bPawnBB, endIndex);
 
             //alle bitboards müssen geupdated werden
             switch (type)
             {
                 case Piece.wPawn:
-                    wPawnBB_ = Utility.updateBB(wPawnBB, startIndex, endIndex);
+                    wPawnBB_ = Utility.UpdateBB(wPawnBB, startIndex, endIndex);
                     //auto queen
                     if (endIndex > 55)
                     {
-                        wPawnBB_ = Utility.setBBtoNullAt(wPawnBB_, endIndex);
+                        wPawnBB_ = Utility.SetBBtoNullAt(wPawnBB_, endIndex);
                         wQueenBB_ += 1ul << endIndex;
                     }
                     break;
 
                 case Piece.bPawn:
-                    bPawnBB_ = Utility.updateBB(bPawnBB, startIndex, endIndex);
+                    bPawnBB_ = Utility.UpdateBB(bPawnBB, startIndex, endIndex);
 
                     if (endIndex < 8)
                     {
-                        bPawnBB_ = Utility.setBBtoNullAt(bPawnBB_, endIndex);
+                        bPawnBB_ = Utility.SetBBtoNullAt(bPawnBB_, endIndex);
                         bQueenBB_ += 1ul << endIndex;
                     }
                     break;
@@ -221,35 +221,35 @@ namespace fraction
                     break;
 
                 case Piece.wKnight:
-                    wKnightBB_ = Utility.updateBB(wKnightBB, startIndex, endIndex);
+                    wKnightBB_ = Utility.UpdateBB(wKnightBB, startIndex, endIndex);
                     break;
 
                 case Piece.bKnight:
-                    bKnightBB_ = Utility.updateBB(bKnightBB, startIndex, endIndex);
+                    bKnightBB_ = Utility.UpdateBB(bKnightBB, startIndex, endIndex);
                     break;
 
                 case Piece.wQueen:
-                    wQueenBB_ = Utility.updateBB(wQueenBB, startIndex, endIndex);
+                    wQueenBB_ = Utility.UpdateBB(wQueenBB, startIndex, endIndex);
                     break;
 
                 case Piece.bQueen:
-                    bQueenBB_ = Utility.updateBB(bQueenBB, startIndex, endIndex);
+                    bQueenBB_ = Utility.UpdateBB(bQueenBB, startIndex, endIndex);
                     break;
 
                 case Piece.wRook:
-                    wRookBB_ = Utility.updateBB(wRookBB, startIndex, endIndex);
+                    wRookBB_ = Utility.UpdateBB(wRookBB, startIndex, endIndex);
                     break;
 
                 case Piece.bRook:
-                    bRookBB_ = Utility.updateBB(bRookBB, startIndex, endIndex);
+                    bRookBB_ = Utility.UpdateBB(bRookBB, startIndex, endIndex);
                     break;
 
                 case Piece.wBishop:
-                    wBishopBB_ = Utility.updateBB(wBishopBB, startIndex, endIndex);
+                    wBishopBB_ = Utility.UpdateBB(wBishopBB, startIndex, endIndex);
                     break;
 
                 case Piece.bBishop:
-                    bBishopBB_ = Utility.updateBB(bBishopBB, startIndex, endIndex);
+                    bBishopBB_ = Utility.UpdateBB(bBishopBB, startIndex, endIndex);
                     break;
             }
 

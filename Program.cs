@@ -52,7 +52,7 @@ namespace fraction
 
                     if (b.HasPieceAt(posIndex))
                     {
-                        currRank += b.GetPieceAt(posIndex).getSymbol() + " | ";
+                        currRank += b.GetPieceAt(posIndex).GetSymbol() + " | ";
                     }
                     else
                     {
@@ -71,7 +71,7 @@ namespace fraction
             DisplayBoard(new Chessboard(Utility.FENtoPosition(fen)));
         }
 
-        static string getPlayerMove()
+        static string GetPlayerMove()
         {
             Console.Write("My move is: \n");
             return Console.ReadLine();
@@ -81,7 +81,7 @@ namespace fraction
         /// Nimmt einen string der form "e4 f6" an, gibt bei 0 die erste Pos an, bei 1 die zweite
         /// </summary>
         /// <param name="an"></param>
-        static int[] translateMove(string an)
+        static int[] TranslateMove(string an)
         {
             int pos1 = Utility.ANtoPos(an.Substring(0, 2));
             int pos2 = Utility.ANtoPos(an.Substring(3, 2));

@@ -19,7 +19,7 @@ namespace fraction
         /// Liest das Textfile ein und generiert ein Array aus Plys in string form
         /// </summary>
         /// <returns></returns>
-        public static string[][] getPlysFromFile(string fileName)
+        public static string[][] GetPlysFromFile(string fileName)
         {
             //maximal 10000 PGNs
             string[][] plys = new string[10000][];
@@ -93,7 +93,7 @@ namespace fraction
             return retStr;
         }
 
-        public static string[] plysToFENs(string[] plys)
+        public static string[] PlysToFENs(string[] plys)
         {
             // printStrings(plys);
 
@@ -137,23 +137,23 @@ namespace fraction
                 //castlen muss abgefangen werden
                 if (currPly == "O-O") //weiß, kingside short castle
                 {
-                    currPos = generatePosWithMove(Utility.BoardToFEN(currPos), 7, 5); //rook geht nach c1
-                    currPos = generatePosWithMove(Utility.BoardToFEN(currPos), 4, 6);
+                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 7, 5); //rook geht nach c1
+                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 4, 6);
                 }
                 else if (currPly == "o-o") //schwarz, kingside short castle
                 {
-                    currPos = generatePosWithMove(Utility.BoardToFEN(currPos), 63, 61);
-                    currPos = generatePosWithMove(Utility.BoardToFEN(currPos), 60, 62);
+                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 63, 61);
+                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 60, 62);
                 }
                 else if (currPly == "O-O-O") //weiß, queenside long castle
                 {
-                    currPos = generatePosWithMove(Utility.BoardToFEN(currPos), 0, 3);
-                    currPos = generatePosWithMove(Utility.BoardToFEN(currPos), 4, 2);
+                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 0, 3);
+                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 4, 2);
                 }
                 else if (currPly == "o-o-o") //schwarz, queenside long castle
                 {
-                    currPos = generatePosWithMove(Utility.BoardToFEN(currPos), 56, 59);
-                    currPos = generatePosWithMove(Utility.BoardToFEN(currPos), 60, 58);
+                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 56, 59);
+                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 60, 58);
                 }
                 else
                 {
@@ -162,7 +162,7 @@ namespace fraction
 
                     // Console.WriteLine(currPly + ", Index = " + i);
 
-                    int endPos = getEndPosOfPly(currPly);
+                    int endPos = GetEndPosOfPly(currPly);
 
                     int startPos;
                     if (currPly.Length == 4) //ein weirder move mit zusatzangaben
@@ -171,7 +171,7 @@ namespace fraction
 
                         if ("12345678".Contains(posInfo)) //y koordinate ist gegeben
                         {
-                            startPos = getStartPosOfPly(
+                            startPos = GetStartPosOfPly(
                                 currPos,
                                 piece,
                                 endPos,
@@ -182,7 +182,7 @@ namespace fraction
                         else //x koordinate ist gegeben
                         {
                             // Console.WriteLine("Found x = " + "abcdefgh".IndexOf(posInfo));
-                            startPos = getStartPosOfPly(
+                            startPos = GetStartPosOfPly(
                                 currPos,
                                 piece,
                                 endPos,
@@ -193,7 +193,7 @@ namespace fraction
                     }
                     else
                     {
-                        startPos = getStartPosOfPly(currPos, piece, endPos);
+                        startPos = GetStartPosOfPly(currPos, piece, endPos);
                     }
 
                     //debug
@@ -206,7 +206,7 @@ namespace fraction
                         Console.WriteLine(currPly); */
                     }
 
-                    currPos = generatePosWithMove(Utility.BoardToFEN(currPos), startPos, endPos);
+                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), startPos, endPos);
                 }
 
                 FENs[i] = Utility.BoardToFEN(currPos);
@@ -217,7 +217,7 @@ namespace fraction
         }
 
         //debuggen
-        private static int getStartPosOfPly(
+        private static int GetStartPosOfPly(
             Dictionary<int, Piece> pos,
             Piece p,
             int endPos,
@@ -301,7 +301,7 @@ namespace fraction
             return -1;
         }
 
-        private static int getEndPosOfPly(string ply)
+        private static int GetEndPosOfPly(string ply)
         {
             if (ply == "O-O-O")
                 return -3; //castlen hätte abgefangen werden müssen
@@ -318,7 +318,7 @@ namespace fraction
             return Utility.ANtoPos(plyPos);
         }
 
-        public static Dictionary<int, Piece> generatePosWithMove(string posFEN, int start, int end)
+        public static Dictionary<int, Piece> GeneratePosWithMove(string posFEN, int start, int end)
         {
             Dictionary<int, Piece> pos = Utility.FENtoPosition(posFEN);
             Piece piece = pos[start];
@@ -328,7 +328,7 @@ namespace fraction
             return pos;
         }
 
-        public static void printStrings(string[] strings, bool newline = false)
+        public static void PrintStrings(string[] strings, bool newline = false)
         {
             for (int i = 0; i < strings.Length; i++)
             {
@@ -406,7 +406,7 @@ namespace fraction
                 {
                     for (int j = 0; j < 64; j++)
                     {
-                        MoveSets.getPseudoTargetSqrsRook(bbs[i], j);
+                        MoveSets.GetPseudoTargetSqrsRook(bbs[i], j);
                     }
                 }
             }

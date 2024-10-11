@@ -27,7 +27,7 @@ namespace fraction
 
         public void PrintBB()
         {
-            Utility.printBitBoard(MoveBB, PosIndex);
+            Utility.PrintBitBoard(MoveBB, PosIndex);
         }
 
         public static void PrintMovesArr(Vision[] moves)

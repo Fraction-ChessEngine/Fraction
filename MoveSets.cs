@@ -79,7 +79,7 @@ namespace fraction
 
                 ulong targetBB = patternBB & allPiecesBB;
 
-                ulong pseudoTargetSqrs = getPseudoTargetSqrsRook(targetBB, posIndex);
+                ulong pseudoTargetSqrs = GetPseudoTargetSqrsRook(targetBB, posIndex);
                 ulong targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
 
                 return targetSqrs;
@@ -112,7 +112,7 @@ namespace fraction
 
                 ulong targetBB = patternBB & allPiecesBB;
 
-                ulong pseudoTargetSqrs = getPseudoTargetSqrsBishop(targetBB, posIndex);
+                ulong pseudoTargetSqrs = GetPseudoTargetSqrsBishop(targetBB, posIndex);
                 ulong targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
 
                 return targetSqrs;
@@ -128,8 +128,8 @@ namespace fraction
                 ulong targetBB1 = patternBB1 & allPiecesBB;
                 ulong targetBB2 = patternBB2 & allPiecesBB;
                 ulong pseudoTargetSqrs =
-                    getPseudoTargetSqrsBishop(targetBB1, posIndex)
-                    | getPseudoTargetSqrsRook(targetBB2, posIndex);
+                    GetPseudoTargetSqrsBishop(targetBB1, posIndex)
+                    | GetPseudoTargetSqrsRook(targetBB2, posIndex);
 
                 ulong targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
 
@@ -151,7 +151,7 @@ namespace fraction
         /// <param name="sqrs"></param>
         /// <param name="posIndex"></param>
         /// <returns></returns>
-        public static ulong getPseudoTargetSqrsBishop(ulong pieceBB, int posIndex)
+        public static ulong GetPseudoTargetSqrsBishop(ulong pieceBB, int posIndex)
         {
             pieceBB &= ~(1ul << posIndex);
             ; //das bit an der position von von posIndex wird 0 gesetzt um komplikationen zu vermeiden
@@ -159,30 +159,30 @@ namespace fraction
             ulong nullifier = posIndex == 0 ? 0 : 1ul;
             int reverseIndex = 64 - posIndex;
 
-            ulong diagBB = getDiagonal(posIndex) & pieceBB;
-            ulong antiDiagBB = getAntiDiagonal(posIndex) & pieceBB;
+            ulong diagBB = GetDiagonal(posIndex) & pieceBB;
+            ulong antiDiagBB = GetAntiDiagonal(posIndex) & pieceBB;
 
             ulong diagSW = ((diagBB << reverseIndex) >> reverseIndex) * nullifier;
             ulong diagNE = ((diagBB >> posIndex) << posIndex);
             int indexSW =
-                diagSW == 0 ? projectdiagSWLookupTable[posIndex] : getBiggestBit(diagSW) % 64;
+                diagSW == 0 ? projectdiagSWLookupTable[posIndex] : GetBiggestBit(diagSW) % 64;
             int indexNE =
-                diagNE == 0 ? projectdiagNELookupTable[posIndex] : getSmallestBit(diagNE) % 64;
+                diagNE == 0 ? projectdiagNELookupTable[posIndex] : GetSmallestBit(diagNE) % 64;
 
-            ulong diag = interpolateDiagonal(indexNE, indexSW);
+            ulong diag = InterpolateDiagonal(indexNE, indexSW);
 
             ulong antiDiagNW = ((antiDiagBB >> posIndex) << posIndex);
             ulong antiDiagSe = ((antiDiagBB << reverseIndex) >> reverseIndex) * nullifier;
             int indexSE =
                 antiDiagSe == 0
                     ? projectAntiDiagSELookupTable[posIndex]
-                    : getBiggestBit(antiDiagSe) % 64;
+                    : GetBiggestBit(antiDiagSe) % 64;
             int indexNW =
                 antiDiagNW == 0
                     ? projectAntiDiagNWLookupTable[posIndex]
-                    : getSmallestBit(antiDiagNW) % 64;
+                    : GetSmallestBit(antiDiagNW) % 64;
 
-            ulong antiDiag = interpolateAntiDiagonal(indexNW, indexSE);
+            ulong antiDiag = InterpolateAntiDiagonal(indexNW, indexSE);
 
             return antiDiag | diag;
         }
@@ -460,19 +460,19 @@ namespace fraction
         };
 
         //NW>SE
-        static ulong interpolateAntiDiagonal(int indexNW, int indexSE)
+        static ulong InterpolateAntiDiagonal(int indexNW, int indexSE)
         {
-            ulong filler = interpolateHorizontal(indexNW, indexSE);
-            ulong diag = getAntiDiagonal(indexNW);
+            ulong filler = InterpolateHorizontal(indexNW, indexSE);
+            ulong diag = GetAntiDiagonal(indexNW);
 
             return filler & diag;
         }
 
         //NE>SW
-        static ulong interpolateDiagonal(int indexNE, int indexSW)
+        static ulong InterpolateDiagonal(int indexNE, int indexSW)
         {
-            ulong filler = interpolateHorizontal(indexNE, indexSW);
-            ulong diag = getDiagonal(indexNE);
+            ulong filler = InterpolateHorizontal(indexNE, indexSW);
+            ulong diag = GetDiagonal(indexNE);
 
             return filler & diag;
         }
@@ -517,7 +517,7 @@ namespace fraction
         };
 
         //returnt die diagonale in der sich ein sqr befindet
-        public static ulong getDiagonal(int posIndex)
+        public static ulong GetDiagonal(int posIndex)
         {
             int y = posIndex >> 3;
             int x = posIndex & 7;
@@ -566,7 +566,7 @@ namespace fraction
         };
 
         //returnt die antidiagonale in der sich ein sqr befindet
-        public static ulong getAntiDiagonal(int posIndex)
+        public static ulong GetAntiDiagonal(int posIndex)
         {
             int y = posIndex >> 3;
             int x = posIndex & 7;
@@ -585,7 +585,7 @@ namespace fraction
         /// <param name="sqrs"></param>
         /// <param name="posIndex"></param>
         /// <returns></returns>
-        public static ulong getPseudoTargetSqrsRook(ulong pieceBB, int posIndex)
+        public static ulong GetPseudoTargetSqrsRook(ulong pieceBB, int posIndex)
         {
             int y = posIndex >> 3;
             int x = posIndex & 7;
@@ -598,26 +598,26 @@ namespace fraction
 
             //die x-Koordinate von posIndex ist die position in der
             //hori line, y ist die position in der verti line
-            ulong hori = horizontalLineBB(y) & pieceBB;
+            ulong hori = HorizontalLineBB(y) & pieceBB;
             ulong horiEast = (hori >> posIndex) << posIndex;
             ulong horiWest = ((hori << reverseIndex) >> reverseIndex) * nullifier;
 
             //vertikale lines
-            ulong verti = verticalLineBB(x) & pieceBB;
+            ulong verti = VerticalLineBB(x) & pieceBB;
             ulong vertiTop = (verti >> posIndex) << posIndex;
             ulong vertiBottom = ((verti << reverseIndex) >> reverseIndex) * nullifier;
 
             //die bits werden isoliert
-            int indexWest = horiWest == 0 ? 8 * y : getBiggestBit(horiWest); //wird null wenn horiWest=0
-            int indexEast = horiEast == 0 ? 8 * y + 7 : getSmallestBit(horiEast) % 64;
-            int indexTop = vertiTop == 0 ? 56 + x : getSmallestBit(vertiTop) % 64;
-            int indexBottom = getBiggestBit(vertiBottom);
+            int indexWest = horiWest == 0 ? 8 * y : GetBiggestBit(horiWest); //wird null wenn horiWest=0
+            int indexEast = horiEast == 0 ? 8 * y + 7 : GetSmallestBit(horiEast) % 64;
+            int indexTop = vertiTop == 0 ? 56 + x : GetSmallestBit(vertiTop) % 64;
+            int indexBottom = GetBiggestBit(vertiBottom);
 
             //indexBottom wird ignoriert weil es zwar 0 wird, die xKoordinate aber von i1, dh indexTop festgelegt wird
             //indexBottom produziert auch wenn es 0 wird richtige ergebnisse weil es nicht mehr verwendet wird
 
-            ulong horizontalLine = interpolateHorizontal(indexEast, indexWest);
-            ulong verticalLine = interpolateVertical(indexTop, indexBottom);
+            ulong horizontalLine = InterpolateHorizontal(indexEast, indexWest);
+            ulong verticalLine = InterpolateVertical(indexTop, indexBottom);
 
             return horizontalLine | verticalLine;
         }
@@ -629,7 +629,7 @@ namespace fraction
         /// <param name="index1"></param>
         /// <param name="index2"></param>
         /// <returns></returns>
-        public static ulong interpolateHorizontal(int i1, int i2)
+        public static ulong InterpolateHorizontal(int i1, int i2)
         {
             /*
             ulong n1 = 1 << i1-i2;
@@ -642,12 +642,12 @@ namespace fraction
 
         //  return ((1ul << (i1 - i2 + 1)) - 1) << i2;//gibt fehler bei 63 , 0 weil dann der mittlere term=64, dh gar kein shift findet statt
 
-        public static ulong interpolateVertical(int i1, int i2)
+        public static ulong InterpolateVertical(int i1, int i2)
         {
             int x = i1 & 7; //basically modulo 8
 
-            ulong filler = interpolateHorizontal(i1, i2);
-            ulong verticalMask = verticalLineBB(x);
+            ulong filler = InterpolateHorizontal(i1, i2);
+            ulong verticalMask = VerticalLineBB(x);
 
             return filler & verticalMask;
         }
@@ -657,7 +657,7 @@ namespace fraction
         /// </summary>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static int getSmallestBit(ulong n)
+        public static int GetSmallestBit(ulong n)
         {
             return (int)System.Runtime.Intrinsics.X86.Bmi1.X64.TrailingZeroCount(n);
         }
@@ -667,7 +667,7 @@ namespace fraction
         /// </summary>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static int getBiggestBit(ulong n)
+        public static int GetBiggestBit(ulong n)
         {
             return Utility.BitScanReverse(n);
             //return BitOperations.LeadingZeroCount(n);
@@ -678,7 +678,7 @@ namespace fraction
         /// </summary>
         /// <param name="y"></param>
         /// <returns></returns>
-        private static ulong horizontalLineBB(int y)
+        private static ulong HorizontalLineBB(int y)
         {
             //y Element von [0 , 7]
             return 0b11111111ul << (y * 8);
@@ -689,7 +689,7 @@ namespace fraction
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
-        private static ulong verticalLineBB(int x)
+        private static ulong VerticalLineBB(int x)
         {
             return 0b0000000100000001000000010000000100000001000000010000000100000001ul << x;
         }
