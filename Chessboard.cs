@@ -26,6 +26,7 @@ namespace fraction
         public ulong bKingBB = 0b0000100000000000000000000000000000000000000000000000000000000000;
         public ulong wPawnBB = 0b0000000000000000000000000000000000000000000000001111111100000000;
         public ulong bPawnBB = 0b0000000011111111000000000000000000000000000000000000000000000000;
+        public ulong wControlledSqrBB = 0b11111111ul << 16, bControlledSqrBB=0b11111111ul<<40;
 
         public string history = "";
         public bool afterCapturePly = false;
@@ -96,6 +97,23 @@ namespace fraction
             this.history = history;
         }
 
+
+        //berechnet neue BBs für die kontrollierten sqrs der beiden seiten
+        public void UpdateAttackedSqrBB(Vision[] visions, bool forWhite){
+            ulong attackSqrBB = 0;
+            
+            for (int i = 0; i < visions.Length; i++)
+            {
+                attackSqrBB |= visions[i].MoveBB;
+            }
+            
+            if(forWhite){
+                wControlledSqrBB = attackSqrBB;
+            }else{
+                bControlledSqrBB = attackSqrBB;
+            }
+        }
+
         public static Chessboard FromFEN(string fen)
         {
             return new Chessboard(Utility.FENtoPosition(fen));
@@ -163,8 +181,6 @@ namespace fraction
         {
             //bool isCapture = type.isWhite() ? MoveSets.IsBitSet(blackPiecesBB, endIndex) : MoveSets.IsBitSet(whitePiecesBB, endIndex);
             bool isCapture = MoveSets.IsBitSet(blackPiecesBB | whitePiecesBB, endIndex);
-
-           
 
             //der king kann gecaptured werden weil das capturen des king essentiell für checkmate detection ist
             ulong wKingBB_ = Utility.SetBBtoNullAt(wKingBB, endIndex);

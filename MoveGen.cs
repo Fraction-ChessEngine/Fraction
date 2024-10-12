@@ -10,7 +10,7 @@ namespace fraction
     /// <summary>
     /// kann für jedes Piece generiert werden, enthält alle pseudolegalen Moves die dieses Piece machen kann als BB
     /// </summary>
-    class Vision
+    public class Vision
     {
         public int PosIndex,
             setBits;
@@ -232,6 +232,9 @@ namespace fraction
         public static Chessboard[] GenerateBoards(Chessboard b, bool whitesTurn)
         {
             Vision[] visions = GenerateMoves(b, whitesTurn);
+
+            //damit im nächsten zug der gegner king keine illegalen moves macht
+            b.UpdateAttackedSqrBB(visions, whitesTurn);
 
             //gesamtlänge des endarrays wird bestimmt
             int endLength = 0;

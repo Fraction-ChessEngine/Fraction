@@ -227,11 +227,18 @@ Sum: 197742
         static void Main(string[] args)
         {
             visualBoard = new Chessboard();
-/* 
+
+ 
             Chessboard b1 = new Chessboard(
                 Utility.FENtoPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
             );
-            b1 = b1.GenerateBoardWithMove(
+
+            perft(4);
+
+            /* Utility.PrintBitBoard(visualBoard.wControlledSqrBB);
+            Utility.PrintBitBoard(visualBoard.bControlledSqrBB); */
+           // DisplayBoard(visualBoard);
+           /* b1 = b1.GenerateBoardWithMove(
                 Utility.ANtoPos("b1"),
                 Utility.ANtoPos("c3"),
                 Piece.wKnight

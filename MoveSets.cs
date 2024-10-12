@@ -101,6 +101,7 @@ namespace fraction
                 ulong patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bKing, posIndex);
 
                 ulong targetSqrs = patternBB & ~sameColorPieces;
+                targetSqrs &= isWhite ? board.bControlledSqrBB : board.wControlledSqrBB;
 
                 return targetSqrs;
             } //es ist ein bishop, beinahe selber code wie rook wegen ähnlichem attackpattern
