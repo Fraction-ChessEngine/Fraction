@@ -368,7 +368,8 @@ namespace fraction
             sw.Start();
 
             Chessboard b = new Chessboard();
-            float eval = Minimax.MiniMax(b, depth, -10000, 10000, true);
+            Minimax minimax = new() { MaxQuiescenceSearchPlies = int.MaxValue };
+            float eval = minimax.Run(b, depth, -10000, 10000, true);
             Console.WriteLine("Eval = " + (float)eval);
             Console.WriteLine("Depth = " + (float)depth);
             // Console.WriteLine("Nodes = " + (float)Minimax.noahTest);
@@ -442,12 +443,12 @@ namespace fraction
             int sum = 0;
             for (int i = 0; i < boards.Length; i++)
             {
-                Minimax.positions = 0;
-                Minimax.MiniMax(boards[i], d - 1, float.MinValue, float.MaxValue, !whitesTurn);
-                sum += Minimax.positions;
+                Minimax minimax = new();
+                minimax.Run(boards[i], d - 1, float.MinValue, float.MaxValue, !whitesTurn);
+                sum += minimax.Positions;
 
                 // Program.DisplayBoard(boards[i]);
-                Console.WriteLine(moves[i] + " gets response nodes: " + Minimax.positions );
+                Console.WriteLine(moves[i] + " gets response nodes: " + minimax.Positions);
             }
 
             Console.WriteLine("Sum: " + sum);

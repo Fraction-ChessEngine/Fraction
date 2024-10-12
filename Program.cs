@@ -133,67 +133,79 @@ namespace fraction
 
             int sum = 0;
 
-            Minimax.positions = 0;
-            var n1 = b1.GenerateBoardWithMove(
-                Utility.ANtoPos("b1"),
-                Utility.ANtoPos("a3"),
-                Piece.wKnight
-            );
-            Minimax.MiniMax(n1, d, float.MinValue, float.MaxValue, false);
-            Console.WriteLine("Na3: " + Minimax.positions);
-            sum += Minimax.positions;
+            {
+                Minimax minimax = new();
+                var n1 = b1.GenerateBoardWithMove(
+                    Utility.ANtoPos("b1"),
+                    Utility.ANtoPos("a3"),
+                    Piece.wKnight
+                );
+                minimax.Run(n1, d, float.MinValue, float.MaxValue, false);
+                Console.WriteLine("Na3: " + minimax.Positions);
+                sum += minimax.Positions;
+            }
 
-            Minimax.positions = 0;
-            n1 = b1.GenerateBoardWithMove(
-                Utility.ANtoPos("b1"),
-                Utility.ANtoPos("c3"),
-                Piece.wKnight
-            );
-            Minimax.MiniMax(n1, d, float.MinValue, float.MaxValue, false);
-            Console.WriteLine("Nc3: " + Minimax.positions);
-            sum += Minimax.positions;
+            {
+                Minimax minimax = new();
+                var n1 = b1.GenerateBoardWithMove(
+                    Utility.ANtoPos("b1"),
+                    Utility.ANtoPos("c3"),
+                    Piece.wKnight
+                );
+                minimax.Run(n1, d, float.MinValue, float.MaxValue, false);
+                Console.WriteLine("Nc3: " + minimax.Positions);
+                sum += minimax.Positions;
+            }
 
-            Minimax.positions = 0;
-            n1 = b1.GenerateBoardWithMove(
-                Utility.ANtoPos("g1"),
-                Utility.ANtoPos("f3"),
-                Piece.wKnight
-            );
-            Minimax.MiniMax(n1, d, float.MinValue, float.MaxValue, false);
-            Console.WriteLine("Nf3: " + Minimax.positions);
-            sum += Minimax.positions;
+            {
+                Minimax minimax = new();
+                var n1 = b1.GenerateBoardWithMove(
+                    Utility.ANtoPos("g1"),
+                    Utility.ANtoPos("f3"),
+                    Piece.wKnight
+                );
+                minimax.Run(n1, d, float.MinValue, float.MaxValue, false);
+                Console.WriteLine("Nf3: " + minimax.Positions);
+                sum += minimax.Positions;
+            }
 
-            Minimax.positions = 0;
-            n1 = b1.GenerateBoardWithMove(
-                Utility.ANtoPos("g1"),
-                Utility.ANtoPos("h3"),
-                Piece.wKnight
-            );
-            Minimax.MiniMax(n1, d, float.MinValue, float.MaxValue, false);
-            Console.WriteLine("Nh3: " + Minimax.positions);
-            sum += Minimax.positions;
+            {
+                Minimax minimax = new();
+                var n1 = b1.GenerateBoardWithMove(
+                    Utility.ANtoPos("g1"),
+                    Utility.ANtoPos("h3"),
+                    Piece.wKnight
+                );
+                minimax.Run(n1, d, float.MinValue, float.MaxValue, false);
+                Console.WriteLine("Nh3: " + minimax.Positions);
+                sum += minimax.Positions;
+            }
 
             foreach (char c in l)
             {
-                Minimax.positions = 0;
-                var a3 = b1.GenerateBoardWithMove(
-                    Utility.ANtoPos(c + "2"),
-                    Utility.ANtoPos(c + "3"),
-                    Piece.wPawn
-                );
-                Minimax.MiniMax(a3, d, float.MinValue, float.MaxValue, false);
-                Console.WriteLine(c + "3: " + Minimax.positions);
-                sum += Minimax.positions;
+                {
+                    Minimax minimax = new();
+                    var a3 = b1.GenerateBoardWithMove(
+                        Utility.ANtoPos(c + "2"),
+                        Utility.ANtoPos(c + "3"),
+                        Piece.wPawn
+                    );
+                    minimax.Run(a3, d, float.MinValue, float.MaxValue, false);
+                    Console.WriteLine(c + "3: " + minimax.Positions);
+                    sum += minimax.Positions;
+                }
 
-                Minimax.positions = 0;
-                a3 = b1.GenerateBoardWithMove(
-                    Utility.ANtoPos(c + "2"),
-                    Utility.ANtoPos(c + "4"),
-                    Piece.wPawn
-                );
-                Minimax.MiniMax(a3, d, float.MinValue, float.MaxValue, false);
-                Console.WriteLine(c + "4: " + Minimax.positions);
-                sum += Minimax.positions;
+                {
+                    Minimax minimax = new();
+                    var a3 = b1.GenerateBoardWithMove(
+                        Utility.ANtoPos(c + "2"),
+                        Utility.ANtoPos(c + "4"),
+                        Piece.wPawn
+                    );
+                    minimax.Run(a3, d, float.MinValue, float.MaxValue, false);
+                    Console.WriteLine(c + "4: " + minimax.Positions);
+                    sum += minimax.Positions;
+                }
             }
 
             Console.WriteLine("Sum: " + sum + " with depth = " + d);
@@ -206,13 +218,46 @@ namespace fraction
             visualBoard = Chessboard.FromFEN("8/p7/b7/8/2P5/3KN1rq/1P4PP/7R");
             visualBoard.GeneratePinnedPieceBB(true);
 
-            Utility.PrintBitBoard(visualBoard.pinnedBB);
 
-            //  Chessboard b1 = Chessboard.FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-           // Testing.BenchMarkMINIMAX();
-            
+            Chessboard b1 = new Chessboard(
+                Utility.FENtoPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
+            );
 
-            
+            perft(4);
+
+            /* Utility.PrintBitBoard(visualBoard.wControlledSqrBB);
+            Utility.PrintBitBoard(visualBoard.bControlledSqrBB); */
+            // DisplayBoard(visualBoard);
+            /* b1 = b1.GenerateBoardWithMove(
+                 Utility.ANtoPos("b1"),
+                 Utility.ANtoPos("c3"),
+                 Piece.wKnight
+             );
+
+             b1 = b1.GenerateBoardWithMove(
+                 Utility.ANtoPos("e7"),
+                 Utility.ANtoPos("e5"),
+                 Piece.bPawn
+             );
+
+             b1 = b1.GenerateBoardWithMove(
+                 Utility.ANtoPos("c3"),
+                 Utility.ANtoPos("d5"),
+                 Piece.wKnight
+             );
+
+
+             response nodes after Nc3
+             Pawn e7 e5 has 657 , expected 656 (+1) 
+             Pawn e7 e6 has 658 , expected 657 (+1)
+
+             response nodes after e5
+             knight c3 d5 has 29 , expected 28
+
+
+             Testing.PerftResults(b1, 1, false);
+
+             */
         }
     }
 }

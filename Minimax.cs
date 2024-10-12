@@ -1,14 +1,17 @@
 using System;
-using System.Collections.Generic;
 
 namespace fraction
 {
-    static class Minimax
+    sealed class Minimax
     {
-        public static int positions = 0,
-            nonQuietEndNodes = 0;
+        public bool AlphaBetaPruning { get; init; } = true;
+        public int MaxQuiescenceSearchPlies { get; init; } = 3;
+        public int Positions { get; private set; } = 0;
+        public int NonQuietEndNodes { get; private set; } = 0;
 
-        public static float MiniMax(
+        public Minimax() { }
+
+        public float Run(
             Chessboard pos,
             int depth,
             float alpha,
@@ -25,20 +28,21 @@ namespace fraction
             }
 
             //quiescence search, 3 als hard limit für depth increase
-            if (pos.afterCapturePly && pos.quiescenceSearchPlies < 3)
+            if (pos.afterCapturePly && pos.quiescenceSearchPlies < MaxQuiescenceSearchPlies)
             {
-                nonQuietEndNodes++;
+                NonQuietEndNodes++;
                 pos.quiescenceSearchPlies++;
                 depth++;
             }
 
             if (depth == 0)
             {
-                positions++;
+                Positions++;
                 return staticEval;
             }
 
             Chessboard[] cbs = MoveGen.GenerateBoards(pos, whitesTurn);
+
             if (cbs.Length == 0)
                 return staticEval;
 
@@ -47,12 +51,15 @@ namespace fraction
                 float maxEval = float.MinValue;
                 foreach (Chessboard c in cbs)
                 {
-                    float eval = MiniMax(c, depth - 1, alpha, beta, false);
+                    float eval = Run(c, depth - 1, alpha, beta, false);
                     maxEval = Math.Max(maxEval, eval);
-                    alpha = Math.Max(alpha, eval);
 
-                    if (beta <= alpha)
-                        break;
+                    if (AlphaBetaPruning)
+                    {
+                        alpha = Math.Max(alpha, eval);
+
+                        if (beta <= alpha) break;
+                    }
                 }
                 return maxEval;
             }
@@ -61,12 +68,15 @@ namespace fraction
                 float minEval = float.MaxValue;
                 foreach (Chessboard c in cbs)
                 {
-                    float eval = MiniMax(c, depth - 1, alpha, beta, true);
+                    float eval = Run(c, depth - 1, alpha, beta, true);
                     minEval = Math.Min(minEval, eval);
-                    beta = Math.Min(beta, eval);
 
-                    if (beta <= alpha)
-                        break;
+                    if (AlphaBetaPruning)
+                    {
+                        beta = Math.Min(beta, eval);
+
+                        if (beta <= alpha) break;
+                    }
                 }
                 return minEval;
             }
