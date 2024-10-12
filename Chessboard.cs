@@ -26,7 +26,8 @@ namespace fraction
         public ulong bKingBB = 0b0000100000000000000000000000000000000000000000000000000000000000;
         public ulong wPawnBB = 0b0000000000000000000000000000000000000000000000001111111100000000;
         public ulong bPawnBB = 0b0000000011111111000000000000000000000000000000000000000000000000;
-        public ulong wControlledSqrBB = 0b11111111ul << 16, bControlledSqrBB=0b11111111ul<<40;
+        public ulong wControlledSqrBB = 0b11111111ul << 16,
+            bControlledSqrBB = 0b11111111ul << 40;
 
         public string history = "";
         public bool afterCapturePly = false;
@@ -97,19 +98,38 @@ namespace fraction
             this.history = history;
         }
 
-
         //berechnet neue BBs für die kontrollierten sqrs der beiden seiten
-        public void UpdateAttackedSqrBB(Vision[] visions, bool forWhite){
+        public void UpdateAttackedSqrBB(Vision[] visions, bool forWhite)
+        {
             ulong attackSqrBB = 0;
-            
+
             for (int i = 0; i < visions.Length; i++)
             {
-                attackSqrBB |= visions[i].MoveBB;
+                Vision v = visions[i];
+                if (v == null)
+                    break;
+                ulong bb = v.MoveBB;
+
+                //pawns müssen gesondert berechnet werden wegen des unterschieds zwischen bewegung und schlagzug
+                if (v.pieceType == Piece.wPawn || v.pieceType == Piece.bPawn)
+                {
+                    bb &= ~MoveSets.VerticalLineBB(v.PosIndex % 8);
+
+                    int y = v.PosIndex >> 3;
+                    int x = v.PosIndex & 7;
+
+                    bb |= BB_Lookup.GetPawnAttackSqrs(x, y, forWhite);
+                }
+
+                attackSqrBB |= bb;
             }
-            
-            if(forWhite){
+
+            if (forWhite)
+            {
                 wControlledSqrBB = attackSqrBB;
-            }else{
+            }
+            else
+            {
                 bControlledSqrBB = attackSqrBB;
             }
         }
@@ -170,6 +190,47 @@ namespace fraction
         public bool HasWhitePieceAt(int index)
         {
             return MoveSets.IsBitSet(whitePiecesBB, index);
+        }
+
+
+        public ulong pinnedBB;
+
+        //forWhite = white is pinned
+        public void GeneratePinnedPieceBB(bool forWhite)
+        {
+            /*
+            rook bb auf king legen
+            bishopbb auf king legen
+
+            pieces der anderen farbe drauflegen und auf intersections prüfen
+            pieces der eigenen farbe drauflegen und auf intersections prüfen
+
+            intersection -> zwischensektion isolieren
+
+            wenn in zwischensektion nur 1 piece: hier ein pinned bit aktivieren
+             */
+            if (forWhite)
+            {
+                int kingIndex = Utility.FindSingleSetBit(wKingBB);
+
+                int y = kingIndex >> 3;
+                int x = kingIndex & 7;
+
+                ulong rookSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex);
+
+                ulong intersectionsStraight = rookSightlines & (bRookBB | bQueenBB);
+
+                ulong intersectionsHori = MoveSets.HorizontalLineBB(x);
+
+                ulong intersectionHoriWest =  intersectionsStraight &  MoveSets.InterpolateHorizontal(kingIndex+ (7 - x),kingIndex );
+                intersectionHoriWest = 1ul<<MoveSets.GetSmallestBit(intersectionHoriWest);
+
+
+                ulong intersectionHoriEast = /* intersectionsStraight & */ MoveSets.InterpolateHorizontal(kingIndex, kingIndex - x);
+
+
+                pinnedBB = intersectionHoriWest;//intersectionHoriEast | intersectionHoriWest;
+            }
         }
 
         /// <summary>

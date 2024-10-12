@@ -156,19 +156,6 @@ namespace fraction
             return 8 * i2 + i1;
         }
 
-        public static void PrintPieces(Dictionary<int, Piece> pos)
-        {
-            for (int i = 0; i < 64; i++)
-            {
-                Piece currPiece;
-                if (pos.TryGetValue(i, out currPiece)) //wenn hier ein piece existiert
-                {
-                    Console.Write(currPiece + " , ");
-                }
-            }
-
-            Console.Write("\n");
-        }
 
         public static Piece SymbolToPiece(string symbol)
         {

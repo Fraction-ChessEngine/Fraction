@@ -29,4 +29,8 @@
         ]
     },
     "omnisharp.enableEditorConfigSupport": false,
+    "editor.wordWrap": "off",
+    "editor.wordWrapColumn": 200,
+    "editor.rulers": [120],
+    "editor.formatOnSave": false
 }

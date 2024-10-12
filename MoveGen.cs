@@ -278,6 +278,9 @@ namespace fraction
             Console.WriteLine();
             Vision[] visions = GenerateMoves(b, whitesTurn);
 
+            //damit im nächsten zug der gegner king keine illegalen moves macht
+            b.UpdateAttackedSqrBB(visions, whitesTurn);
+
             //gesamtlänge des endarrays wird bestimmt
             int endLength = 0;
             int visionCount = 0;
@@ -310,7 +313,6 @@ namespace fraction
                         v.pieceType.GetSymbol()
                         + " "
                         + Utility.PosToAN(v.PosIndex)
-                        + " -> "
                         + Utility.PosToAN(moveArr[j]);
                     index++;
                 }

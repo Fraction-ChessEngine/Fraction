@@ -7,6 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 
 /* To do:
 
+-pawn attack lookup table generieren
 -movegen kann mit den neuen Utility funktionen krank optimiert werden
 -auch evaluation kann stark verbessert werden weil jetzt access auf die einzelnen indices mgl ist
 -transposition table
@@ -122,29 +123,6 @@ namespace fraction
             return;
         }
 
-        /*
-Na3: 8885
-Nc3: 9757 2 zu viel
-Nf3: 9754 6 zu viel
-Nh3: 8883 2 zu viel
-a3: 8457
-a4: 9329
-b3: 9347 2 zu viel
-b4: 9332
-c3: 9347 75 zu viel
-c4: 9818 74 zu viel
-d3: 11961 2 zu viel
-d4: 12437 2 zu viel
-e3: 13280 147 zu viel
-e4: 13308 148 zu viel
-f3: 8457
-f4: 8929
-g3: 9347 2 zu viel
-g4: 9328
-h3: 8457
-h4: 9329
-Sum: 197742
- */
 
         private static void perft(int d)
         {
@@ -225,48 +203,16 @@ Sum: 197742
 
         static void Main(string[] args)
         {
-            visualBoard = new Chessboard();
+            visualBoard = Chessboard.FromFEN("8/p7/b7/8/2P5/3KN1rq/1P4PP/7R");
+            visualBoard.GeneratePinnedPieceBB(true);
 
- 
-            Chessboard b1 = new Chessboard(
-                Utility.FENtoPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
-            );
+            Utility.PrintBitBoard(visualBoard.pinnedBB);
 
-            perft(4);
-
-            /* Utility.PrintBitBoard(visualBoard.wControlledSqrBB);
-            Utility.PrintBitBoard(visualBoard.bControlledSqrBB); */
-           // DisplayBoard(visualBoard);
-           /* b1 = b1.GenerateBoardWithMove(
-                Utility.ANtoPos("b1"),
-                Utility.ANtoPos("c3"),
-                Piece.wKnight
-            );
-
-            b1 = b1.GenerateBoardWithMove(
-                Utility.ANtoPos("e7"),
-                Utility.ANtoPos("e5"),
-                Piece.bPawn
-            );
-
-            b1 = b1.GenerateBoardWithMove(
-                Utility.ANtoPos("c3"),
-                Utility.ANtoPos("d5"),
-                Piece.wKnight
-            );
-
-            
-            response nodes after Nc3
-            Pawn e7 e5 has 657 , expected 656 (+1) 
-            Pawn e7 e6 has 658 , expected 657 (+1)
-
-            response nodes after e5
-            knight c3 d5 has 29 , expected 28
+            //  Chessboard b1 = Chessboard.FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+           // Testing.BenchMarkMINIMAX();
             
 
-            Testing.PerftResults(b1, 1, false);
             
-            */
         }
     }
 }

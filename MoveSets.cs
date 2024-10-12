@@ -101,7 +101,7 @@ namespace fraction
                 ulong patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bKing, posIndex);
 
                 ulong targetSqrs = patternBB & ~sameColorPieces;
-                targetSqrs &= isWhite ? board.bControlledSqrBB : board.wControlledSqrBB;
+                targetSqrs &= ~(isWhite ? board.bControlledSqrBB : board.wControlledSqrBB);
 
                 return targetSqrs;
             } //es ist ein bishop, beinahe selber code wie rook wegen ähnlichem attackpattern
@@ -679,7 +679,7 @@ namespace fraction
         /// </summary>
         /// <param name="y"></param>
         /// <returns></returns>
-        private static ulong HorizontalLineBB(int y)
+        public static ulong HorizontalLineBB(int y)
         {
             //y Element von [0 , 7]
             return 0b11111111ul << (y * 8);
@@ -690,7 +690,7 @@ namespace fraction
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
-        private static ulong VerticalLineBB(int x)
+        public static ulong VerticalLineBB(int x)
         {
             return 0b0000000100000001000000010000000100000001000000010000000100000001ul << x;
         }
@@ -702,5 +702,8 @@ namespace fraction
         {
             return (b & (1ul << pos)) != 0;
         }
+    
+        
+
     }
 }
