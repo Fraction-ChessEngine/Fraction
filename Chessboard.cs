@@ -218,18 +218,24 @@ namespace fraction
 
                 ulong rookSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex);
 
+                //enemy pieces die sightlines auf den king haben
                 ulong intersectionsStraight = rookSightlines & (bRookBB | bQueenBB);
 
-                ulong intersectionsHori = MoveSets.HorizontalLineBB(x);
-
                 ulong intersectionHoriWest =  intersectionsStraight &  MoveSets.InterpolateHorizontal(kingIndex+ (7 - x),kingIndex );
-                intersectionHoriWest = 1ul<<MoveSets.GetSmallestBit(intersectionHoriWest);
+                intersectionHoriWest = intersectionHoriWest==0?0: 1ul<<MoveSets.GetSmallestBit(intersectionHoriWest);
 
+                ulong intersectionHoriEast =  intersectionsStraight & MoveSets.InterpolateHorizontal(kingIndex, kingIndex - x);
+                intersectionHoriEast = intersectionHoriEast==0?0: 1ul<<MoveSets.GetBiggestBit(intersectionHoriEast);
 
-                ulong intersectionHoriEast = /* intersectionsStraight & */ MoveSets.InterpolateHorizontal(kingIndex, kingIndex - x);
+                ulong intersectionVertiBottom=intersectionsStraight & MoveSets.InterpolateVertical(kingIndex, kingIndex - y*8);
+                intersectionVertiBottom = intersectionVertiBottom==0?0: 1ul<<MoveSets.GetBiggestBit(intersectionVertiBottom);
 
+                ulong intersectionVertiTop = MoveSets.InterpolateVertical(kingIndex+(8-y)*8, kingIndex);
+                intersectionVertiTop = intersectionVertiTop==0?0: 1ul<<MoveSets.GetSmallestBit(intersectionVertiBottom);
 
-                pinnedBB = intersectionHoriWest;//intersectionHoriEast | intersectionHoriWest;
+                ulong friendsInSightlines = /* whitePiecesBB & */ (intersectionHoriEast|intersectionHoriWest|intersectionVertiBottom|intersectionVertiTop);
+                /* DIe scheisse funktioniert nicht, alle intersections individuell an geigneter position testen */
+                pinnedBB = friendsInSightlines;// intersectionHoriWest;//intersectionHoriEast | intersectionHoriWest;
             }
         }
 
@@ -240,7 +246,6 @@ namespace fraction
         /// <param name="endIndex"></param>
         public Chessboard GenerateBoardWithMove(int startIndex, int endIndex, Piece type)
         {
-            //bool isCapture = type.isWhite() ? MoveSets.IsBitSet(blackPiecesBB, endIndex) : MoveSets.IsBitSet(whitePiecesBB, endIndex);
             bool isCapture = MoveSets.IsBitSet(blackPiecesBB | whitePiecesBB, endIndex);
 
             //der king kann gecaptured werden weil das capturen des king essentiell für checkmate detection ist

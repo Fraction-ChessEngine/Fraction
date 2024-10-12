@@ -219,11 +219,11 @@ namespace fraction
             visualBoard.GeneratePinnedPieceBB(true);
 
 
-            Chessboard b1 = new Chessboard(
-                Utility.FENtoPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
-            );
+            Chessboard b1 = new Chessboard(Utility.FENtoPosition("8/p7/b7/8/2P5/3KN1rq/1P4PP/7R"));
 
-            perft(4);
+            b1.GeneratePinnedPieceBB(true);
+            Utility.PrintBitBoard(b1.pinnedBB);
+
 
             /* Utility.PrintBitBoard(visualBoard.wControlledSqrBB);
             Utility.PrintBitBoard(visualBoard.bControlledSqrBB); */
