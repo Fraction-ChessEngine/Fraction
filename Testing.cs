@@ -433,5 +433,24 @@ namespace fraction
 
             return boards;
         }
+
+        public static void PerftResults(Chessboard b, int d, bool whitesTurn)
+        {
+            string[] moves;
+            Chessboard[] boards = MoveGen.GenerateBoards_DEBUG(b, whitesTurn, out moves);
+
+            int sum = 0;
+            for (int i = 0; i < boards.Length; i++)
+            {
+                Minimax.positions = 0;
+                Minimax.MiniMax(boards[i], d - 1, float.MinValue, float.MaxValue, !whitesTurn);
+                sum += Minimax.positions;
+
+                // Program.DisplayBoard(boards[i]);
+                Console.WriteLine(moves[i] + " gets response nodes: " + Minimax.positions );
+            }
+
+            Console.WriteLine("Sum: " + sum);
+        }
     }
 }

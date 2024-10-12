@@ -165,18 +165,12 @@ namespace fraction
             //bool isCapture = type.isWhite() ? MoveSets.IsBitSet(blackPiecesBB, endIndex) : MoveSets.IsBitSet(whitePiecesBB, endIndex);
             bool isCapture = MoveSets.IsBitSet(blackPiecesBB | whitePiecesBB, endIndex);
 
-            /* if (MoveSets.IsBitSet(blackPiecesBB | whitePiecesBB, endIndex) !=
-            (type.isWhite() ? MoveSets.IsBitSet(blackPiecesBB, endIndex) : MoveSets.IsBitSet(whitePiecesBB, endIndex)))
-            {
-                Program.DisplayBoard(this);
-                Console.WriteLine(type.getSymbol() + " " + Utility.posToAN(startIndex) + " -> " + Utility.posToAN(endIndex));
-                Utility.printBitBoard(MoveSets.getPseudoLegalMoves_bb(this, startIndex, out type));
-                Utility.printBitBoard(whitePiecesBB | blackPiecesBB);
-                Environment.Exit(0);
-            } */
+           
 
+            //der king kann gecaptured werden weil das capturen des king essentiell für checkmate detection ist
             ulong wKingBB_ = Utility.SetBBtoNullAt(wKingBB, endIndex);
             ulong bKingBB_ = Utility.SetBBtoNullAt(bKingBB, endIndex);
+
             ulong wKnightBB_ = Utility.SetBBtoNullAt(wKnightBB, endIndex);
             ulong bKnightBB_ = Utility.SetBBtoNullAt(bKnightBB, endIndex);
             ulong wQueenBB_ = Utility.SetBBtoNullAt(wQueenBB, endIndex);

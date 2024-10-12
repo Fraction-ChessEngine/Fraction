@@ -18,11 +18,15 @@ namespace fraction
         {
             //checkmate detection
             float staticEval = Eval.BasicStaticEval(pos);
+
             if (Math.Abs(staticEval) > 9000)
             {
                 return staticEval;
             }
 
+            /* quiescence search deaktiviert für perft
+            alpha beta pruning deaktiviret für perft
+            
             //quiescence search, 3 als hard limit für depth increase
             if (pos.afterCapturePly && pos.quiescenceSearchPlies < 3)
             {
@@ -30,7 +34,8 @@ namespace fraction
                 pos.quiescenceSearchPlies++;
                 depth++;
             }
-            /* ayo das hier ist ein commit test, wenn du ihn siehst entfern ihn */
+            
+            */
 
             if (depth == 0)
             {
@@ -51,8 +56,7 @@ namespace fraction
                     maxEval = Math.Max(maxEval, eval);
                     alpha = Math.Max(alpha, eval);
 
-                    if (beta <= alpha)
-                        break;
+                    //  if (beta <= alpha)break;
                 }
                 return maxEval;
             }
@@ -65,8 +69,7 @@ namespace fraction
                     minEval = Math.Min(minEval, eval);
                     beta = Math.Min(beta, eval);
 
-                    if (beta <= alpha)
-                        break;
+                    //if (beta <= alpha)break;
                 }
                 return minEval;
             }

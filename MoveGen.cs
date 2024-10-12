@@ -266,6 +266,56 @@ namespace fraction
             return boards;
         }
 
+        public static Chessboard[] GenerateBoards_DEBUG(
+            Chessboard b,
+            bool whitesTurn,
+            out string[] moves
+        )
+        {
+            Console.WriteLine();
+            Vision[] visions = GenerateMoves(b, whitesTurn);
+
+            //gesamtlänge des endarrays wird bestimmt
+            int endLength = 0;
+            int visionCount = 0;
+            for (int i = 0; i < visions.Length; i++)
+            {
+                Vision v = visions[i];
+
+                if (v == null)
+                {
+                    visionCount = i;
+                    break;
+                }
+                endLength += v.setBits;
+            }
+
+            Chessboard[] boards = new Chessboard[endLength];
+            moves = new string[endLength];
+
+            int index = 0;
+
+            for (int i = 0; i < visionCount; i++)
+            {
+                Vision v = visions[i];
+
+                int[] moveArr = Utility.FindSetBitsMax(v.MoveBB, v.setBits);
+                for (int j = 0; j < v.setBits; j++)
+                {
+                    boards[index] = b.GenerateBoardWithMove(v.PosIndex, moveArr[j], v.pieceType);
+                    moves[index] =
+                        v.pieceType.GetSymbol()
+                        + " "
+                        + Utility.PosToAN(v.PosIndex)
+                        + " -> "
+                        + Utility.PosToAN(moveArr[j]);
+                    index++;
+                }
+            }
+
+            return boards;
+        }
+
         public static Vision GetVisionForPieceAt(Chessboard b, int i)
         {
             Piece pieceType;
