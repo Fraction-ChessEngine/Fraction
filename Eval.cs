@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+
 using fraction;
 
 namespace fraction
@@ -69,6 +70,8 @@ namespace fraction
             0b0000000011111111000000000000000000000000000000000000000000000000,
             0b0000000000000000000000000000000000000000000000000000000011100111,
             0b1111111100000000000000000000000000000000000000000011110000000000,
+            0,// padding, think twice before removing!
+            0,// padding, think twice before removing!
             0b11111111111111111111111111111111,
             0b0000000000011000001111000011110000111100001111000001100000000000,
             0b0000000000011000001111000011110000111100001111000001100000000000,
@@ -81,17 +84,11 @@ namespace fraction
         private static ulong[] pieceMasks2 = new ulong[]
         {
             0b111111111111111100000000000000000000000000000000,
-            0,
-            0,
-            0,
-            0,
-            0,
+            0, 0, 0, 0, 0, // other pieces
+            0,// padding, think twice before removing!
+            0,// padding, think twice before removing!
             0b1111111111111111,
-            0,
-            0,
-            0,
-            0,
-            0,
+            0, 0, 0, 0, 0, // other pieces
         };
 
         private static float[] pieceFightValue = new float[]
@@ -102,6 +99,8 @@ namespace fraction
             5f,
             2f,
             9f,
+            0f,// padding, think twice before removing!
+            0f,// padding, think twice before removing!
             1f,
             3f,
             2.7f,
@@ -113,12 +112,10 @@ namespace fraction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static float RelativeValue(ulong bb, Piece type)
         {
-            float value =
-                NumberOfSetBits(bb & pieceMasks1[(int)type]) * pieceFightValue[(int)type] * 0.1f;
+            float value = NumberOfSetBits(bb & pieceMasks1[(int)type]) * pieceFightValue[(int)type] * 0.1f;
 
             // branchless durch lut
-            value +=
-                NumberOfSetBits(bb & pieceMasks2[(int)type]) * pieceFightValue[(int)type] * 0.1f;
+            value += NumberOfSetBits(bb & pieceMasks2[(int)type]) * pieceFightValue[(int)type] * 0.1f;
 
             return value;
         }

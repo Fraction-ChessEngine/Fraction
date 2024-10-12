@@ -25,7 +25,7 @@ namespace fraction
         wRook,
         wKing,
         wQueen,
-        bPawn,
+        bPawn = 8,
         bBishop,
         bKnight,
         bRook,
