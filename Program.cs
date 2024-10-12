@@ -17,22 +17,6 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace fraction
 {
-    public enum Piece : int
-    {
-        wPawn,
-        wBishop,
-        wKnight,
-        wRook,
-        wKing,
-        wQueen,
-        bPawn = 8,
-        bBishop,
-        bKnight,
-        bRook,
-        bKing,
-        bQueen,
-    }
-
     public class Program
     {
         /// <summary>
