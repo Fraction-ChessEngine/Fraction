@@ -227,7 +227,7 @@ Sum: 197742
         static void Main(string[] args)
         {
             visualBoard = new Chessboard();
-
+/* 
             Chessboard b1 = new Chessboard(
                 Utility.FENtoPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
             );
@@ -237,22 +237,30 @@ Sum: 197742
                 Piece.wKnight
             );
 
-            /* b1 = b1.GenerateBoardWithMove(
-                Utility.ANtoPos("b7"),
-                Utility.ANtoPos("b5"),
+            b1 = b1.GenerateBoardWithMove(
+                Utility.ANtoPos("e7"),
+                Utility.ANtoPos("e5"),
                 Piece.bPawn
-            ); */
+            );
 
-            /* 
+            b1 = b1.GenerateBoardWithMove(
+                Utility.ANtoPos("c3"),
+                Utility.ANtoPos("d5"),
+                Piece.wKnight
+            );
+
+            
             response nodes after Nc3
             Pawn e7 e5 has 657 , expected 656 (+1) 
             Pawn e7 e6 has 658 , expected 657 (+1)
+
+            response nodes after e5
+            knight c3 d5 has 29 , expected 28
+            
+
+            Testing.PerftResults(b1, 1, false);
             
             */
-
-
-            //perft(3);
-            Testing.PerftResults(b1, 3, false);
         }
     }
 }
