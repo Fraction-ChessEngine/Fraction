@@ -100,8 +100,6 @@ namespace fraction
             for (int i = 0; i < visions.Length; i++)
             {
                 Vision v = visions[i];
-                if (v == null)
-                    break;
                 ulong bb = v.MoveBB;
 
                 //pawns müssen gesondert berechnet werden wegen des unterschieds zwischen bewegung und schlagzug
