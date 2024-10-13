@@ -1,8 +1,7 @@
 using System;
 
 namespace fraction;
-sealed class Minimax
-{
+sealed class Minimax {
     public bool AlphaBetaPruning { get; init; } = true;
     public int MaxQuiescenceSearchPlies { get; init; } = 3;
     public int Positions { get; private set; } = 0;
@@ -20,26 +19,22 @@ sealed class Minimax
         float beta,
         bool whitesTurn,
         int quiescenceSearchPlies
-    )
-    {
+    ) {
         //checkmate detection
         float staticEval = Eval.BasicStaticEval(pos);
 
-        if (Math.Abs(staticEval) > 9000)
-        {
+        if (Math.Abs(staticEval) > 9000) {
             return staticEval;
         }
 
         //quiescence search, 3 als hard limit für depth increase
-        if (pos.afterCapturePly && quiescenceSearchPlies < MaxQuiescenceSearchPlies)
-        {
+        if (pos.afterCapturePly && quiescenceSearchPlies < MaxQuiescenceSearchPlies) {
             NonQuietEndNodes++;
             quiescenceSearchPlies++;
             depth++;
         }
 
-        if (depth == 0)
-        {
+        if (depth == 0) {
             Positions++;
             return staticEval;
         }
@@ -49,33 +44,26 @@ sealed class Minimax
         if (cbs.Length == 0)
             return staticEval;
 
-        if (whitesTurn)
-        {
+        if (whitesTurn) {
             float maxEval = float.MinValue;
-            foreach (Chessboard c in cbs)
-            {
+            foreach (Chessboard c in cbs) {
                 float eval = Run(c, depth - 1, alpha, beta, false, quiescenceSearchPlies);
                 maxEval = Math.Max(maxEval, eval);
 
-                if (AlphaBetaPruning)
-                {
+                if (AlphaBetaPruning) {
                     alpha = Math.Max(alpha, eval);
 
                     if (beta <= alpha) break;
                 }
             }
             return maxEval;
-        }
-        else
-        {
+        } else {
             float minEval = float.MaxValue;
-            foreach (Chessboard c in cbs)
-            {
+            foreach (Chessboard c in cbs) {
                 float eval = Run(c, depth - 1, alpha, beta, true, quiescenceSearchPlies);
                 minEval = Math.Min(minEval, eval);
 
-                if (AlphaBetaPruning)
-                {
+                if (AlphaBetaPruning) {
                     beta = Math.Min(beta, eval);
 
                     if (beta <= alpha) break;

@@ -6,8 +6,7 @@ using System.Linq;
 using System.Numerics;
 
 namespace fraction;
-static class MoveGen
-{
+static class MoveGen {
     /*
     Architektur:
     -funktion die einmal über das board loopt und für alle sqrs die mgl moves berechnet
@@ -25,11 +24,9 @@ static class MoveGen
         bool forWhite,
         ref Vision[] possibleMoves,
         ref int currIndex
-    )
-    {
+    ) {
         int amount = Eval.NumberOfSetBits(pieceBB);
-        switch (amount)
-        {
+        switch (amount) {
             case 1:
                 int i1 = Utility.FindSingleSetBit(pieceBB);
                 Vision v = GetVisionForPieceAt(b, i1);
@@ -45,14 +42,12 @@ static class MoveGen
                 Vision v1 = GetVisionForPieceAt(b, j1);
                 Vision v2 = GetVisionForPieceAt(b, j2);
 
-                if (v1.MoveBB != 0ul)
-                {
+                if (v1.MoveBB != 0ul) {
                     possibleMoves[currIndex] = v1;
                     currIndex++;
                 }
 
-                if (v2.MoveBB != 0ul)
-                {
+                if (v2.MoveBB != 0ul) {
                     possibleMoves[currIndex] = v2;
                     currIndex++;
                 }
@@ -63,13 +58,13 @@ static class MoveGen
         }
     }
 
-    public static Span<Vision> GenerateMoves(Chessboard b, bool forWhite)
-    {
+    public static Span<Vision> GenerateMoves(Chessboard b, bool forWhite) {
         Vision[] possibleMoves = new Vision[16]; //weil maximal 16 pieces die je ein "Moves" bekommen
+        b.GeneratePinnedPieceBB(forWhite);
+
         int currIndex = 0;
 
-        if (forWhite)
-        {
+        if (forWhite) {
             GenerateMovesForDoublePiece(
                 b,
                 b.wRookBB,
@@ -96,8 +91,7 @@ static class MoveGen
             int pawns = Eval.NumberOfSetBits(b.wPawnBB);
             int[] pawnArr = Utility.FindSetBitsMax(b.wPawnBB, pawns);
 
-            for (int i = 0; i < pawns; i++)
-            {
+            for (int i = 0; i < pawns; i++) {
                 Vision v = GetVisionForPieceAt(b, pawnArr[i]);
                 if (v.MoveBB == 0)
                     continue;
@@ -109,8 +103,7 @@ static class MoveGen
             int kingIndex = Utility.FindSingleSetBit(b.wKingBB);
 
             Vision vKing = GetVisionForPieceAt(b, kingIndex);
-            if (vKing.MoveBB != 0)
-            {
+            if (vKing.MoveBB != 0) {
                 possibleMoves[currIndex] = vKing;
                 currIndex++;
             }
@@ -119,17 +112,14 @@ static class MoveGen
             int queens = Eval.NumberOfSetBits(b.wQueenBB);
             int[] queenArr = Utility.FindSetBitsMax(b.wQueenBB, queens);
 
-            for (int i = 0; i < queens; i++)
-            {
+            for (int i = 0; i < queens; i++) {
                 Vision v = GetVisionForPieceAt(b, queenArr[i]);
                 if (v.MoveBB == 0)
                     continue;
                 possibleMoves[currIndex] = v;
                 currIndex++;
             }
-        }
-        else
-        {
+        } else {
             GenerateMovesForDoublePiece(
                 b,
                 b.bRookBB,
@@ -156,8 +146,7 @@ static class MoveGen
             int pawns = Eval.NumberOfSetBits(b.bPawnBB);
             int[] pawnArr = Utility.FindSetBitsMax(b.bPawnBB, pawns);
 
-            for (int i = 0; i < pawns; i++)
-            {
+            for (int i = 0; i < pawns; i++) {
                 Vision v = GetVisionForPieceAt(b, pawnArr[i]);
                 if (v.MoveBB == 0)
                     continue;
@@ -169,8 +158,7 @@ static class MoveGen
             int kingIndex = Utility.FindSingleSetBit(b.bKingBB);
 
             Vision vKing = GetVisionForPieceAt(b, kingIndex);
-            if (vKing.MoveBB != 0)
-            {
+            if (vKing.MoveBB != 0) {
                 possibleMoves[currIndex] = vKing;
                 currIndex++;
             }
@@ -179,8 +167,7 @@ static class MoveGen
             int queens = Eval.NumberOfSetBits(b.bQueenBB);
             int[] queenArr = Utility.FindSetBitsMax(b.bQueenBB, queens);
 
-            for (int i = 0; i < queens; i++)
-            {
+            for (int i = 0; i < queens; i++) {
                 Vision v = GetVisionForPieceAt(b, queenArr[i]);
                 if (v.MoveBB == 0)
                     continue;
@@ -192,8 +179,7 @@ static class MoveGen
         return possibleMoves[0..currIndex];
     }
 
-    public static Chessboard[] GenerateBoards(Chessboard b, bool whitesTurn)
-    {
+    public static Chessboard[] GenerateBoards(Chessboard b, bool whitesTurn) {
         Span<Vision> visions = GenerateMoves(b, whitesTurn);
 
         //damit im nächsten zug der gegner king keine illegalen moves macht
@@ -201,8 +187,7 @@ static class MoveGen
 
         //gesamtlänge des endarrays wird bestimmt
         int endLength = 0;
-        for (int i = 0; i < visions.Length; i++)
-        {
+        for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
             endLength += v.setBits;
         }
@@ -210,13 +195,11 @@ static class MoveGen
         Chessboard[] boards = new Chessboard[endLength];
         int index = 0;
 
-        for (int i = 0; i < visions.Length; i++)
-        {
+        for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
 
             int[] moveArr = Utility.FindSetBitsMax(v.MoveBB, v.setBits);
-            for (int j = 0; j < v.setBits; j++)
-            {
+            for (int j = 0; j < v.setBits; j++) {
                 boards[index] = b.GenerateBoardWithMove(v.PosIndex, moveArr[j], v.pieceType);
                 index++;
             }
@@ -229,8 +212,7 @@ static class MoveGen
         Chessboard b,
         bool whitesTurn,
         out string[] moves
-    )
-    {
+    ) {
         Console.WriteLine();
         Span<Vision> visions = GenerateMoves(b, whitesTurn);
 
@@ -239,8 +221,7 @@ static class MoveGen
 
         //gesamtlänge des endarrays wird bestimmt
         int endLength = 0;
-        for (int i = 0; i < visions.Length; i++)
-        {
+        for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
             endLength += v.setBits;
         }
@@ -250,13 +231,11 @@ static class MoveGen
 
         int index = 0;
 
-        for (int i = 0; i < visions.Length; i++)
-        {
+        for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
 
             int[] moveArr = Utility.FindSetBitsMax(v.MoveBB, v.setBits);
-            for (int j = 0; j < v.setBits; j++)
-            {
+            for (int j = 0; j < v.setBits; j++) {
                 boards[index] = b.GenerateBoardWithMove(v.PosIndex, moveArr[j], v.pieceType);
                 moves[index] =
                     v.pieceType.GetSymbol()
@@ -270,15 +249,13 @@ static class MoveGen
         return boards;
     }
 
-    public static Vision GetVisionForPieceAt(Chessboard b, int i)
-    {
+    public static Vision GetVisionForPieceAt(Chessboard b, int i) {
         Piece pieceType;
         ulong bb = MoveSets.getPseudoLegalMoves_bb(b, i, out pieceType);
         //  bool isCheck =isWhite ? (bb & b.bKingBB) != 0ul : (bb & b.wKingBB) != 0ul;
 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
-        if (MoveSets.IsBitSet(b.pinnedBB, i))
-        {
+        if (MoveSets.IsBitSet(b.pinnedBB, i)) {
             bb &= b.pinnedBB;
         }
 

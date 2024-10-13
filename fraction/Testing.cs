@@ -464,12 +464,11 @@ static class Testing
         int sum = 0;
         for (int i = 0; i < boards.Length; i++)
         {
-            Minimax minimax = new();
+            Minimax minimax = new(){MaxQuiescenceSearchPlies=0, AlphaBetaPruning=false};
             minimax.Run(boards[i], d - 1, !whitesTurn);
             sum += minimax.Positions;
 
-            // Program.DisplayBoard(boards[i]);
-            Console.WriteLine(moves[i] + " gets response nodes: " + minimax.Positions);
+            Console.WriteLine(moves[i] + ": " + minimax.Positions);
         }
 
         Console.WriteLine("Sum: " + sum);

@@ -16,29 +16,22 @@ using System.Security.Cryptography.X509Certificates;
 */
 
 namespace fraction;
-public class Program
-{
+public class Program {
     /// <summary>
     /// Printed das board
     /// </summary>
     /// <param name="board"></param>
-    public static void DisplayBoard(Chessboard b)
-    {
+    public static void DisplayBoard(Chessboard b) {
         if (b == null)
             return;
-        for (int y = 7; y >= 0; y--)
-        {
+        for (int y = 7; y >= 0; y--) {
             string currRank = "";
-            for (int x = 0; x < 8; x++)
-            {
+            for (int x = 0; x < 8; x++) {
                 int posIndex = y * 8 + x;
 
-                if (b.HasPieceAt(posIndex))
-                {
+                if (b.HasPieceAt(posIndex)) {
                     currRank += b.GetPieceAt(posIndex).GetSymbol() + " | ";
-                }
-                else
-                {
+                } else {
                     currRank += "  | ";
                 }
             }
@@ -49,13 +42,11 @@ public class Program
         //  Console.WriteLine("");
     }
 
-    static void DisplayBoard(string fen)
-    {
+    static void DisplayBoard(string fen) {
         DisplayBoard(new Chessboard(Utility.FENtoPosition(fen)));
     }
 
-    static string GetPlayerMove()
-    {
+    static string GetPlayerMove() {
         Console.Write("My move is: \n");
         return Console.ReadLine() ?? "";
     }
@@ -64,8 +55,7 @@ public class Program
     /// Nimmt einen string der form "e4 f6" an, gibt bei 0 die erste Pos an, bei 1 die zweite
     /// </summary>
     /// <param name="an"></param>
-    static int[] TranslateMove(string an)
-    {
+    static int[] TranslateMove(string an) {
         int pos1 = Utility.ANtoPos(an.Substring(0, 2));
         int pos2 = Utility.ANtoPos(an.Substring(3, 2));
 
@@ -75,8 +65,7 @@ public class Program
     /// <summary>
     /// Die rekursive Funktion die das game am laufen hält
     /// </summary>
-    static void MainLoop()
-    {
+    static void MainLoop() {
         Chessboard b1 = new Chessboard(
             Utility.FENtoPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
         );
@@ -107,8 +96,7 @@ public class Program
     }
 
 
-    private static void perft(int d)
-    {
+    private static void perft(int d) {
         Chessboard b1 = new Chessboard(
             Utility.FENtoPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
         );
@@ -117,7 +105,8 @@ public class Program
         int sum = 0;
 
         {
-            Minimax minimax = new();
+            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
+
             var n1 = b1.GenerateBoardWithMove(
                 Utility.ANtoPos("b1"),
                 Utility.ANtoPos("a3"),
@@ -129,7 +118,7 @@ public class Program
         }
 
         {
-            Minimax minimax = new();
+            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
             var n1 = b1.GenerateBoardWithMove(
                 Utility.ANtoPos("b1"),
                 Utility.ANtoPos("c3"),
@@ -141,7 +130,7 @@ public class Program
         }
 
         {
-            Minimax minimax = new();
+            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
             var n1 = b1.GenerateBoardWithMove(
                 Utility.ANtoPos("g1"),
                 Utility.ANtoPos("f3"),
@@ -153,7 +142,7 @@ public class Program
         }
 
         {
-            Minimax minimax = new();
+            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
             var n1 = b1.GenerateBoardWithMove(
                 Utility.ANtoPos("g1"),
                 Utility.ANtoPos("h3"),
@@ -164,10 +153,9 @@ public class Program
             sum += minimax.Positions;
         }
 
-        foreach (char c in l)
-        {
+        foreach (char c in l) {
             {
-                Minimax minimax = new();
+                Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
                 var a3 = b1.GenerateBoardWithMove(
                     Utility.ANtoPos(c + "2"),
                     Utility.ANtoPos(c + "3"),
@@ -179,7 +167,7 @@ public class Program
             }
 
             {
-                Minimax minimax = new();
+                Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
                 var a3 = b1.GenerateBoardWithMove(
                     Utility.ANtoPos(c + "2"),
                     Utility.ANtoPos(c + "4"),
@@ -196,10 +184,31 @@ public class Program
 
     static Chessboard? visualBoard; //board auf dem die "wahre" position gespeichert wird
 
-    static void Main(string[] args)
-    {
-        visualBoard = Chessboard.FromFEN("8/p7/b7/8/2P5/3KN1rq/1P4PP/7R");
-        //Testing.BenchMarkPins();
-        perft(3);
+    static void Main(string[] args) {
+
+        /* 
+            b2b3: 9345 vs b2b3: 9347
+            c2c3: 9272 vs c2c3: 9313
+            d2d3: 11959 vs d2d3: 11961
+            e2e3: 13134 vs e2e3: 13164
+            g2g3: 9345 vs g2g3: 9347
+            c2c4: 9744 vs c2c4: 9784
+            d2d4: 12435 vs d2d4: 12437
+            e2e4: 13160 vs e2e4: 13193
+            b1c3: 9755 vs b1c3: 9757
+            g1f3: 9748 vs g1f3: 9754
+            g1h3: 8881 vs g1h3: 8883 
+        */
+        visualBoard = Chessboard.FromFEN("rnbqkbnr/pppp1ppp/4p3/8/8/1P6/P1PPPPPP/RNBQKBNR");
+
+        visualBoard = visualBoard.GenerateBoardWithMove(Utility.ANtoPos("c1"), Utility.ANtoPos("a3"), Piece.wBishop);
+        MoveGen.GenerateBoards(visualBoard, false);
+        MoveGen.GenerateBoards(visualBoard, true);
+
+        /* TODO bugfixing, perft updatet die scheisse aus irgendeinem grund nicht selbst, bitte perften um das zu beheben */
+
+
+        Testing.PerftResults(visualBoard, 1, false);
+
     }
 }

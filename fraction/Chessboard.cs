@@ -291,8 +291,6 @@ public class Chessboard
             pinLineArr[7] = intersectionDiagNW;
         }
 
-        /* TODO!!! sicherstellen dass nur EIN piece der eigenen farbe auf den linien steht */
-
         pinnedBB = friendsInSightlines & ~wKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
     }
 
