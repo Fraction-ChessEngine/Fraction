@@ -11,32 +11,32 @@ static class Eval
     public static float BasicStaticEval(Chessboard b)
     {
         float white = 0;
-        white += NumberOfSetBits(b.wKingBB) * 10000f;
-        white += NumberOfSetBits(b.wRookBB) * 5f;
-        white += NumberOfSetBits(b.wBishopBB) * 3f;
-        white += NumberOfSetBits(b.wKnightBB) * 2.8f;
-        white += NumberOfSetBits(b.wQueenBB) * 9f;
-        white += NumberOfSetBits(b.wPawnBB);
-        white += RelativeValue(b.wPawnBB, Piece.wPawn);
-        white += RelativeValue(b.wRookBB, Piece.wRook);
-        white += RelativeValue(b.wBishopBB, Piece.wBishop);
-        white += RelativeValue(b.wKingBB, Piece.wKing);
-        white += RelativeValue(b.wKnightBB, Piece.wKnight);
-        white += RelativeValue(b.wQueenBB, Piece.wQueen);
+        white += NumberOfSetBits(b.WKingBB) * 10000f;
+        white += NumberOfSetBits(b.WRookBB) * 5f;
+        white += NumberOfSetBits(b.WBishopBB) * 3f;
+        white += NumberOfSetBits(b.WKnightBB) * 2.8f;
+        white += NumberOfSetBits(b.WQueenBB) * 9f;
+        white += NumberOfSetBits(b.WPawnBB);
+        white += RelativeValue(b.WPawnBB, Piece.wPawn);
+        white += RelativeValue(b.WRookBB, Piece.wRook);
+        white += RelativeValue(b.WBishopBB, Piece.wBishop);
+        white += RelativeValue(b.WKingBB, Piece.wKing);
+        white += RelativeValue(b.WKnightBB, Piece.wKnight);
+        white += RelativeValue(b.WQueenBB, Piece.wQueen);
 
         float black = 0;
-        black += NumberOfSetBits(b.bKingBB) * 10000f;
-        black += NumberOfSetBits(b.bRookBB) * 5f;
-        black += NumberOfSetBits(b.bBishopBB) * 3f;
-        black += NumberOfSetBits(b.bKnightBB) * 2.8f;
-        black += NumberOfSetBits(b.bQueenBB) * 9f;
-        black += NumberOfSetBits(b.bPawnBB);
-        black += RelativeValue(b.bPawnBB, Piece.bPawn);
-        black += RelativeValue(b.bRookBB, Piece.bRook);
-        black += RelativeValue(b.bBishopBB, Piece.bBishop);
-        black += RelativeValue(b.bKingBB, Piece.bKing);
-        black += RelativeValue(b.bKnightBB, Piece.bKnight);
-        black += RelativeValue(b.bQueenBB, Piece.bQueen);
+        black += NumberOfSetBits(b.BKingBB) * 10000f;
+        black += NumberOfSetBits(b.BRookBB) * 5f;
+        black += NumberOfSetBits(b.BBishopBB) * 3f;
+        black += NumberOfSetBits(b.BKnightBB) * 2.8f;
+        black += NumberOfSetBits(b.BQueenBB) * 9f;
+        black += NumberOfSetBits(b.BPawnBB);
+        black += RelativeValue(b.BPawnBB, Piece.bPawn);
+        black += RelativeValue(b.BRookBB, Piece.bRook);
+        black += RelativeValue(b.BBishopBB, Piece.bBishop);
+        black += RelativeValue(b.BKingBB, Piece.bKing);
+        black += RelativeValue(b.BKnightBB, Piece.bKnight);
+        black += RelativeValue(b.BQueenBB, Piece.bQueen);
 
         return white - black;
     }
