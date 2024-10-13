@@ -16,22 +16,6 @@ using System.Security.Cryptography.X509Certificates;
 */
 
 namespace fraction;
-public enum Piece : int
-{
-    wPawn,
-    wBishop,
-    wKnight,
-    wRook,
-    wKing,
-    wQueen,
-    bPawn,
-    bBishop,
-    bKnight,
-    bRook,
-    bKing,
-    bQueen,
-}
-
 public class Program
 {
     /// <summary>
@@ -139,7 +123,7 @@ public class Program
                 Utility.ANtoPos("a3"),
                 Piece.wKnight
             );
-            minimax.Run(n1, d, float.MinValue, float.MaxValue, false);
+            minimax.Run(n1, d, false);
             Console.WriteLine("Na3: " + minimax.Positions);
             sum += minimax.Positions;
         }
@@ -151,7 +135,7 @@ public class Program
                 Utility.ANtoPos("c3"),
                 Piece.wKnight
             );
-            minimax.Run(n1, d, float.MinValue, float.MaxValue, false);
+            minimax.Run(n1, d, false);
             Console.WriteLine("Nc3: " + minimax.Positions);
             sum += minimax.Positions;
         }
@@ -163,7 +147,7 @@ public class Program
                 Utility.ANtoPos("f3"),
                 Piece.wKnight
             );
-            minimax.Run(n1, d, float.MinValue, float.MaxValue, false);
+            minimax.Run(n1, d, false);
             Console.WriteLine("Nf3: " + minimax.Positions);
             sum += minimax.Positions;
         }
@@ -175,7 +159,7 @@ public class Program
                 Utility.ANtoPos("h3"),
                 Piece.wKnight
             );
-            minimax.Run(n1, d, float.MinValue, float.MaxValue, false);
+            minimax.Run(n1, d, false);
             Console.WriteLine("Nh3: " + minimax.Positions);
             sum += minimax.Positions;
         }
@@ -189,7 +173,7 @@ public class Program
                     Utility.ANtoPos(c + "3"),
                     Piece.wPawn
                 );
-                minimax.Run(a3, d, float.MinValue, float.MaxValue, false);
+                minimax.Run(a3, d, false);
                 Console.WriteLine(c + "3: " + minimax.Positions);
                 sum += minimax.Positions;
             }
@@ -201,7 +185,7 @@ public class Program
                     Utility.ANtoPos(c + "4"),
                     Piece.wPawn
                 );
-                minimax.Run(a3, d, float.MinValue, float.MaxValue, false);
+                minimax.Run(a3, d, false);
                 Console.WriteLine(c + "4: " + minimax.Positions);
                 sum += minimax.Positions;
             }
@@ -215,9 +199,7 @@ public class Program
     static void Main(string[] args)
     {
         visualBoard = Chessboard.FromFEN("8/p7/b7/8/2P5/3KN1rq/1P4PP/7R");
-
         //Testing.BenchMarkPins();
         perft(3);
-
     }
 }

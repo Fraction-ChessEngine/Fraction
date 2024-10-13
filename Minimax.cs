@@ -3,19 +3,23 @@ using System;
 namespace fraction;
 sealed class Minimax
 {
-    public bool AlphaBetaPruning { get; init; } = false;
-    public int MaxQuiescenceSearchPlies { get; init; } = 0;
+    public bool AlphaBetaPruning { get; init; } = true;
+    public int MaxQuiescenceSearchPlies { get; init; } = 3;
     public int Positions { get; private set; } = 0;
     public int NonQuietEndNodes { get; private set; } = 0;
 
     public Minimax() { }
 
-    public float Run(
+    public float Run(Chessboard pos, int depth, bool whitesTurn)
+        => Run(pos, depth, float.MinValue, float.MaxValue, whitesTurn, 0);
+
+    private float Run(
         Chessboard pos,
         int depth,
         float alpha,
         float beta,
-        bool whitesTurn
+        bool whitesTurn,
+        int quiescenceSearchPlies
     )
     {
         //checkmate detection
@@ -27,10 +31,10 @@ sealed class Minimax
         }
 
         //quiescence search, 3 als hard limit für depth increase
-        if (pos.afterCapturePly && pos.quiescenceSearchPlies < MaxQuiescenceSearchPlies)
+        if (pos.afterCapturePly && quiescenceSearchPlies < MaxQuiescenceSearchPlies)
         {
             NonQuietEndNodes++;
-            pos.quiescenceSearchPlies++;
+            quiescenceSearchPlies++;
             depth++;
         }
 
@@ -50,7 +54,7 @@ sealed class Minimax
             float maxEval = float.MinValue;
             foreach (Chessboard c in cbs)
             {
-                float eval = Run(c, depth - 1, alpha, beta, false);
+                float eval = Run(c, depth - 1, alpha, beta, false, quiescenceSearchPlies);
                 maxEval = Math.Max(maxEval, eval);
 
                 if (AlphaBetaPruning)
@@ -67,7 +71,7 @@ sealed class Minimax
             float minEval = float.MaxValue;
             foreach (Chessboard c in cbs)
             {
-                float eval = Run(c, depth - 1, alpha, beta, true);
+                float eval = Run(c, depth - 1, alpha, beta, true, quiescenceSearchPlies);
                 minEval = Math.Min(minEval, eval);
 
                 if (AlphaBetaPruning)

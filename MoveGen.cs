@@ -6,40 +6,6 @@ using System.Linq;
 using System.Numerics;
 
 namespace fraction;
-/// <summary>
-/// kann für jedes Piece generiert werden, enthält alle pseudolegalen Moves die dieses Piece machen kann als BB
-/// </summary>
-public class Vision
-{
-    public int PosIndex,
-        setBits;
-    public ulong MoveBB;
-    public Piece pieceType;
-
-    public Vision(int i, ulong m, Piece piece)
-    {
-        PosIndex = i;
-        MoveBB = m;
-        pieceType = piece;
-        setBits = Eval.NumberOfSetBits(MoveBB);
-    }
-
-    public void PrintBB()
-    {
-        Utility.PrintBitBoard(MoveBB, PosIndex);
-    }
-
-    public static void PrintMovesArr(Vision[] moves)
-    {
-        foreach (Vision m in moves)
-        {
-            if (m == null)
-                return;
-            m.PrintBB();
-        }
-    }
-}
-
 static class MoveGen
 {
     /*
@@ -50,12 +16,10 @@ static class MoveGen
     64 iterationen zur generation des possibleMovesBBs[] array (für jedes sqr getPseudoLegalMoves callen)
     x64 iterationen um über das currMoveBB zu loopen und ein board mit dem entsprechenden move zu generieren
     (kann optimiert werden da man wegen getSmallestBit und getBiggestBit nicht von 0-63 gehen muss)
-
-
-
     ==> muss sehr intensiv gebenchmarked werden
     */
-    static void GenerateMovesForDoublePiece(
+
+    private static void GenerateMovesForDoublePiece(
         Chessboard b,
         ulong pieceBB,
         bool forWhite,
@@ -99,13 +63,10 @@ static class MoveGen
         }
     }
 
-    public static Vision[] GenerateMoves(Chessboard b, bool forWhite)
+    public static Span<Vision> GenerateMoves(Chessboard b, bool forWhite)
     {
         Vision[] possibleMoves = new Vision[16]; //weil maximal 16 pieces die je ein "Moves" bekommen
         int currIndex = 0;
-
-        //damit alle hier verwendeten funktionen access auf ein korrektes pin bb haben
-        b.GeneratePinnedPieceBB(forWhite);
 
         if (forWhite)
         {
@@ -228,35 +189,28 @@ static class MoveGen
             }
         }
 
-        return possibleMoves;
+        return possibleMoves[0..currIndex];
     }
 
     public static Chessboard[] GenerateBoards(Chessboard b, bool whitesTurn)
     {
-        Vision[] visions = GenerateMoves(b, whitesTurn);
+        Span<Vision> visions = GenerateMoves(b, whitesTurn);
 
         //damit im nächsten zug der gegner king keine illegalen moves macht
         b.UpdateAttackedSqrBB(visions, whitesTurn);
 
         //gesamtlänge des endarrays wird bestimmt
         int endLength = 0;
-        int visionCount = 0;
         for (int i = 0; i < visions.Length; i++)
         {
             Vision v = visions[i];
-
-            if (v == null)
-            {
-                visionCount = i;
-                break;
-            }
             endLength += v.setBits;
         }
 
         Chessboard[] boards = new Chessboard[endLength];
         int index = 0;
 
-        for (int i = 0; i < visionCount; i++)
+        for (int i = 0; i < visions.Length; i++)
         {
             Vision v = visions[i];
 
@@ -278,23 +232,16 @@ static class MoveGen
     )
     {
         Console.WriteLine();
-        Vision[] visions = GenerateMoves(b, whitesTurn);
+        Span<Vision> visions = GenerateMoves(b, whitesTurn);
 
         //damit im nächsten zug der gegner king keine illegalen moves macht
         b.UpdateAttackedSqrBB(visions, whitesTurn);
 
         //gesamtlänge des endarrays wird bestimmt
         int endLength = 0;
-        int visionCount = 0;
         for (int i = 0; i < visions.Length; i++)
         {
             Vision v = visions[i];
-
-            if (v == null)
-            {
-                visionCount = i;
-                break;
-            }
             endLength += v.setBits;
         }
 
@@ -303,7 +250,7 @@ static class MoveGen
 
         int index = 0;
 
-        for (int i = 0; i < visionCount; i++)
+        for (int i = 0; i < visions.Length; i++)
         {
             Vision v = visions[i];
 

@@ -9,10 +9,8 @@ namespace fraction;
 public class Chessboard
 {
     //0 ist ganz rechts, 63 ist ganz links, 0=a1, 63=h8
-    public ulong whitePiecesBB =
-        0b0000000000000000000000000000000000000000000000001111111111111111;
-    public ulong blackPiecesBB =
-        0b1111111111111111000000000000000000000000000000000000000000000000;
+    public ulong whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
+    public ulong blackPiecesBB = 0b1111111111111111000000000000000000000000000000000000000000000000;
     public ulong bRookBB = 0b1000000100000000000000000000000000000000000000000000000000000000;
     public ulong wRookBB = 0b0000000000000000000000000000000000000000000000000000000010000001;
     public ulong bBishopBB = 0b0010010000000000000000000000000000000000000000000000000000000000;
@@ -30,7 +28,6 @@ public class Chessboard
 
     public string history = "";
     public bool afterCapturePly = false;
-    public int quiescenceSearchPlies = 0;
 
     /// <summary>
     /// Hiermit kann durch FENtoPos funktionen ein board gebaut werden
@@ -72,8 +69,7 @@ public class Chessboard
         ulong wPawnBB,
         ulong bPawnBB,
         string history,
-        bool afterCapturePly,
-        int qsp
+        bool afterCapturePly
     )
     {
         this.wKingBB = wKingBB;
@@ -89,7 +85,6 @@ public class Chessboard
         this.wPawnBB = wPawnBB;
         this.bPawnBB = bPawnBB;
         this.afterCapturePly = afterCapturePly;
-        quiescenceSearchPlies = qsp;
 
         this.whitePiecesBB = wKingBB | wKnightBB | wQueenBB | wRookBB | wBishopBB | wPawnBB;
         this.blackPiecesBB = bKingBB | bKnightBB | bQueenBB | bRookBB | bBishopBB | bPawnBB;
@@ -98,15 +93,13 @@ public class Chessboard
     }
 
     //berechnet neue BBs für die kontrollierten sqrs der beiden seiten
-    public void UpdateAttackedSqrBB(Vision[] visions, bool forWhite)
+    public void UpdateAttackedSqrBB(Span<Vision> visions, bool forWhite)
     {
         ulong attackSqrBB = 0;
 
         for (int i = 0; i < visions.Length; i++)
         {
             Vision v = visions[i];
-            if (v == null)
-                break;
             ulong bb = v.MoveBB;
 
             //pawns müssen gesondert berechnet werden wegen des unterschieds zwischen bewegung und schlagzug
@@ -407,8 +400,7 @@ public class Chessboard
             bPawnBB_,
             history /* + "; " + type.getSymbol() +" "+ Utility.posToAN(startIndex) + " -> " + Utility.posToAN(endIndex)  */
             ,
-            isCapture,
-            quiescenceSearchPlies
+            isCapture
         );
     }
 }

@@ -379,6 +379,7 @@ static class Testing
         float t = sw.Elapsed.Seconds + (float)sw.Elapsed.Milliseconds / 1000f;
         Console.WriteLine((float)n * 2 / t + " Iterations per second");
     }
+
     public static void BenchMarkMINIMAX()
     {
         Stopwatch sw = new Stopwatch();
@@ -389,7 +390,7 @@ static class Testing
 
         Chessboard b = new Chessboard();
         Minimax minimax = new() { MaxQuiescenceSearchPlies = int.MaxValue };
-        float eval = minimax.Run(b, depth, -10000, 10000, true);
+        float eval = minimax.Run(b, depth, true);
         Console.WriteLine("Eval = " + (float)eval);
         Console.WriteLine("Depth = " + (float)depth);
         // Console.WriteLine("Nodes = " + (float)Minimax.noahTest);
@@ -464,7 +465,7 @@ static class Testing
         for (int i = 0; i < boards.Length; i++)
         {
             Minimax minimax = new();
-            minimax.Run(boards[i], d - 1, float.MinValue, float.MaxValue, !whitesTurn);
+            minimax.Run(boards[i], d - 1, !whitesTurn);
             sum += minimax.Positions;
 
             // Program.DisplayBoard(boards[i]);
