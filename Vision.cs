@@ -5,7 +5,7 @@ namespace fraction;
 /// <summary>
 /// kann für jedes Piece generiert werden, enthält alle pseudolegalen Moves die dieses Piece machen kann als BB
 /// </summary>
-public class Vision
+public struct Vision
 {
     public int PosIndex, setBits;
     public ulong MoveBB;
