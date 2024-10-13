@@ -359,7 +359,8 @@ namespace fraction
             Console.WriteLine((float)n / t + " Iterations per second");
         }
 
-        public static void BenchMarkPins(){
+        public static void BenchMarkPins()
+        {
             int n = 852000; //n<852000
             Chessboard[] chessboards = ReadFENsFromFile(n);
             Stopwatch sw = new Stopwatch();
@@ -377,7 +378,7 @@ namespace fraction
                 sw.Elapsed
             );
             float t = sw.Elapsed.Seconds + (float)sw.Elapsed.Milliseconds / 1000f;
-            Console.WriteLine((float)n*2 / t + " Iterations per second");
+            Console.WriteLine((float)n * 2 / t + " Iterations per second");
         }
         public static void BenchMarkMINIMAX()
         {
@@ -388,7 +389,7 @@ namespace fraction
             sw.Start();
 
             Chessboard b = new Chessboard();
-            Minimax minimax = new() { MaxQuiescenceSearchPlies = int.MaxValue };
+            Minimax minimax = new() { MaxQuiescenceSearchPlies = 3 };
             float eval = minimax.Run(b, depth, -10000, 10000, true);
             Console.WriteLine("Eval = " + (float)eval);
             Console.WriteLine("Depth = " + (float)depth);

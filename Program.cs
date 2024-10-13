@@ -217,8 +217,8 @@ namespace fraction
         {
             visualBoard = Chessboard.FromFEN("8/p7/b7/8/2P5/3KN1rq/1P4PP/7R");
 
-            //Testing.BenchMarkPins();
-            perft(3);
+            Testing.BenchMarkMINIMAX();
+            //perft(3);
 
         }
     }

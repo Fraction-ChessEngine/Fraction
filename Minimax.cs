@@ -4,8 +4,8 @@ namespace fraction
 {
     sealed class Minimax
     {
-        public bool AlphaBetaPruning { get; init; } = false;
-        public int MaxQuiescenceSearchPlies { get; init; } = 0;
+        public bool AlphaBetaPruning { get; init; } = true;
+        public int MaxQuiescenceSearchPlies { get; init; } = 3;
         public int Positions { get; private set; } = 0;
         public int NonQuietEndNodes { get; private set; } = 0;
 
