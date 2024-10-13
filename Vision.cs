@@ -1,3 +1,5 @@
+using System;
+
 namespace fraction;
 
 /// <summary>
@@ -22,12 +24,10 @@ public class Vision
         Utility.PrintBitBoard(MoveBB, PosIndex);
     }
 
-    public static void PrintMovesArr(Vision[] moves)
+    public static void PrintMovesArr(Span<Vision> moves)
     {
         foreach (Vision m in moves)
         {
-            if (m == null)
-                return;
             m.PrintBB();
         }
     }

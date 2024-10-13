@@ -97,8 +97,7 @@ namespace fraction
         }
 
         //berechnet neue BBs für die kontrollierten sqrs der beiden seiten
-        public void UpdateAttackedSqrBB(Vision[] visions, bool forWhite)
-        {
+        public void UpdateAttackedSqrBB(Span<Vision> visions, bool forWhite){
             ulong attackSqrBB = 0;
 
             for (int i = 0; i < visions.Length; i++)
