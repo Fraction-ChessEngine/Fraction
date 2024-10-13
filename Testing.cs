@@ -359,6 +359,26 @@ namespace fraction
             Console.WriteLine((float)n / t + " Iterations per second");
         }
 
+        public static void BenchMarkPins(){
+            int n = 852000; //n<852000
+            Chessboard[] chessboards = ReadFENsFromFile(n);
+            Stopwatch sw = new Stopwatch();
+
+            sw.Start();
+            for (int i = 0; i < n; i++)
+            {
+                chessboards[i].GeneratePinnedPieceBB(true);
+                chessboards[i].GeneratePinnedPieceBB(false);
+            }
+            sw.Stop();
+
+            Console.WriteLine(
+                "1 Iteration on " + n + " different positions, Time elapsed={0}",
+                sw.Elapsed
+            );
+            float t = sw.Elapsed.Seconds + (float)sw.Elapsed.Milliseconds / 1000f;
+            Console.WriteLine((float)n*2 / t + " Iterations per second");
+        }
         public static void BenchMarkMINIMAX()
         {
             Stopwatch sw = new Stopwatch();

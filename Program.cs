@@ -216,48 +216,10 @@ namespace fraction
         static void Main(string[] args)
         {
             visualBoard = Chessboard.FromFEN("8/p7/b7/8/2P5/3KN1rq/1P4PP/7R");
-            visualBoard.GeneratePinnedPieceBB(true);
 
+            //Testing.BenchMarkPins();
+            perft(3);
 
-            Chessboard b1 = new Chessboard(Utility.FENtoPosition("8/p7/b7/8/2P5/3KN1rq/1P4PP/7R"));
-
-            b1.GeneratePinnedPieceBB(true);
-            Utility.PrintBitBoard(b1.pinnedBB);
-
-
-            /* Utility.PrintBitBoard(visualBoard.wControlledSqrBB);
-            Utility.PrintBitBoard(visualBoard.bControlledSqrBB); */
-            // DisplayBoard(visualBoard);
-            /* b1 = b1.GenerateBoardWithMove(
-                 Utility.ANtoPos("b1"),
-                 Utility.ANtoPos("c3"),
-                 Piece.wKnight
-             );
-
-             b1 = b1.GenerateBoardWithMove(
-                 Utility.ANtoPos("e7"),
-                 Utility.ANtoPos("e5"),
-                 Piece.bPawn
-             );
-
-             b1 = b1.GenerateBoardWithMove(
-                 Utility.ANtoPos("c3"),
-                 Utility.ANtoPos("d5"),
-                 Piece.wKnight
-             );
-
-
-             response nodes after Nc3
-             Pawn e7 e5 has 657 , expected 656 (+1) 
-             Pawn e7 e6 has 658 , expected 657 (+1)
-
-             response nodes after e5
-             knight c3 d5 has 29 , expected 28
-
-
-             Testing.PerftResults(b1, 1, false);
-
-             */
         }
     }
 }

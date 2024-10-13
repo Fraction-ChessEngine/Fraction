@@ -192,51 +192,116 @@ namespace fraction
             return MoveSets.IsBitSet(whitePiecesBB, index);
         }
 
-
-        public ulong pinnedBB;
+        //kein unterschied zwischen weißen und schwarzen pins, weil sowieso nach jedem zug das BB aktualisiert werden muss
+        public ulong pinnedBB = 0;
+        /// <summary>
+        /// After GeneratePinnedPieceBB(...) is called, this contains BBs to pinLines in alle directions in the following order:
+        /// Top, TopRight, Right, BottomRight, Bottom, BottomLeft, Left, TopLeft (<=> clockwise, starting with Top)
+        /// </summary>
+        public ulong[] pinLineArr = new ulong[8];
 
         //forWhite = white is pinned
         public void GeneratePinnedPieceBB(bool forWhite)
         {
-            /*
-            rook bb auf king legen
-            bishopbb auf king legen
+            int kingIndex;
 
-            pieces der anderen farbe drauflegen und auf intersections prüfen
-            pieces der eigenen farbe drauflegen und auf intersections prüfen
+            ulong rookSightlines;
+            ulong bishopSightlines;
 
-            intersection -> zwischensektion isolieren
+            //enemy pieces die sightlines auf den king haben, aka intersections of sightlines with pieces
+            ulong intersectionsStraight;
+            ulong intersectionDiags;
 
-            wenn in zwischensektion nur 1 piece: hier ein pinned bit aktivieren
-             */
             if (forWhite)
             {
-                int kingIndex = Utility.FindSingleSetBit(wKingBB);
+                kingIndex = Utility.FindSingleSetBit(wKingBB);
 
-                int y = kingIndex >> 3;
-                int x = kingIndex & 7;
+                rookSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex);
+                bishopSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wBishop, kingIndex);
 
-                ulong rookSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex);
 
-                //enemy pieces die sightlines auf den king haben
-                ulong intersectionsStraight = rookSightlines & (bRookBB | bQueenBB);
-
-                ulong intersectionHoriWest =  intersectionsStraight &  MoveSets.InterpolateHorizontal(kingIndex+ (7 - x),kingIndex );
-                intersectionHoriWest = intersectionHoriWest==0?0: 1ul<<MoveSets.GetSmallestBit(intersectionHoriWest);
-
-                ulong intersectionHoriEast =  intersectionsStraight & MoveSets.InterpolateHorizontal(kingIndex, kingIndex - x);
-                intersectionHoriEast = intersectionHoriEast==0?0: 1ul<<MoveSets.GetBiggestBit(intersectionHoriEast);
-
-                ulong intersectionVertiBottom=intersectionsStraight & MoveSets.InterpolateVertical(kingIndex, kingIndex - y*8);
-                intersectionVertiBottom = intersectionVertiBottom==0?0: 1ul<<MoveSets.GetBiggestBit(intersectionVertiBottom);
-
-                ulong intersectionVertiTop = MoveSets.InterpolateVertical(kingIndex+(8-y)*8, kingIndex);
-                intersectionVertiTop = intersectionVertiTop==0?0: 1ul<<MoveSets.GetSmallestBit(intersectionVertiBottom);
-
-                ulong friendsInSightlines = /* whitePiecesBB & */ (intersectionHoriEast|intersectionHoriWest|intersectionVertiBottom|intersectionVertiTop);
-                /* DIe scheisse funktioniert nicht, alle intersections individuell an geigneter position testen */
-                pinnedBB = friendsInSightlines;// intersectionHoriWest;//intersectionHoriEast | intersectionHoriWest;
+                intersectionsStraight = rookSightlines & (bRookBB | bQueenBB);
+                intersectionDiags = bishopSightlines & (bBishopBB | bQueenBB);
             }
+            else
+            {
+                kingIndex = Utility.FindSingleSetBit(bKingBB);
+
+                rookSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex);
+                bishopSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wBishop, kingIndex);
+
+                intersectionsStraight = rookSightlines & (wRookBB | wQueenBB);
+                intersectionDiags = bishopSightlines & (wBishopBB | wQueenBB);
+            }
+
+            ulong friendsInSightlines = 0;
+            int y = kingIndex >> 3;
+            int x = kingIndex & 7;
+
+            ulong sameColorPieces = forWhite ? whitePiecesBB : blackPiecesBB;
+
+
+            if (intersectionsStraight != 0)
+            {
+                ulong intersectionHoriWest = intersectionsStraight & MoveSets.InterpolateHorizontal(kingIndex, kingIndex - x);
+                intersectionHoriWest = intersectionHoriWest == 0 ? 0 : MoveSets.InterpolateHorizontal(kingIndex, MoveSets.GetBiggestBit(intersectionHoriWest));
+                intersectionHoriWest = MoveSets.CountSetBits(intersectionHoriWest & sameColorPieces) == 2 ? intersectionHoriWest : 0;//1x king, 1x piece, dh 2 bits
+
+                ulong intersectionHoriEast = intersectionsStraight & MoveSets.InterpolateHorizontal(kingIndex + (7 - x), kingIndex);
+                intersectionHoriEast = intersectionHoriEast == 0 ? 0 : MoveSets.InterpolateHorizontal(MoveSets.GetSmallestBit(intersectionHoriEast), kingIndex);
+                intersectionHoriEast = MoveSets.CountSetBits(intersectionHoriEast & sameColorPieces) == 2 ? intersectionHoriEast : 0;
+
+                ulong intersectionVertiBottom = intersectionsStraight & MoveSets.InterpolateVertical(kingIndex, kingIndex - y * 8);
+                intersectionVertiBottom = intersectionVertiBottom == 0 ? 0 : MoveSets.InterpolateVertical(kingIndex, MoveSets.GetBiggestBit(intersectionVertiBottom));
+                intersectionVertiBottom = MoveSets.CountSetBits(intersectionVertiBottom & sameColorPieces) == 2 ? intersectionVertiBottom : 0;
+
+                ulong intersectionVertiTop = intersectionsStraight & MoveSets.InterpolateVertical(kingIndex + (8 - y) * 8, kingIndex);
+                intersectionVertiTop = intersectionVertiTop == 0 ? 0 : MoveSets.InterpolateVertical(MoveSets.GetSmallestBit(intersectionVertiTop), kingIndex);
+                intersectionVertiTop = MoveSets.CountSetBits(intersectionVertiTop & sameColorPieces) == 2 ? intersectionVertiTop : 0;
+
+                //wenn mehr oder weniger als ein piece der eigenen farbe auf der pinLine steht ist es kein pin
+
+                friendsInSightlines |= sameColorPieces & (intersectionHoriEast | intersectionHoriWest | intersectionVertiBottom | intersectionVertiTop);
+                pinLineArr[0] = intersectionVertiTop;
+                pinLineArr[2] = intersectionHoriEast;
+                pinLineArr[4] = intersectionVertiBottom;
+                pinLineArr[6] = intersectionHoriWest;
+            }
+
+            if (intersectionDiags != 0)
+            {
+                ulong antiDiag = MoveSets.GetAntiDiagonal(x, y);
+                int nw = MoveSets.GetBiggestBit(antiDiag);
+                ulong intersectionDiagNW = intersectionDiags & MoveSets.InterpolateAntiDiagonal(nw, kingIndex);
+                intersectionDiagNW = intersectionDiagNW == 0 ? 0 : MoveSets.InterpolateAntiDiagonal(MoveSets.GetSmallestBit(intersectionDiagNW), kingIndex);
+                intersectionDiagNW = MoveSets.CountSetBits(intersectionDiagNW & sameColorPieces) == 2 ? intersectionDiagNW : 0;
+
+                int se = MoveSets.GetSmallestBit(antiDiag);
+                ulong intersectionDiagSE = intersectionDiags & MoveSets.InterpolateAntiDiagonal(kingIndex, se);
+                intersectionDiagSE = intersectionDiagSE == 0 ? 0 : MoveSets.InterpolateAntiDiagonal(kingIndex, MoveSets.GetBiggestBit(intersectionDiagSE));
+                intersectionDiagSE = MoveSets.CountSetBits(intersectionDiagSE & sameColorPieces) == 2 ? intersectionDiagSE : 0;
+
+                ulong diag = MoveSets.GetDiagonal(x, y);
+                int ne = MoveSets.GetBiggestBit(diag);
+                ulong intersectionDiagNE = intersectionDiags & MoveSets.InterpolateDiagonal(ne, kingIndex);
+                intersectionDiagNE = intersectionDiagNE == 0 ? 0 : MoveSets.InterpolateDiagonal(MoveSets.GetSmallestBit(intersectionDiagNE), kingIndex);
+                intersectionDiagNE = MoveSets.CountSetBits(intersectionDiagNE & sameColorPieces) == 2 ? intersectionDiagNE : 0;
+
+                int sw = MoveSets.GetSmallestBit(diag);
+                ulong intersectionDiagSW = intersectionDiags & MoveSets.InterpolateDiagonal(kingIndex, sw);
+                intersectionDiagSW = intersectionDiagSW == 0 ? 0 : MoveSets.InterpolateDiagonal(kingIndex, MoveSets.GetBiggestBit(intersectionDiagSW));
+                intersectionDiagSW = MoveSets.CountSetBits(intersectionDiagSW & sameColorPieces) == 2 ? intersectionDiagSW : 0;
+
+                friendsInSightlines |= intersectionDiagNE | intersectionDiagNW | intersectionDiagSE | intersectionDiagSW;
+                pinLineArr[1] = intersectionDiagNE;
+                pinLineArr[3] = intersectionDiagSE;
+                pinLineArr[5] = intersectionDiagSW;
+                pinLineArr[7] = intersectionDiagNW;
+            }
+
+            /* TODO!!! sicherstellen dass nur EIN piece der eigenen farbe auf den linien steht */
+
+            pinnedBB = friendsInSightlines & ~wKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
         }
 
         /// <summary>

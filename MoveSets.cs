@@ -188,7 +188,7 @@ namespace fraction
             return antiDiag | diag;
         }
 
-        private static int[] projectAntiDiagSELookupTable =
+        private static readonly int[] projectAntiDiagSELookupTable =
         {
             0,
             1,
@@ -256,7 +256,7 @@ namespace fraction
             63
         };
 
-        private static int[] projectAntiDiagNWLookupTable =
+        private static readonly int[] projectAntiDiagNWLookupTable =
         {
             0,
             8,
@@ -324,7 +324,7 @@ namespace fraction
             63,
         };
 
-        private static int[] projectdiagSWLookupTable =
+        private static readonly int[] projectdiagSWLookupTable =
         {
             0,
             1,
@@ -392,7 +392,7 @@ namespace fraction
             0,
         };
 
-        private static int[] projectdiagNELookupTable =
+        private static readonly int[] projectdiagNELookupTable =
         {
             63,
             55,
@@ -461,7 +461,7 @@ namespace fraction
         };
 
         //NW>SE
-        static ulong InterpolateAntiDiagonal(int indexNW, int indexSE)
+        public static ulong InterpolateAntiDiagonal(int indexNW, int indexSE)
         {
             ulong filler = InterpolateHorizontal(indexNW, indexSE);
             ulong diag = GetAntiDiagonal(indexNW);
@@ -470,7 +470,7 @@ namespace fraction
         }
 
         //NE>SW
-        static ulong InterpolateDiagonal(int indexNE, int indexSW)
+        public static ulong InterpolateDiagonal(int indexNE, int indexSW)
         {
             ulong filler = InterpolateHorizontal(indexNE, indexSW);
             ulong diag = GetDiagonal(indexNE);
@@ -528,6 +528,13 @@ namespace fraction
             return diagonals[diagonalIndex];
         }
 
+        public static ulong GetDiagonal(int x, int y)
+        {
+            int diagonalIndex = y - x + 7;
+
+            return diagonals[diagonalIndex];
+        }
+
         private static readonly ulong[] antiDiagonals =
         {
             (1ul << 0),
@@ -574,6 +581,12 @@ namespace fraction
 
             int antiDiagonalIndex = x + y;
 
+            return antiDiagonals[antiDiagonalIndex];
+        }
+
+        public static ulong GetAntiDiagonal(int x, int y)
+        {
+            int antiDiagonalIndex = x + y;
             return antiDiagonals[antiDiagonalIndex];
         }
 
@@ -663,6 +676,11 @@ namespace fraction
             return (int)System.Runtime.Intrinsics.X86.Bmi1.X64.TrailingZeroCount(n);
         }
 
+        public static int CountSetBits(ulong n)
+        {
+            return System.Numerics.BitOperations.PopCount(n);
+        }
+
         /// <summary>
         /// Returnt den Index (!) des größten "1" bits
         /// </summary>
@@ -702,8 +720,8 @@ namespace fraction
         {
             return (b & (1ul << pos)) != 0;
         }
-    
-        
+
+
 
     }
 }

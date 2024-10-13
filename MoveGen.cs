@@ -105,6 +105,9 @@ namespace fraction
             Vision[] possibleMoves = new Vision[16]; //weil maximal 16 pieces die je ein "Moves" bekommen
             int currIndex = 0;
 
+            //damit alle hier verwendeten funktionen access auf ein korrektes pin bb haben
+            b.GeneratePinnedPieceBB(forWhite);
+
             if (forWhite)
             {
                 GenerateMovesForDoublePiece(
@@ -326,6 +329,11 @@ namespace fraction
             Piece pieceType;
             ulong bb = MoveSets.getPseudoLegalMoves_bb(b, i, out pieceType);
             //  bool isCheck =isWhite ? (bb & b.bKingBB) != 0ul : (bb & b.wKingBB) != 0ul;
+            
+            //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
+            if(MoveSets.IsBitSet(b.pinnedBB,i)){
+                bb &= b.pinnedBB;
+            }
 
             return new Vision(i, bb, pieceType);
         }
