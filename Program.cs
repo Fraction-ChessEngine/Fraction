@@ -124,7 +124,7 @@ namespace fraction
                     Utility.ANtoPos("a3"),
                     Piece.wKnight
                 );
-                minimax.Run(n1, d, float.MinValue, float.MaxValue, false);
+                minimax.Run(n1, d, false);
                 Console.WriteLine("Na3: " + minimax.Positions);
                 sum += minimax.Positions;
             }
@@ -136,7 +136,7 @@ namespace fraction
                     Utility.ANtoPos("c3"),
                     Piece.wKnight
                 );
-                minimax.Run(n1, d, float.MinValue, float.MaxValue, false);
+                minimax.Run(n1, d, false);
                 Console.WriteLine("Nc3: " + minimax.Positions);
                 sum += minimax.Positions;
             }
@@ -148,7 +148,7 @@ namespace fraction
                     Utility.ANtoPos("f3"),
                     Piece.wKnight
                 );
-                minimax.Run(n1, d, float.MinValue, float.MaxValue, false);
+                minimax.Run(n1, d, false);
                 Console.WriteLine("Nf3: " + minimax.Positions);
                 sum += minimax.Positions;
             }
@@ -160,7 +160,7 @@ namespace fraction
                     Utility.ANtoPos("h3"),
                     Piece.wKnight
                 );
-                minimax.Run(n1, d, float.MinValue, float.MaxValue, false);
+                minimax.Run(n1, d, false);
                 Console.WriteLine("Nh3: " + minimax.Positions);
                 sum += minimax.Positions;
             }
@@ -174,7 +174,7 @@ namespace fraction
                         Utility.ANtoPos(c + "3"),
                         Piece.wPawn
                     );
-                    minimax.Run(a3, d, float.MinValue, float.MaxValue, false);
+                    minimax.Run(a3, d, false);
                     Console.WriteLine(c + "3: " + minimax.Positions);
                     sum += minimax.Positions;
                 }
@@ -186,7 +186,7 @@ namespace fraction
                         Utility.ANtoPos(c + "4"),
                         Piece.wPawn
                     );
-                    minimax.Run(a3, d, float.MinValue, float.MaxValue, false);
+                    minimax.Run(a3, d, false);
                     Console.WriteLine(c + "4: " + minimax.Positions);
                     sum += minimax.Positions;
                 }

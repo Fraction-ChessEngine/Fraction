@@ -29,7 +29,6 @@ namespace fraction
 
         public string history = "";
         public bool afterCapturePly = false;
-        public int quiescenceSearchPlies = 0;
 
         /// <summary>
         /// Hiermit kann durch FENtoPos funktionen ein board gebaut werden
@@ -71,8 +70,7 @@ namespace fraction
             ulong wPawnBB,
             ulong bPawnBB,
             string history,
-            bool afterCapturePly,
-            int qsp
+            bool afterCapturePly
         )
         {
             this.wKingBB = wKingBB;
@@ -88,7 +86,6 @@ namespace fraction
             this.wPawnBB = wPawnBB;
             this.bPawnBB = bPawnBB;
             this.afterCapturePly = afterCapturePly;
-            quiescenceSearchPlies = qsp;
 
             this.whitePiecesBB = wKingBB | wKnightBB | wQueenBB | wRookBB | wBishopBB | wPawnBB;
             this.blackPiecesBB = bKingBB | bKnightBB | bQueenBB | bRookBB | bBishopBB | bPawnBB;
@@ -340,8 +337,7 @@ namespace fraction
                 bPawnBB_,
                 history /* + "; " + type.getSymbol() +" "+ Utility.posToAN(startIndex) + " -> " + Utility.posToAN(endIndex)  */
                 ,
-                isCapture,
-                quiescenceSearchPlies
+                isCapture
             );
         }
     }

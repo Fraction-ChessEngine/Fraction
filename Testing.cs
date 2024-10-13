@@ -369,7 +369,7 @@ namespace fraction
 
             Chessboard b = new Chessboard();
             Minimax minimax = new() { MaxQuiescenceSearchPlies = int.MaxValue };
-            float eval = minimax.Run(b, depth, -10000, 10000, true);
+            float eval = minimax.Run(b, depth, true);
             Console.WriteLine("Eval = " + (float)eval);
             Console.WriteLine("Depth = " + (float)depth);
             // Console.WriteLine("Nodes = " + (float)Minimax.noahTest);
@@ -444,7 +444,7 @@ namespace fraction
             for (int i = 0; i < boards.Length; i++)
             {
                 Minimax minimax = new();
-                minimax.Run(boards[i], d - 1, float.MinValue, float.MaxValue, !whitesTurn);
+                minimax.Run(boards[i], d - 1, !whitesTurn);
                 sum += minimax.Positions;
 
                 // Program.DisplayBoard(boards[i]);
