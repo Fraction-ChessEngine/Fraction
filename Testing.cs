@@ -11,380 +11,379 @@ using System.Linq;
     -funktion die ein PGN ein ein array von fen strings umwandelt
     -funktionen die relevante funktionen von MoveGen und MoveSets benchmarken
 */
-namespace fraction
+namespace fraction;
+static class Testing
 {
-    static class Testing
+    /// <summary>
+    /// Liest das Textfile ein und generiert ein Array aus Plys in string form
+    /// </summary>
+    /// <returns></returns>
+    public static string[][] GetPlysFromFile(string fileName)
     {
-        /// <summary>
-        /// Liest das Textfile ein und generiert ein Array aus Plys in string form
-        /// </summary>
-        /// <returns></returns>
-        public static string[][] GetPlysFromFile(string fileName)
+        //maximal 10000 PGNs
+        string[][] plys = new string[10000][];
+        string content = File.ReadAllText(fileName);
+
+        string[] games = content.Split("sep");
+
+        Console.WriteLine("|--- " + games.Length + " games read in, beginning to format ---|");
+
+        int currIndex = 0;
+        foreach (string game in games)
         {
-            //maximal 10000 PGNs
-            string[][] plys = new string[10000][];
-            string content = File.ReadAllText(fileName);
+            string[] moves = game.Split(".");
 
-            string[] games = content.Split("sep");
-
-            Console.WriteLine("|--- " + games.Length + " games read in, beginning to format ---|");
-
-            int currIndex = 0;
-            foreach (string game in games)
+            for (int i = 0; i < moves.Length; i++)
             {
-                string[] moves = game.Split(".");
-
-                for (int i = 0; i < moves.Length; i++)
+                if (moves[i].Length == 1)
                 {
-                    if (moves[i].Length == 1)
-                    {
-                        moves[i] = "";
-                        continue;
-                    }
-
-                    moves[i] = moves[i].Remove(moves[i].Length - 2); //cuttet die beiden letzten chars um den index zu moves zu entfernen
-                    moves[i] = moves[i].Trim();
-                }
-
-                string[] gamePlys = string.Join(" ", moves).Split(" ");
-
-                gamePlys[gamePlys.Length - 1] = ""; //um das 1-0 zu entfernen
-
-                //um das # zu entfernen
-                if (gamePlys.Length > 2) //um edgecases abzufangen
-                {
-                    string lastPly = gamePlys[gamePlys.Length - 2];
-                    if (lastPly != "" && lastPly[lastPly.Length - 1] == '#')
-                    {
-                        gamePlys[gamePlys.Length - 2] = gamePlys[gamePlys.Length - 2].Substring(
-                            0,
-                            gamePlys[gamePlys.Length - 2].Length - 1
-                        );
-                    }
-                }
-
-                plys[currIndex] = gamePlys;
-                currIndex++;
-            }
-
-            //entfertn das "+"
-            foreach (string[] game in plys)
-            {
-                if (game == null)
+                    moves[i] = "";
                     continue;
-                for (int i = 0; i < game.Length; i++)
+                }
+
+                moves[i] = moves[i].Remove(moves[i].Length - 2); //cuttet die beiden letzten chars um den index zu moves zu entfernen
+                moves[i] = moves[i].Trim();
+            }
+
+            string[] gamePlys = string.Join(" ", moves).Split(" ");
+
+            gamePlys[gamePlys.Length - 1] = ""; //um das 1-0 zu entfernen
+
+            //um das # zu entfernen
+            if (gamePlys.Length > 2) //um edgecases abzufangen
+            {
+                string lastPly = gamePlys[gamePlys.Length - 2];
+                if (lastPly != "" && lastPly[lastPly.Length - 1] == '#')
                 {
-                    game[i] = RemovePlus(game[i]);
+                    gamePlys[gamePlys.Length - 2] = gamePlys[gamePlys.Length - 2].Substring(
+                        0,
+                        gamePlys[gamePlys.Length - 2].Length - 1
+                    );
                 }
             }
 
-            return plys;
+            plys[currIndex] = gamePlys;
+            currIndex++;
         }
 
-        //string.contains methode funktioniert nicht, erkennt "+" nicht reliable, dh ersatzmethode muss geschrieben werden
-        private static string RemovePlus(string str)
+        //entfertn das "+"
+        foreach (string[] game in plys)
         {
-            string retStr = "";
-            for (int i = 0; i < str.Length; i++)
+            if (game == null)
+                continue;
+            for (int i = 0; i < game.Length; i++)
             {
-                if (str[i] != '+' && str[i] != 'x')
-                    retStr += str[i];
+                game[i] = RemovePlus(game[i]);
             }
-            return retStr;
         }
 
-        public static string[] PlysToFENs(string[] plys)
+        return plys;
+    }
+
+    //string.contains methode funktioniert nicht, erkennt "+" nicht reliable, dh ersatzmethode muss geschrieben werden
+    private static string RemovePlus(string str)
+    {
+        string retStr = "";
+        for (int i = 0; i < str.Length; i++)
         {
-            // printStrings(plys);
-
-            Dictionary<int, Piece> currPos = Utility.FENtoPosition(
-                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-            );
-            string[] FENs = new string[plys.Length];
-            bool whiteToPlay = true;
-
-            for (int i = 0; i < plys.Length; i++)
-            {
-                string currPly = plys[i];
-                if (currPly == "")
-                    continue;
-
-                //es ist ein pawnMove, wird nicht in getPlysFromFile() verschoben weil man hier whiteToPlay braucht
-                if (currPly.Length == 2)
-                    currPly = (whiteToPlay ? "P" : "p") + currPly;
-
-                //debug
-                /* if (i == 14)
-                {
-                    Console.WriteLine("ERROR HERE: " + currPly);
-                } */
-
-                /* Hier wird dc6 zu pc6 gemacht, dies entfernt aber relevante information über den PawnMove,
-                in diesem Fall dass mit dem dPawn genommen wird
-                 */
-
-                //pawn captures werden mit kleinbuchstaben für die ranks representiert
-                if (currPly == currPly.ToLower() && currPly[0] != 'p')
-                {
-                    // Console.WriteLine(currPly + " is a pawnMove, becomes " + (whiteToPlay ? "P" : "p") + currPly.Substring(0, currPly.Length));
-                    currPly = (whiteToPlay ? "P" : "p") + currPly.Substring(0, currPly.Length);
-                }
-
-                //pgn unterscheidet nicht zwischen verschiedenen farben bei der schreibweise
-                if (!whiteToPlay)
-                    currPly = currPly.ToLower();
-
-                //castlen muss abgefangen werden
-                if (currPly == "O-O") //weiß, kingside short castle
-                {
-                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 7, 5); //rook geht nach c1
-                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 4, 6);
-                }
-                else if (currPly == "o-o") //schwarz, kingside short castle
-                {
-                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 63, 61);
-                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 60, 62);
-                }
-                else if (currPly == "O-O-O") //weiß, queenside long castle
-                {
-                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 0, 3);
-                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 4, 2);
-                }
-                else if (currPly == "o-o-o") //schwarz, queenside long castle
-                {
-                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 56, 59);
-                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 60, 58);
-                }
-                else
-                {
-                    //normale piece bewegungen
-                    Piece piece = Utility.SymbolToPiece(currPly[0].ToString());
-
-                    // Console.WriteLine(currPly + ", Index = " + i);
-
-                    int endPos = GetEndPosOfPly(currPly);
-
-                    int startPos;
-                    if (currPly.Length == 4) //ein weirder move mit zusatzangaben
-                    {
-                        char posInfo = currPly[1];
-
-                        if ("12345678".Contains(posInfo)) //y koordinate ist gegeben
-                        {
-                            startPos = GetStartPosOfPly(
-                                currPos,
-                                piece,
-                                endPos,
-                                -1,
-                                "12345678".IndexOf(posInfo)
-                            );
-                        }
-                        else //x koordinate ist gegeben
-                        {
-                            // Console.WriteLine("Found x = " + "abcdefgh".IndexOf(posInfo));
-                            startPos = GetStartPosOfPly(
-                                currPos,
-                                piece,
-                                endPos,
-                                "abcdefgh".IndexOf(posInfo),
-                                -1
-                            );
-                        }
-                    }
-                    else
-                    {
-                        startPos = GetStartPosOfPly(currPos, piece, endPos);
-                    }
-
-                    //debug
-                    if (startPos == -1)
-                    {
-                        return FENs; //weil en passant nicht implementiert wurde und daher oft "illegale" moves passieren
-                        /* Console.WriteLine(piece);
-                        Console.WriteLine(endPos);
-                        Console.WriteLine(Utility.BoardToFEN(currPos));
-                        Console.WriteLine(currPly); */
-                    }
-
-                    currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), startPos, endPos);
-                }
-
-                FENs[i] = Utility.BoardToFEN(currPos);
-                whiteToPlay = !whiteToPlay;
-            }
-
-            return FENs;
+            if (str[i] != '+' && str[i] != 'x')
+                retStr += str[i];
         }
+        return retStr;
+    }
 
-        //debuggen
-        private static int GetStartPosOfPly(
-            Dictionary<int, Piece> pos,
-            Piece p,
-            int endPos,
-            int givenX = -1,
-            int givenY = -1
-        )
+    public static string[] PlysToFENs(string[] plys)
+    {
+        // printStrings(plys);
+
+        Dictionary<int, Piece> currPos = Utility.FENtoPosition(
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+        );
+        string[] FENs = new string[plys.Length];
+        bool whiteToPlay = true;
+
+        for (int i = 0; i < plys.Length; i++)
         {
-            Piece outValue;
-            //für moves wie Nge2
-            if (givenX > -1)
+            string currPly = plys[i];
+            if (currPly == "")
+                continue;
+
+            //es ist ein pawnMove, wird nicht in getPlysFromFile() verschoben weil man hier whiteToPlay braucht
+            if (currPly.Length == 2)
+                currPly = (whiteToPlay ? "P" : "p") + currPly;
+
+            //debug
+            /* if (i == 14)
             {
-                for (int y = 0; y < 8; y++)
-                {
-                    int index = Utility.PosToIndex(givenX, y);
+                Console.WriteLine("ERROR HERE: " + currPly);
+            } */
 
-                    Piece currPiece;
-                    if (pos.TryGetValue(index, out currPiece)) //wenn hier ein piece existiert
-                    {
-                        if (currPiece != p)
-                            continue; //nur für die richtige pieceArt checken
+            /* Hier wird dc6 zu pc6 gemacht, dies entfernt aber relevante information über den PawnMove,
+            in diesem Fall dass mit dem dPawn genommen wird
+             */
 
-                        ulong bb = MoveSets.getPseudoLegalMoves_bb(
-                            new Chessboard(pos),
-                            index,
-                            out outValue
-                        );
-                        if (MoveSets.IsBitSet(bb, endPos))
-                            return index;
-                    }
-                }
+            //pawn captures werden mit kleinbuchstaben für die ranks representiert
+            if (currPly == currPly.ToLower() && currPly[0] != 'p')
+            {
+                // Console.WriteLine(currPly + " is a pawnMove, becomes " + (whiteToPlay ? "P" : "p") + currPly.Substring(0, currPly.Length));
+                currPly = (whiteToPlay ? "P" : "p") + currPly.Substring(0, currPly.Length);
             }
-            else if (givenY > -1)
+
+            //pgn unterscheidet nicht zwischen verschiedenen farben bei der schreibweise
+            if (!whiteToPlay)
+                currPly = currPly.ToLower();
+
+            //castlen muss abgefangen werden
+            if (currPly == "O-O") //weiß, kingside short castle
             {
-                for (int x = 0; x < 8; x++)
-                {
-                    int index = Utility.PosToIndex(x, givenY);
-                    Piece currPiece;
-                    if (pos.TryGetValue(index, out currPiece)) //wenn hier ein piece existiert
-                    {
-                        if (currPiece != p)
-                            continue; //nur für die richtige pieceArt checken
-                        if (
-                            MoveSets.IsBitSet(
-                                MoveSets.getPseudoLegalMoves_bb(
-                                    new Chessboard(pos),
-                                    index,
-                                    out outValue
-                                ),
-                                endPos
-                            )
-                        )
-                            return index;
-                    }
-                }
+                currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 7, 5); //rook geht nach c1
+                currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 4, 6);
+            }
+            else if (currPly == "o-o") //schwarz, kingside short castle
+            {
+                currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 63, 61);
+                currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 60, 62);
+            }
+            else if (currPly == "O-O-O") //weiß, queenside long castle
+            {
+                currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 0, 3);
+                currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 4, 2);
+            }
+            else if (currPly == "o-o-o") //schwarz, queenside long castle
+            {
+                currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 56, 59);
+                currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 60, 58);
             }
             else
             {
-                //für alle mgl Pieces der korrekten art überprüfen ob die endPos im bitboard im lookuptable enthalten ist
-                for (int i = 0; i < 64; i++)
+                //normale piece bewegungen
+                Piece piece = Utility.SymbolToPiece(currPly[0].ToString());
+
+                // Console.WriteLine(currPly + ", Index = " + i);
+
+                int endPos = GetEndPosOfPly(currPly);
+
+                int startPos;
+                if (currPly.Length == 4) //ein weirder move mit zusatzangaben
                 {
-                    Piece currPiece;
-                    if (pos.TryGetValue(i, out currPiece)) //wenn hier ein piece existiert
+                    char posInfo = currPly[1];
+
+                    if ("12345678".Contains(posInfo)) //y koordinate ist gegeben
                     {
-                        if (currPiece != p)
-                            continue; //nur für die richtige pieceArt checken
-
-                        ulong bb = MoveSets.getPseudoLegalMoves_bb(
-                            new Chessboard(pos),
-                            i,
-                            out outValue
+                        startPos = GetStartPosOfPly(
+                            currPos,
+                            piece,
+                            endPos,
+                            -1,
+                            "12345678".IndexOf(posInfo)
                         );
-
-                        if (MoveSets.IsBitSet(bb, endPos))
-                            return i;
+                    }
+                    else //x koordinate ist gegeben
+                    {
+                        // Console.WriteLine("Found x = " + "abcdefgh".IndexOf(posInfo));
+                        startPos = GetStartPosOfPly(
+                            currPos,
+                            piece,
+                            endPos,
+                            "abcdefgh".IndexOf(posInfo),
+                            -1
+                        );
                     }
                 }
+                else
+                {
+                    startPos = GetStartPosOfPly(currPos, piece, endPos);
+                }
+
+                //debug
+                if (startPos == -1)
+                {
+                    return FENs; //weil en passant nicht implementiert wurde und daher oft "illegale" moves passieren
+                    /* Console.WriteLine(piece);
+                    Console.WriteLine(endPos);
+                    Console.WriteLine(Utility.BoardToFEN(currPos));
+                    Console.WriteLine(currPly); */
+                }
+
+                currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), startPos, endPos);
             }
 
-            /* Console.WriteLine(Utility.BoardToFEN(pos));
-            Console.WriteLine("function failed at Piece: " + p); */
-            return -1;
+            FENs[i] = Utility.BoardToFEN(currPos);
+            whiteToPlay = !whiteToPlay;
         }
 
-        private static int GetEndPosOfPly(string ply)
-        {
-            if (ply == "O-O-O")
-                return -3; //castlen hätte abgefangen werden müssen
-            if (ply == "O-O")
-                return -2;
-            string plyPos = "";
+        return FENs;
+    }
 
-            //greift die hinteren beiden chars ab, da diese immer die position sind
-            for (int i = 0; i < 2; i++)
+    //debuggen
+    private static int GetStartPosOfPly(
+        Dictionary<int, Piece> pos,
+        Piece p,
+        int endPos,
+        int givenX = -1,
+        int givenY = -1
+    )
+    {
+        Piece outValue;
+        //für moves wie Nge2
+        if (givenX > -1)
+        {
+            for (int y = 0; y < 8; y++)
             {
-                plyPos = ply[ply.Length - 1 - i] + plyPos;
+                int index = Utility.PosToIndex(givenX, y);
+
+                Piece currPiece;
+                if (pos.TryGetValue(index, out currPiece)) //wenn hier ein piece existiert
+                {
+                    if (currPiece != p)
+                        continue; //nur für die richtige pieceArt checken
+
+                    ulong bb = MoveSets.getPseudoLegalMoves_bb(
+                        new Chessboard(pos),
+                        index,
+                        out outValue
+                    );
+                    if (MoveSets.IsBitSet(bb, endPos))
+                        return index;
+                }
             }
-
-            return Utility.ANtoPos(plyPos);
         }
-
-        public static Dictionary<int, Piece> GeneratePosWithMove(string posFEN, int start, int end)
+        else if (givenY > -1)
         {
-            Dictionary<int, Piece> pos = Utility.FENtoPosition(posFEN);
-            Piece piece = pos[start];
-            pos.Remove(start);
-            pos[end] = piece;
-
-            return pos;
-        }
-
-        public static void PrintStrings(string[] strings, bool newline = false)
-        {
-            for (int i = 0; i < strings.Length; i++)
+            for (int x = 0; x < 8; x++)
             {
-                Console.Write(strings[i] + " , " + (newline ? "\n" : ""));
+                int index = Utility.PosToIndex(x, givenY);
+                Piece currPiece;
+                if (pos.TryGetValue(index, out currPiece)) //wenn hier ein piece existiert
+                {
+                    if (currPiece != p)
+                        continue; //nur für die richtige pieceArt checken
+                    if (
+                        MoveSets.IsBitSet(
+                            MoveSets.getPseudoLegalMoves_bb(
+                                new Chessboard(pos),
+                                index,
+                                out outValue
+                            ),
+                            endPos
+                        )
+                    )
+                        return index;
+                }
             }
-
-            Console.WriteLine("");
         }
-
-        public static void BenchMark()
+        else
         {
-            int n = 852000; //n<852000
-            Chessboard[] chessboards = ReadFENsFromFile(n);
-            Stopwatch sw = new Stopwatch();
-
-            sw.Start();
-            for (int i = 0; i < n; i++)
+            //für alle mgl Pieces der korrekten art überprüfen ob die endPos im bitboard im lookuptable enthalten ist
+            for (int i = 0; i < 64; i++)
             {
-                MoveGen.GenerateBoards(chessboards[i], true);
+                Piece currPiece;
+                if (pos.TryGetValue(i, out currPiece)) //wenn hier ein piece existiert
+                {
+                    if (currPiece != p)
+                        continue; //nur für die richtige pieceArt checken
+
+                    ulong bb = MoveSets.getPseudoLegalMoves_bb(
+                        new Chessboard(pos),
+                        i,
+                        out outValue
+                    );
+
+                    if (MoveSets.IsBitSet(bb, endPos))
+                        return i;
+                }
             }
-            sw.Stop();
-
-            Console.WriteLine(
-                "1 Iteration on " + n + " different positions, Time elapsed={0}",
-                sw.Elapsed
-            );
-            float t = sw.Elapsed.Seconds + (float)sw.Elapsed.Milliseconds / 1000f;
-            Console.WriteLine((float)n / t + " Iterations per second");
         }
 
-        public static void BenchMarkMINIMAX()
+        /* Console.WriteLine(Utility.BoardToFEN(pos));
+        Console.WriteLine("function failed at Piece: " + p); */
+        return -1;
+    }
+
+    private static int GetEndPosOfPly(string ply)
+    {
+        if (ply == "O-O-O")
+            return -3; //castlen hätte abgefangen werden müssen
+        if (ply == "O-O")
+            return -2;
+        string plyPos = "";
+
+        //greift die hinteren beiden chars ab, da diese immer die position sind
+        for (int i = 0; i < 2; i++)
         {
-            Stopwatch sw = new Stopwatch();
-
-            int depth = 7;
-
-            sw.Start();
-
-            Chessboard b = new Chessboard();
-            Minimax minimax = new() { MaxQuiescenceSearchPlies = int.MaxValue };
-            float eval = minimax.Run(b, depth, true);
-            Console.WriteLine("Eval = " + (float)eval);
-            Console.WriteLine("Depth = " + (float)depth);
-            // Console.WriteLine("Nodes = " + (float)Minimax.noahTest);
-
-            sw.Stop();
-
-            Console.WriteLine("Time elapsed={0}", sw.Elapsed);
-
-            float t = sw.Elapsed.Seconds + (float)sw.Elapsed.Milliseconds / 1000f;
+            plyPos = ply[ply.Length - 1 - i] + plyPos;
         }
 
-        public static void BenchMarkMoveSets()
+        return Utility.ANtoPos(plyPos);
+    }
+
+    public static Dictionary<int, Piece> GeneratePosWithMove(string posFEN, int start, int end)
+    {
+        Dictionary<int, Piece> pos = Utility.FENtoPosition(posFEN);
+        Piece piece = pos[start];
+        pos.Remove(start);
+        pos[end] = piece;
+
+        return pos;
+    }
+
+    public static void PrintStrings(string[] strings, bool newline = false)
+    {
+        for (int i = 0; i < strings.Length; i++)
         {
-            ulong[] bbs =
-            {
+            Console.Write(strings[i] + " , " + (newline ? "\n" : ""));
+        }
+
+        Console.WriteLine("");
+    }
+
+    public static void BenchMark()
+    {
+        int n = 852000; //n<852000
+        Chessboard[] chessboards = ReadFENsFromFile(n);
+        Stopwatch sw = new Stopwatch();
+
+        sw.Start();
+        for (int i = 0; i < n; i++)
+        {
+            MoveGen.GenerateBoards(chessboards[i], true);
+        }
+        sw.Stop();
+
+        Console.WriteLine(
+            "1 Iteration on " + n + " different positions, Time elapsed={0}",
+            sw.Elapsed
+        );
+        float t = sw.Elapsed.Seconds + (float)sw.Elapsed.Milliseconds / 1000f;
+        Console.WriteLine((float)n / t + " Iterations per second");
+    }
+
+    public static void BenchMarkMINIMAX()
+    {
+        Stopwatch sw = new Stopwatch();
+
+        int depth = 7;
+
+        sw.Start();
+
+        Chessboard b = new Chessboard();
+        Minimax minimax = new() { MaxQuiescenceSearchPlies = int.MaxValue };
+        float eval = minimax.Run(b, depth, true);
+        Console.WriteLine("Eval = " + (float)eval);
+        Console.WriteLine("Depth = " + (float)depth);
+        // Console.WriteLine("Nodes = " + (float)Minimax.noahTest);
+
+        sw.Stop();
+
+        Console.WriteLine("Time elapsed={0}", sw.Elapsed);
+
+        float t = sw.Elapsed.Seconds + (float)sw.Elapsed.Milliseconds / 1000f;
+    }
+
+    public static void BenchMarkMoveSets()
+    {
+        ulong[] bbs =
+        {
                 0b0101010101001010001001111110101011101010010111100010011000111001,
                 0b1000110001101101101111111110111100010101011101100000010110011110,
                 0b1111110000001000001110101010100111100011011110000101010001110001,
@@ -395,63 +394,62 @@ namespace fraction
                 0b0101100011000000011110000011000101000101000010101001100001010010
             };
 
-            int max = 100000;
+        int max = 100000;
 
-            Stopwatch sw = new Stopwatch();
+        Stopwatch sw = new Stopwatch();
 
-            sw.Start();
+        sw.Start();
 
-            for (int n = 0; n < max; n++)
+        for (int n = 0; n < max; n++)
+        {
+            for (int i = 0; i < 8; i++)
             {
-                for (int i = 0; i < 8; i++)
+                for (int j = 0; j < 64; j++)
                 {
-                    for (int j = 0; j < 64; j++)
-                    {
-                        MoveSets.GetPseudoTargetSqrsRook(bbs[i], j);
-                    }
+                    MoveSets.GetPseudoTargetSqrsRook(bbs[i], j);
                 }
             }
-
-            sw.Stop();
-
-            Console.WriteLine(
-                "1 Iterations on " + max * 8 * 64 + " different positions, Time elapsed={0}",
-                sw.Elapsed
-            );
-            float t = sw.Elapsed.Seconds + (float)sw.Elapsed.Milliseconds / 1000f;
-            Console.WriteLine((float)max * 8f * 64f / t + " Iterations per second");
         }
 
-        static Chessboard[] ReadFENsFromFile(int maxIndex)
+        sw.Stop();
+
+        Console.WriteLine(
+            "1 Iterations on " + max * 8 * 64 + " different positions, Time elapsed={0}",
+            sw.Elapsed
+        );
+        float t = sw.Elapsed.Seconds + (float)sw.Elapsed.Milliseconds / 1000f;
+        Console.WriteLine((float)max * 8f * 64f / t + " Iterations per second");
+    }
+
+    static Chessboard[] ReadFENsFromFile(int maxIndex)
+    {
+        string[] fens = File.ReadAllLines("FENdatabase.txt");
+        Chessboard[] boards = new Chessboard[maxIndex];
+
+        for (int i = 0; i < maxIndex; i++)
         {
-            string[] fens = File.ReadAllLines("FENdatabase.txt");
-            Chessboard[] boards = new Chessboard[maxIndex];
-
-            for (int i = 0; i < maxIndex; i++)
-            {
-                boards[i] = new Chessboard(Utility.FENtoPosition(fens[i]));
-            }
-
-            return boards;
+            boards[i] = new Chessboard(Utility.FENtoPosition(fens[i]));
         }
 
-        public static void PerftResults(Chessboard b, int d, bool whitesTurn)
+        return boards;
+    }
+
+    public static void PerftResults(Chessboard b, int d, bool whitesTurn)
+    {
+        string[] moves;
+        Chessboard[] boards = MoveGen.GenerateBoards_DEBUG(b, whitesTurn, out moves);
+
+        int sum = 0;
+        for (int i = 0; i < boards.Length; i++)
         {
-            string[] moves;
-            Chessboard[] boards = MoveGen.GenerateBoards_DEBUG(b, whitesTurn, out moves);
+            Minimax minimax = new();
+            minimax.Run(boards[i], d - 1, !whitesTurn);
+            sum += minimax.Positions;
 
-            int sum = 0;
-            for (int i = 0; i < boards.Length; i++)
-            {
-                Minimax minimax = new();
-                minimax.Run(boards[i], d - 1, !whitesTurn);
-                sum += minimax.Positions;
-
-                // Program.DisplayBoard(boards[i]);
-                Console.WriteLine(moves[i] + " gets response nodes: " + minimax.Positions);
-            }
-
-            Console.WriteLine("Sum: " + sum);
+            // Program.DisplayBoard(boards[i]);
+            Console.WriteLine(moves[i] + " gets response nodes: " + minimax.Positions);
         }
+
+        Console.WriteLine("Sum: " + sum);
     }
 }

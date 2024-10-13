@@ -1,58 +1,57 @@
 using System;
 using System.Runtime.ConstrainedExecution;
 
-namespace fraction
+namespace fraction;
+static class BB_Lookup
 {
-    static class BB_Lookup
+    static void PrintBBArray(ulong[] bbs)
     {
-        static void PrintBBArray(ulong[] bbs)
+        foreach (ulong bb in bbs)
         {
-            foreach (ulong bb in bbs)
-            {
-                Console.WriteLine(bb + " , ");
-            }
+            Console.WriteLine(bb + " , ");
         }
+    }
 
-        /// <summary>get
-        /// Returnt das Bitboard das die möglichen Targetsqrs eines Pieces an einer gegebenen Position angibt
-        /// </summary>
-        /// <param name="p"></param>
-        /// <param name="posIndex"></param>
-        /// <returns></returns>
-        public static ulong GetBBforPieceAtSqr(Piece p, int posIndex)
+    /// <summary>get
+    /// Returnt das Bitboard das die möglichen Targetsqrs eines Pieces an einer gegebenen Position angibt
+    /// </summary>
+    /// <param name="p"></param>
+    /// <param name="posIndex"></param>
+    /// <returns></returns>
+    public static ulong GetBBforPieceAtSqr(Piece p, int posIndex)
+    {
+        switch (p)
         {
-            switch (p)
-            {
-                case Piece.wBishop:
-                case Piece.bBishop:
-                    return BishopBitboards[posIndex];
+            case Piece.wBishop:
+            case Piece.bBishop:
+                return BishopBitboards[posIndex];
 
-                case Piece.wKnight:
-                case Piece.bKnight:
-                    return KnightBitboards[posIndex];
+            case Piece.wKnight:
+            case Piece.bKnight:
+                return KnightBitboards[posIndex];
 
-                case Piece.bKing:
-                case Piece.wKing:
-                    return KingBitboards[posIndex];
+            case Piece.bKing:
+            case Piece.wKing:
+                return KingBitboards[posIndex];
 
-                case Piece.wRook:
-                case Piece.bRook:
-                    return RookBitboards[posIndex];
+            case Piece.wRook:
+            case Piece.bRook:
+                return RookBitboards[posIndex];
 
-                case Piece.wQueen:
-                case Piece.bQueen:
-                    return QueenBitboards[posIndex];
+            case Piece.wQueen:
+            case Piece.bQueen:
+                return QueenBitboards[posIndex];
 
-                default:
-                    Console.WriteLine("getBBforPieceAtSqr(...) wurde mit Pawn gecalled");
-                    return 0;
-            }
+            default:
+                Console.WriteLine("getBBforPieceAtSqr(...) wurde mit Pawn gecalled");
+                return 0;
         }
+    }
 
-        //wurden stichprobenartig getestet, sind korrekt
-        //funktioniert
-        readonly private static ulong[] BishopBitboards = new ulong[]
-        {
+    //wurden stichprobenartig getestet, sind korrekt
+    //funktioniert
+    readonly private static ulong[] BishopBitboards = new ulong[]
+    {
             9241421688590303744,
             36099303471056128,
             141012904249856,
@@ -117,11 +116,11 @@ namespace fraction
             22667548931719168,
             45053622886727936,
             18049651735527937
-        };
+    };
 
-        //funktioniert
-        readonly private static ulong[] RookBitboards = new ulong[]
-        {
+    //funktioniert
+    readonly private static ulong[] RookBitboards = new ulong[]
+    {
             72340172838076926 + 1,
             144680345676153596 + 1,
             289360691352306938 + 1,
@@ -186,11 +185,11 @@ namespace fraction
             16077885992062689312,
             13781085504453754944,
             9187484529235886208
-        };
+    };
 
-        //funtioniert
-        readonly private static ulong[] KnightBitboards = new ulong[]
-        {
+    //funtioniert
+    readonly private static ulong[] KnightBitboards = new ulong[]
+    {
             132096,
             329728,
             659712,
@@ -255,11 +254,11 @@ namespace fraction
             38368557762871296,
             4679521487814656,
             9077567998918656
-        };
+    };
 
-        //funktioniert
-        readonly private static ulong[] QueenBitboards = new ulong[]
-        {
+    //funktioniert
+    readonly private static ulong[] QueenBitboards = new ulong[]
+    {
             9313761861428380670,
             180779649147209725,
             289501704256556795,
@@ -324,11 +323,11 @@ namespace fraction
             16100553540994408480,
             13826139127340482880,
             9205534180971414145
-        };
+    };
 
-        //funktioniert
-        readonly private static ulong[] KingBitboards = new ulong[]
-        {
+    //funktioniert
+    readonly private static ulong[] KingBitboards = new ulong[]
+    {
             770,
             1797,
             3594,
@@ -393,10 +392,10 @@ namespace fraction
             5796132720425828352,
             11592265440851656704,
             4665729213955833856
-        };
+    };
 
-        private static readonly ulong[] pawnAttackPatterns =
-        {
+    private static readonly ulong[] pawnAttackPatterns =
+    {
             0b00000010,
             0b00000101,
             0b00001010,
@@ -407,11 +406,10 @@ namespace fraction
             0b01000000,
         };
 
-        //pawns sind redundant weil die nächste position mit einem simplen bitshift erledigt ist
-        public static ulong GetPawnAttackSqrs(int x, int y, bool isWhite)
-        {
-            ulong pattern = pawnAttackPatterns[x];
-            return pattern << (y * 8 + (isWhite ? 8 : -8));
-        }
+    //pawns sind redundant weil die nächste position mit einem simplen bitshift erledigt ist
+    public static ulong GetPawnAttackSqrs(int x, int y, bool isWhite)
+    {
+        ulong pattern = pawnAttackPatterns[x];
+        return pattern << (y * 8 + (isWhite ? 8 : -8));
     }
 }
