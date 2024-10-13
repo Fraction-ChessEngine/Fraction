@@ -23,10 +23,8 @@ public class Chessboard
     public ulong bKingBB = 0b0000100000000000000000000000000000000000000000000000000000000000;
     public ulong wPawnBB = 0b0000000000000000000000000000000000000000000000001111111100000000;
     public ulong bPawnBB = 0b0000000011111111000000000000000000000000000000000000000000000000;
-    public ulong wControlledSqrBB = 0b11111111ul << 16,
-        bControlledSqrBB = 0b11111111ul << 40;
-
-    public string history = "";
+    public ulong wControlledSqrBB = 0b11111111ul << 16;
+    public ulong bControlledSqrBB = 0b11111111ul << 40;
     public bool afterCapturePly = false;
 
     /// <summary>
@@ -68,7 +66,6 @@ public class Chessboard
         ulong bBishopBB,
         ulong wPawnBB,
         ulong bPawnBB,
-        string history,
         bool afterCapturePly
     )
     {
@@ -88,8 +85,6 @@ public class Chessboard
 
         this.whitePiecesBB = wKingBB | wKnightBB | wQueenBB | wRookBB | wBishopBB | wPawnBB;
         this.blackPiecesBB = bKingBB | bKnightBB | bQueenBB | bRookBB | bBishopBB | bPawnBB;
-
-        this.history = history;
     }
 
     //berechnet neue BBs für die kontrollierten sqrs der beiden seiten
@@ -398,8 +393,6 @@ public class Chessboard
             bBishopBB_,
             wPawnBB_,
             bPawnBB_,
-            history /* + "; " + type.getSymbol() +" "+ Utility.posToAN(startIndex) + " -> " + Utility.posToAN(endIndex)  */
-            ,
             isCapture
         );
     }
