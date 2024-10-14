@@ -9,25 +9,25 @@ namespace fraction;
 public class Chessboard
 {
     //0 ist ganz rechts, 63 ist ganz links, 0=a1, 63=h8
-    public ulong whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
-    public ulong blackPiecesBB = 0b1111111111111111000000000000000000000000000000000000000000000000;
-    public ulong bRookBB = 0b1000000100000000000000000000000000000000000000000000000000000000;
-    public ulong wRookBB = 0b0000000000000000000000000000000000000000000000000000000010000001;
-    public ulong bBishopBB = 0b0010010000000000000000000000000000000000000000000000000000000000;
-    public ulong wBishopBB = 0b0000000000000000000000000000000000000000000000000000000000100100;
-    public ulong bKnightBB = 0b0100001000000000000000000000000000000000000000000000000000000000;
-    public ulong wKnightBB = 0b0000000000000000000000000000000000000000000000000000000001000010;
-    public ulong wQueenBB = 0b0000000000000000000000000000000000000000000000000000000000001000;
-    public ulong bQueenBB = 0b0000100000000000000000000000000000000000000000000000000000000000;
-    public ulong wKingBB = 0b0000000000000000000000000000000000000000000000000000000000010000;
-    public ulong bKingBB = 0b0000100000000000000000000000000000000000000000000000000000000000;
-    public ulong wPawnBB = 0b0000000000000000000000000000000000000000000000001111111100000000;
-    public ulong bPawnBB = 0b0000000011111111000000000000000000000000000000000000000000000000;
-    public ulong wControlledSqrBB = 0b11111111ul << 16,
-        bControlledSqrBB = 0b11111111ul << 40;
+    public ulong BRookBB { get; set; } = 0b1000000100000000000000000000000000000000000000000000000000000000;
+    public ulong WRookBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000010000001;
+    public ulong BBishopBB { get; set; } = 0b0010010000000000000000000000000000000000000000000000000000000000;
+    public ulong WBishopBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000000100100;
+    public ulong BKnightBB { get; set; } = 0b0100001000000000000000000000000000000000000000000000000000000000;
+    public ulong WKnightBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000001000010;
+    public ulong WQueenBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000000001000;
+    public ulong BQueenBB { get; set; } = 0b0000100000000000000000000000000000000000000000000000000000000000;
+    public ulong WKingBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000000010000;
+    public ulong BKingBB { get; set; } = 0b0000100000000000000000000000000000000000000000000000000000000000;
+    public ulong WPawnBB { get; set; } = 0b0000000000000000000000000000000000000000000000001111111100000000;
+    public ulong BPawnBB { get; set; } = 0b0000000011111111000000000000000000000000000000000000000000000000;
+    public ulong WhitePiecesBB { get; set; } = 0b0000000000000000000000000000000000000000000000001111111111111111;
+    public ulong BlackPiecesBB { get; set; } = 0b1111111111111111000000000000000000000000000000000000000000000000;
 
-    public string history = "";
-    public bool afterCapturePly = false;
+    public ulong WControlledSqrBB { get; set; } = 0b11111111ul << 16;
+    public ulong BControlledSqrBB { get; set; } = 0b11111111ul << 40;
+
+    public bool AfterCapturePly { get; set; } = false;
 
     /// <summary>
     /// Hiermit kann durch FENtoPos funktionen ein board gebaut werden
@@ -36,21 +36,21 @@ public class Chessboard
     public Chessboard(Dictionary<int, Piece> pieces_)
     {
         //bitboards müssen generiert werden
-        bPawnBB = Utility.GetBBofPosition(pieces_, Piece.bPawn);
-        wPawnBB = Utility.GetBBofPosition(pieces_, Piece.wPawn);
-        bBishopBB = Utility.GetBBofPosition(pieces_, Piece.bBishop);
-        wBishopBB = Utility.GetBBofPosition(pieces_, Piece.wBishop);
-        bQueenBB = Utility.GetBBofPosition(pieces_, Piece.bQueen);
-        wQueenBB = Utility.GetBBofPosition(pieces_, Piece.wQueen);
-        bKingBB = Utility.GetBBofPosition(pieces_, Piece.bKing);
-        wKingBB = Utility.GetBBofPosition(pieces_, Piece.wKing);
-        bKnightBB = Utility.GetBBofPosition(pieces_, Piece.bKnight);
-        wKnightBB = Utility.GetBBofPosition(pieces_, Piece.wKnight);
-        bRookBB = Utility.GetBBofPosition(pieces_, Piece.bRook);
-        wRookBB = Utility.GetBBofPosition(pieces_, Piece.wRook);
+        BPawnBB = Utility.GetBBofPosition(pieces_, Piece.bPawn);
+        WPawnBB = Utility.GetBBofPosition(pieces_, Piece.wPawn);
+        BBishopBB = Utility.GetBBofPosition(pieces_, Piece.bBishop);
+        WBishopBB = Utility.GetBBofPosition(pieces_, Piece.wBishop);
+        BQueenBB = Utility.GetBBofPosition(pieces_, Piece.bQueen);
+        WQueenBB = Utility.GetBBofPosition(pieces_, Piece.wQueen);
+        BKingBB = Utility.GetBBofPosition(pieces_, Piece.bKing);
+        WKingBB = Utility.GetBBofPosition(pieces_, Piece.wKing);
+        BKnightBB = Utility.GetBBofPosition(pieces_, Piece.bKnight);
+        WKnightBB = Utility.GetBBofPosition(pieces_, Piece.wKnight);
+        BRookBB = Utility.GetBBofPosition(pieces_, Piece.bRook);
+        WRookBB = Utility.GetBBofPosition(pieces_, Piece.wRook);
 
-        whitePiecesBB = wPawnBB | wBishopBB | wKingBB | wKnightBB | wRookBB | wQueenBB;
-        blackPiecesBB = bPawnBB | bBishopBB | bKingBB | bKnightBB | bRookBB | bQueenBB;
+        WhitePiecesBB = WPawnBB | WBishopBB | WKingBB | WKnightBB | WRookBB | WQueenBB;
+        BlackPiecesBB = BPawnBB | BBishopBB | BKingBB | BKnightBB | BRookBB | BQueenBB;
     }
 
     public Chessboard() { }
@@ -68,28 +68,25 @@ public class Chessboard
         ulong bBishopBB,
         ulong wPawnBB,
         ulong bPawnBB,
-        string history,
         bool afterCapturePly
     )
     {
-        this.wKingBB = wKingBB;
-        this.bKingBB = bKingBB;
-        this.wKnightBB = wKnightBB;
-        this.bKnightBB = bKnightBB;
-        this.wQueenBB = wQueenBB;
-        this.bQueenBB = bQueenBB;
-        this.wRookBB = wRookBB;
-        this.bRookBB = bRookBB;
-        this.wBishopBB = wBishopBB;
-        this.bBishopBB = bBishopBB;
-        this.wPawnBB = wPawnBB;
-        this.bPawnBB = bPawnBB;
-        this.afterCapturePly = afterCapturePly;
+        this.WKingBB = wKingBB;
+        this.BKingBB = bKingBB;
+        this.WKnightBB = wKnightBB;
+        this.BKnightBB = bKnightBB;
+        this.WQueenBB = wQueenBB;
+        this.BQueenBB = bQueenBB;
+        this.WRookBB = wRookBB;
+        this.BRookBB = bRookBB;
+        this.WBishopBB = wBishopBB;
+        this.BBishopBB = bBishopBB;
+        this.WPawnBB = wPawnBB;
+        this.BPawnBB = bPawnBB;
+        this.AfterCapturePly = afterCapturePly;
 
-        this.whitePiecesBB = wKingBB | wKnightBB | wQueenBB | wRookBB | wBishopBB | wPawnBB;
-        this.blackPiecesBB = bKingBB | bKnightBB | bQueenBB | bRookBB | bBishopBB | bPawnBB;
-
-        this.history = history;
+        this.WhitePiecesBB = wKingBB | wKnightBB | wQueenBB | wRookBB | wBishopBB | wPawnBB;
+        this.BlackPiecesBB = bKingBB | bKnightBB | bQueenBB | bRookBB | bBishopBB | bPawnBB;
     }
 
     //berechnet neue BBs für die kontrollierten sqrs der beiden seiten
@@ -118,11 +115,11 @@ public class Chessboard
 
         if (forWhite)
         {
-            wControlledSqrBB = attackSqrBB;
+            WControlledSqrBB = attackSqrBB;
         }
         else
         {
-            bControlledSqrBB = attackSqrBB;
+            BControlledSqrBB = attackSqrBB;
         }
     }
 
@@ -142,29 +139,29 @@ public class Chessboard
         //kann optimiert werden mit blackPiecesBB und whitePiecesBB,
         //aber diese funktion ist nicht dafür gedacht in performance-critical
         //teilen des bots ausgeführt zu werden
-        if (MoveSets.IsBitSet(wPawnBB, posIndex))
+        if (MoveSets.IsBitSet(WPawnBB, posIndex))
             return Piece.wPawn;
-        if (MoveSets.IsBitSet(bPawnBB, posIndex))
+        if (MoveSets.IsBitSet(BPawnBB, posIndex))
             return Piece.bPawn;
-        if (MoveSets.IsBitSet(wKingBB, posIndex))
+        if (MoveSets.IsBitSet(WKingBB, posIndex))
             return Piece.wKing;
-        if (MoveSets.IsBitSet(bKingBB, posIndex))
+        if (MoveSets.IsBitSet(BKingBB, posIndex))
             return Piece.bKing;
-        if (MoveSets.IsBitSet(wKnightBB, posIndex))
+        if (MoveSets.IsBitSet(WKnightBB, posIndex))
             return Piece.wKnight;
-        if (MoveSets.IsBitSet(bKnightBB, posIndex))
+        if (MoveSets.IsBitSet(BKnightBB, posIndex))
             return Piece.bKnight;
-        if (MoveSets.IsBitSet(wQueenBB, posIndex))
+        if (MoveSets.IsBitSet(WQueenBB, posIndex))
             return Piece.wQueen;
-        if (MoveSets.IsBitSet(bQueenBB, posIndex))
+        if (MoveSets.IsBitSet(BQueenBB, posIndex))
             return Piece.bQueen;
-        if (MoveSets.IsBitSet(wRookBB, posIndex))
+        if (MoveSets.IsBitSet(WRookBB, posIndex))
             return Piece.wRook;
-        if (MoveSets.IsBitSet(bRookBB, posIndex))
+        if (MoveSets.IsBitSet(BRookBB, posIndex))
             return Piece.bRook;
-        if (MoveSets.IsBitSet(wBishopBB, posIndex))
+        if (MoveSets.IsBitSet(WBishopBB, posIndex))
             return Piece.wBishop;
-        if (MoveSets.IsBitSet(bBishopBB, posIndex))
+        if (MoveSets.IsBitSet(BBishopBB, posIndex))
             return Piece.bBishop;
 
         return 0;
@@ -172,7 +169,7 @@ public class Chessboard
 
     public bool HasPieceAt(int posIndex)
     {
-        return MoveSets.IsBitSet(whitePiecesBB | blackPiecesBB, posIndex);
+        return MoveSets.IsBitSet(WhitePiecesBB | BlackPiecesBB, posIndex);
     }
 
     /// <summary>
@@ -181,7 +178,7 @@ public class Chessboard
     /// <returns></returns>
     public bool HasWhitePieceAt(int index)
     {
-        return MoveSets.IsBitSet(whitePiecesBB, index);
+        return MoveSets.IsBitSet(WhitePiecesBB, index);
     }
 
     //kein unterschied zwischen weißen und schwarzen pins, weil sowieso nach jedem zug das BB aktualisiert werden muss
@@ -206,31 +203,31 @@ public class Chessboard
 
         if (forWhite)
         {
-            kingIndex = Utility.FindSingleSetBit(wKingBB);
+            kingIndex = Utility.FindSingleSetBit(WKingBB);
 
             rookSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex);
             bishopSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wBishop, kingIndex);
 
 
-            intersectionsStraight = rookSightlines & (bRookBB | bQueenBB);
-            intersectionDiags = bishopSightlines & (bBishopBB | bQueenBB);
+            intersectionsStraight = rookSightlines & (BRookBB | BQueenBB);
+            intersectionDiags = bishopSightlines & (BBishopBB | BQueenBB);
         }
         else
         {
-            kingIndex = Utility.FindSingleSetBit(bKingBB);
+            kingIndex = Utility.FindSingleSetBit(BKingBB);
 
             rookSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex);
             bishopSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wBishop, kingIndex);
 
-            intersectionsStraight = rookSightlines & (wRookBB | wQueenBB);
-            intersectionDiags = bishopSightlines & (wBishopBB | wQueenBB);
+            intersectionsStraight = rookSightlines & (WRookBB | WQueenBB);
+            intersectionDiags = bishopSightlines & (WBishopBB | WQueenBB);
         }
 
         ulong friendsInSightlines = 0;
         int y = kingIndex >> 3;
         int x = kingIndex & 7;
 
-        ulong sameColorPieces = forWhite ? whitePiecesBB : blackPiecesBB;
+        ulong sameColorPieces = forWhite ? WhitePiecesBB : BlackPiecesBB;
 
 
         if (intersectionsStraight != 0)
@@ -291,7 +288,9 @@ public class Chessboard
             pinLineArr[7] = intersectionDiagNW;
         }
 
-        pinnedBB = friendsInSightlines & ~wKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
+        /* TODO!!! sicherstellen dass nur EIN piece der eigenen farbe auf den linien steht */
+
+        pinnedBB = friendsInSightlines & ~WKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
     }
 
     /// <summary>
@@ -301,28 +300,28 @@ public class Chessboard
     /// <param name="endIndex"></param>
     public Chessboard GenerateBoardWithMove(int startIndex, int endIndex, Piece type)
     {
-        bool isCapture = MoveSets.IsBitSet(blackPiecesBB | whitePiecesBB, endIndex);
+        bool isCapture = MoveSets.IsBitSet(BlackPiecesBB | WhitePiecesBB, endIndex);
 
         //der king kann gecaptured werden weil das capturen des king essentiell für checkmate detection ist
-        ulong wKingBB_ = Utility.SetBBtoNullAt(wKingBB, endIndex);
-        ulong bKingBB_ = Utility.SetBBtoNullAt(bKingBB, endIndex);
+        ulong wKingBB_ = Utility.SetBBtoNullAt(WKingBB, endIndex);
+        ulong bKingBB_ = Utility.SetBBtoNullAt(BKingBB, endIndex);
 
-        ulong wKnightBB_ = Utility.SetBBtoNullAt(wKnightBB, endIndex);
-        ulong bKnightBB_ = Utility.SetBBtoNullAt(bKnightBB, endIndex);
-        ulong wQueenBB_ = Utility.SetBBtoNullAt(wQueenBB, endIndex);
-        ulong bQueenBB_ = Utility.SetBBtoNullAt(bQueenBB, endIndex);
-        ulong wRookBB_ = Utility.SetBBtoNullAt(wRookBB, endIndex);
-        ulong bRookBB_ = Utility.SetBBtoNullAt(bRookBB, endIndex);
-        ulong wBishopBB_ = Utility.SetBBtoNullAt(wBishopBB, endIndex);
-        ulong bBishopBB_ = Utility.SetBBtoNullAt(bBishopBB, endIndex);
-        ulong wPawnBB_ = Utility.SetBBtoNullAt(wPawnBB, endIndex);
-        ulong bPawnBB_ = Utility.SetBBtoNullAt(bPawnBB, endIndex);
+        ulong wKnightBB_ = Utility.SetBBtoNullAt(WKnightBB, endIndex);
+        ulong bKnightBB_ = Utility.SetBBtoNullAt(BKnightBB, endIndex);
+        ulong wQueenBB_ = Utility.SetBBtoNullAt(WQueenBB, endIndex);
+        ulong bQueenBB_ = Utility.SetBBtoNullAt(BQueenBB, endIndex);
+        ulong wRookBB_ = Utility.SetBBtoNullAt(WRookBB, endIndex);
+        ulong bRookBB_ = Utility.SetBBtoNullAt(BRookBB, endIndex);
+        ulong wBishopBB_ = Utility.SetBBtoNullAt(WBishopBB, endIndex);
+        ulong bBishopBB_ = Utility.SetBBtoNullAt(BBishopBB, endIndex);
+        ulong wPawnBB_ = Utility.SetBBtoNullAt(WPawnBB, endIndex);
+        ulong bPawnBB_ = Utility.SetBBtoNullAt(BPawnBB, endIndex);
 
         //alle bitboards müssen geupdated werden
         switch (type)
         {
             case Piece.wPawn:
-                wPawnBB_ = Utility.UpdateBB(wPawnBB, startIndex, endIndex);
+                wPawnBB_ = Utility.UpdateBB(WPawnBB, startIndex, endIndex);
                 //auto queen
                 if (endIndex > 55)
                 {
@@ -332,7 +331,7 @@ public class Chessboard
                 break;
 
             case Piece.bPawn:
-                bPawnBB_ = Utility.UpdateBB(bPawnBB, startIndex, endIndex);
+                bPawnBB_ = Utility.UpdateBB(BPawnBB, startIndex, endIndex);
 
                 if (endIndex < 8)
                 {
@@ -351,35 +350,35 @@ public class Chessboard
                 break;
 
             case Piece.wKnight:
-                wKnightBB_ = Utility.UpdateBB(wKnightBB, startIndex, endIndex);
+                wKnightBB_ = Utility.UpdateBB(WKnightBB, startIndex, endIndex);
                 break;
 
             case Piece.bKnight:
-                bKnightBB_ = Utility.UpdateBB(bKnightBB, startIndex, endIndex);
+                bKnightBB_ = Utility.UpdateBB(BKnightBB, startIndex, endIndex);
                 break;
 
             case Piece.wQueen:
-                wQueenBB_ = Utility.UpdateBB(wQueenBB, startIndex, endIndex);
+                wQueenBB_ = Utility.UpdateBB(WQueenBB, startIndex, endIndex);
                 break;
 
             case Piece.bQueen:
-                bQueenBB_ = Utility.UpdateBB(bQueenBB, startIndex, endIndex);
+                bQueenBB_ = Utility.UpdateBB(BQueenBB, startIndex, endIndex);
                 break;
 
             case Piece.wRook:
-                wRookBB_ = Utility.UpdateBB(wRookBB, startIndex, endIndex);
+                wRookBB_ = Utility.UpdateBB(WRookBB, startIndex, endIndex);
                 break;
 
             case Piece.bRook:
-                bRookBB_ = Utility.UpdateBB(bRookBB, startIndex, endIndex);
+                bRookBB_ = Utility.UpdateBB(BRookBB, startIndex, endIndex);
                 break;
 
             case Piece.wBishop:
-                wBishopBB_ = Utility.UpdateBB(wBishopBB, startIndex, endIndex);
+                wBishopBB_ = Utility.UpdateBB(WBishopBB, startIndex, endIndex);
                 break;
 
             case Piece.bBishop:
-                bBishopBB_ = Utility.UpdateBB(bBishopBB, startIndex, endIndex);
+                bBishopBB_ = Utility.UpdateBB(BBishopBB, startIndex, endIndex);
                 break;
         }
 
@@ -396,8 +395,6 @@ public class Chessboard
             bBishopBB_,
             wPawnBB_,
             bPawnBB_,
-            history /* + "; " + type.getSymbol() +" "+ Utility.posToAN(startIndex) + " -> " + Utility.posToAN(endIndex)  */
-            ,
             isCapture
         );
     }

@@ -1,0 +1,169 @@
+using System.Collections.Immutable;
+using System.Text;
+
+using static System.Numerics.BitOperations;
+
+namespace fraction;
+
+// implemented with lsb = a1 and msb = h8 first increasing file then rank
+public struct BitBoard
+{
+    private ulong _value; // must have 64b!
+
+    public int Count => PopCount(_value);
+
+    public bool this[int bit]
+    {
+        get => (_value & (1ul << bit)) != 0;
+        set
+        {
+            if (value)
+                _value |= (1ul << bit);
+            else
+                _value &= ~(1ul << bit);
+        }
+    }
+
+    public bool this[string pos]
+    {
+        get => (_value & (1ul << ((pos[1] - '1') * 8 + (pos[0] - 'a')))) != 0;
+        set
+        {
+            int bit = ((pos[1] - '1') * 8 + (pos[0] - 'a'));
+
+            if (value)
+                _value |= (1ul << bit);
+            else
+                _value &= ~(1ul << bit);
+        }
+    }
+
+    public BitBoard() { }
+
+    // draw a BitBoard with a1 in msb of a...
+    public BitBoard(byte h, byte g, byte f, byte e, byte d, byte c, byte b, byte a)
+    {
+        _value = Reverse(h);
+        _value <<= 8;
+        _value += Reverse(g);
+        _value <<= 8;
+        _value += Reverse(f);
+        _value <<= 8;
+        _value += Reverse(e);
+        _value <<= 8;
+        _value += Reverse(d);
+        _value <<= 8;
+        _value += Reverse(c);
+        _value <<= 8;
+        _value += Reverse(b);
+        _value <<= 8;
+        _value += Reverse(a);
+    }
+
+    //https://stackoverflow.com/questions/3587826/is-there-a-built-in-function-to-reverse-bit-order
+    private static byte Reverse(byte x)
+        => (byte)(((x * 0x80200802ul) & 0x0884422110ul) * 0x0101010101ul >> 32);
+
+    private static readonly BitBoard[] diagonals =
+    {
+        0x0000000000000080ul,
+        0x0000000000008040ul,
+        0x0000000000804020ul,
+        0x0000000080402010ul,
+        0x0000008040201008ul,
+        0x0000804020100804ul,
+        0x0080402010080402ul,
+        0x8040201008040201ul,
+        0x4020100804020100ul,
+        0x2010080402010000ul,
+        0x1008040201000000ul,
+        0x0804020100000000ul,
+        0x0402010000000000ul,
+        0x0201000000000000ul,
+        0x0100000000000000ul,
+        0x0000000000000080ul,
+    };
+
+    public static BitBoard Diagonal(string pos)
+        => Diagonal(pos[0] - 'a', pos[1] - '1');
+
+    public static BitBoard Diagonal(int bit)
+        => Diagonal(bit & 0xf, bit >> 3);
+
+    public static BitBoard Diagonal(int x, int y)
+        => diagonals[y - x + 7];
+
+
+    private static readonly BitBoard[] antiDiagonals =
+    {
+        0x0000000000000001ul,
+        0x0000000000000102ul,
+        0x0000000000010204ul,
+        0x0000000001020408ul,
+        0x0000000102040810ul,
+        0x0000010204081020ul,
+        0x0001020408102040ul,
+        0x0102040810204080ul,
+        0x0204081020408000ul,
+        0x0408102040800000ul,
+        0x0810204080000000ul,
+        0x1020408000000000ul,
+        0x2040800000000000ul,
+        0x4080000000000000ul,
+        0x8000000000000000ul,
+        0x0000000000000001ul,
+    };
+
+    public static BitBoard AntiDiagonal(string pos)
+        => AntiDiagonal(pos[0] - 'a', pos[1] - '1');
+
+    public static BitBoard AntiDiagonal(int bit)
+        => AntiDiagonal(bit & 0xf, bit >> 3);
+
+    public static BitBoard AntiDiagonal(int x, int y)
+        => antiDiagonals[x + y];
+
+
+    public static BitBoard HorizontalLine(int rank)
+        => 0xfful << (8 * rank);
+
+    public static BitBoard VerticalLine(char file)
+        => VerticalLine(file - 'a');
+
+    public static BitBoard VerticalLine(int file)
+        => 0x101010101010101ul << file;
+
+    // lsb is a file
+    public static BitBoard VerticalLines(byte files)
+        => 0x101010101010101ul * files;
+
+    public static implicit operator BitBoard(ulong val) => new() { _value = val };
+    public static implicit operator ulong(BitBoard val) => val._value;
+    public static BitBoard operator ~(BitBoard bb) => ~(ulong)bb;
+    public static BitBoard operator &(BitBoard left, BitBoard right) => (ulong)left | (ulong)right;
+    public static BitBoard operator |(BitBoard left, BitBoard right) => (ulong)left | (ulong)right;
+    public static BitBoard operator ^(BitBoard left, BitBoard right) => (ulong)left ^ (ulong)right;
+    public static bool operator ==(BitBoard left, BitBoard right) => (ulong)left == (ulong)right;
+    public static bool operator !=(BitBoard left, BitBoard right) => (ulong)left != (ulong)right;
+
+    public override bool Equals(object? obj)
+        => ((ulong)this).Equals(obj);
+
+    public override int GetHashCode()
+        => ((ulong)this).GetHashCode();
+
+    public override string ToString()
+    {
+        StringBuilder sb = new();
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; i < 8; i++)
+                sb.Append((this[(8 - i) * 8 + j]) ? '1' : '0');
+            sb.AppendLine();
+        }
+
+        sb.Remove(sb.Length - 1, 1);
+
+        return sb.ToString();
+    }
+}

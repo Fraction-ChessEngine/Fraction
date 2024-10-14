@@ -67,29 +67,29 @@ static class MoveGen {
         if (forWhite) {
             GenerateMovesForDoublePiece(
                 b,
-                b.wRookBB,
+                b.WRookBB,
                 forWhite,
                 ref possibleMoves,
                 ref currIndex
             );
             GenerateMovesForDoublePiece(
                 b,
-                b.wKnightBB,
+                b.WKnightBB,
                 forWhite,
                 ref possibleMoves,
                 ref currIndex
             );
             GenerateMovesForDoublePiece(
                 b,
-                b.wBishopBB,
+                b.WBishopBB,
                 forWhite,
                 ref possibleMoves,
                 ref currIndex
             );
 
             //pawns
-            int pawns = Eval.NumberOfSetBits(b.wPawnBB);
-            int[] pawnArr = Utility.FindSetBitsMax(b.wPawnBB, pawns);
+            int pawns = Eval.NumberOfSetBits(b.WPawnBB);
+            int[] pawnArr = Utility.FindSetBitsMax(b.WPawnBB, pawns);
 
             for (int i = 0; i < pawns; i++) {
                 Vision v = GetVisionForPieceAt(b, pawnArr[i]);
@@ -100,7 +100,7 @@ static class MoveGen {
             }
 
             //king, es kann nur einen geben
-            int kingIndex = Utility.FindSingleSetBit(b.wKingBB);
+            int kingIndex = Utility.FindSingleSetBit(b.WKingBB);
 
             Vision vKing = GetVisionForPieceAt(b, kingIndex);
             if (vKing.MoveBB != 0) {
@@ -109,8 +109,8 @@ static class MoveGen {
             }
 
             //queens, es kann maximal 8 geben
-            int queens = Eval.NumberOfSetBits(b.wQueenBB);
-            int[] queenArr = Utility.FindSetBitsMax(b.wQueenBB, queens);
+            int queens = Eval.NumberOfSetBits(b.WQueenBB);
+            int[] queenArr = Utility.FindSetBitsMax(b.WQueenBB, queens);
 
             for (int i = 0; i < queens; i++) {
                 Vision v = GetVisionForPieceAt(b, queenArr[i]);
@@ -122,29 +122,29 @@ static class MoveGen {
         } else {
             GenerateMovesForDoublePiece(
                 b,
-                b.bRookBB,
+                b.BRookBB,
                 forWhite,
                 ref possibleMoves,
                 ref currIndex
             );
             GenerateMovesForDoublePiece(
                 b,
-                b.bKnightBB,
+                b.BKnightBB,
                 forWhite,
                 ref possibleMoves,
                 ref currIndex
             );
             GenerateMovesForDoublePiece(
                 b,
-                b.bBishopBB,
+                b.BBishopBB,
                 forWhite,
                 ref possibleMoves,
                 ref currIndex
             );
 
             //pawns
-            int pawns = Eval.NumberOfSetBits(b.bPawnBB);
-            int[] pawnArr = Utility.FindSetBitsMax(b.bPawnBB, pawns);
+            int pawns = Eval.NumberOfSetBits(b.BPawnBB);
+            int[] pawnArr = Utility.FindSetBitsMax(b.BPawnBB, pawns);
 
             for (int i = 0; i < pawns; i++) {
                 Vision v = GetVisionForPieceAt(b, pawnArr[i]);
@@ -155,7 +155,7 @@ static class MoveGen {
             }
 
             //king, es kann nur einen geben
-            int kingIndex = Utility.FindSingleSetBit(b.bKingBB);
+            int kingIndex = Utility.FindSingleSetBit(b.BKingBB);
 
             Vision vKing = GetVisionForPieceAt(b, kingIndex);
             if (vKing.MoveBB != 0) {
@@ -164,8 +164,8 @@ static class MoveGen {
             }
 
             //queens, es kann maximal 8 geben
-            int queens = Eval.NumberOfSetBits(b.bQueenBB);
-            int[] queenArr = Utility.FindSetBitsMax(b.bQueenBB, queens);
+            int queens = Eval.NumberOfSetBits(b.BQueenBB);
+            int[] queenArr = Utility.FindSetBitsMax(b.BQueenBB, queens);
 
             for (int i = 0; i < queens; i++) {
                 Vision v = GetVisionForPieceAt(b, queenArr[i]);
