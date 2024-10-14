@@ -23,8 +23,8 @@ public class Chessboard {
     public ulong WhitePiecesBB { get; set; } = 0b0000000000000000000000000000000000000000000000001111111111111111;
     public ulong BlackPiecesBB { get; set; } = 0b1111111111111111000000000000000000000000000000000000000000000000;
 
-    public ulong WControlledSqrBB { get; set; } = 0b11111111ul << 16;
-    public ulong BControlledSqrBB { get; set; } = 0b11111111ul << 40;
+    public ulong WControlledSqrBB { get; set; } = 0;// 0b11111111ul << 16;
+    public ulong BControlledSqrBB { get; set; } = 0;//0b11111111ul << 40;
 
     public bool AfterCapturePly { get; set; } = false;
 
@@ -66,7 +66,10 @@ public class Chessboard {
         ulong bBishopBB,
         ulong wPawnBB,
         ulong bPawnBB,
-        bool afterCapturePly
+        bool afterCapturePly,
+        ulong wCtrlBB,
+        ulong bCtrlBB
+
     ) {
         this.WKingBB = wKingBB;
         this.BKingBB = bKingBB;
@@ -84,6 +87,9 @@ public class Chessboard {
 
         this.WhitePiecesBB = wKingBB | wKnightBB | wQueenBB | wRookBB | wBishopBB | wPawnBB;
         this.BlackPiecesBB = bKingBB | bKnightBB | bQueenBB | bRookBB | bBishopBB | bPawnBB;
+
+        WControlledSqrBB = wCtrlBB;
+        BControlledSqrBB = bCtrlBB;
     }
 
     //berechnet neue BBs für die kontrollierten sqrs der beiden seiten
@@ -372,7 +378,9 @@ public class Chessboard {
             bBishopBB_,
             wPawnBB_,
             bPawnBB_,
-            isCapture
+            isCapture,
+            WControlledSqrBB,
+            BControlledSqrBB
         );
     }
 }

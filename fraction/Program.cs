@@ -207,9 +207,9 @@ public class Program {
         MoveGen.GenerateBoards(visualBoard, true);
 
         /* TODO bugfixing, perft updatet die scheisse aus irgendeinem grund nicht selbst, bitte perften um das zu beheben */
- 
 
-        Testing.PerftResults(visualBoard, 3, true);
+
+        Testing.PerftResults(visualBoard, 6, true);
 
     }
 }
