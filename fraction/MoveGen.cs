@@ -182,8 +182,31 @@ static class MoveGen {
     public static Chessboard[] GenerateBoards(Chessboard b, bool whitesTurn) {
         Span<Vision> visions = GenerateMoves(b, whitesTurn);
 
+
+        //debug, um error zu catchen der nur bei diesem board auftritt
+        if (b.WhitePiecesBB == Program.errorComp.WhitePiecesBB
+        && b.BlackPiecesBB == Program.errorComp.BlackPiecesBB
+        && b.WBishopBB == Program.errorComp.WBishopBB) {
+            Program.DisplayBoard(b);
+            Utility.PrintBitBoard(b.WControlledSqrBB);
+            Utility.PrintBitBoard(b.BControlledSqrBB);
+            Console.WriteLine("Jetzt update...");
+        }
+
         //damit im nächsten zug der gegner king keine illegalen moves macht
         b.UpdateAttackedSqrBB(visions, whitesTurn);
+
+        //debug, um error zu catchen der nur bei diesem board auftritt
+        if (b.WhitePiecesBB == Program.errorComp.WhitePiecesBB
+        && b.BlackPiecesBB == Program.errorComp.BlackPiecesBB
+        && b.WBishopBB == Program.errorComp.WBishopBB) {
+
+            Utility.PrintBitBoard(b.WControlledSqrBB);
+            Utility.PrintBitBoard(b.BControlledSqrBB);
+            throw new Exception("Exit");
+        }
+
+
 
         //gesamtlänge des endarrays wird bestimmt
         int endLength = 0;
@@ -198,6 +221,18 @@ static class MoveGen {
         for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
 
+
+            if (v.pieceType == Piece.wKing || v.pieceType == Piece.bKing) {
+                ulong enemyCtrlSqrs = whitesTurn ? b.BControlledSqrBB : b.WControlledSqrBB;
+
+                if ((v.MoveBB & enemyCtrlSqrs) != 0 && false) {
+                    Console.WriteLine("hindered king");//wird nicht gecalled, function wird nicht korrekt geupdated
+                    throw new Exception("terminate");
+                }
+
+                v.MoveBB &= ~enemyCtrlSqrs;
+            }
+
             int[] moveArr = Utility.FindSetBitsMax(v.MoveBB, v.setBits);
             for (int j = 0; j < v.setBits; j++) {
                 boards[index] = b.GenerateBoardWithMove(v.PosIndex, moveArr[j], v.pieceType);
@@ -207,6 +242,8 @@ static class MoveGen {
 
         return boards;
     }
+
+
 
     public static Chessboard[] GenerateBoards_DEBUG(
         Chessboard b,

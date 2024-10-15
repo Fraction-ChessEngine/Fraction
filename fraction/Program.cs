@@ -182,6 +182,7 @@ public class Program {
         Console.WriteLine("Sum: " + sum + " with depth = " + d);
     }
 
+    public static Chessboard errorComp = new();
     static Chessboard? visualBoard; //board auf dem die "wahre" position gespeichert wird
 
     static void Main(string[] args) {
@@ -200,16 +201,21 @@ public class Program {
             g1h3: 8881 vs g1h3: 8883 
         */
         visualBoard = new();
-        DisplayBoard(visualBoard);
-
-        /* visualBoard = visualBoard.GenerateBoardWithMove(Utility.ANtoPos("c1"), Utility.ANtoPos("a3"), Piece.wBishop);
-        MoveGen.GenerateBoards(visualBoard, false);
-        MoveGen.GenerateBoards(visualBoard, true);
-
-        /* TODO bugfixing, perft updatet die scheisse aus irgendeinem grund nicht selbst, bitte perften um das zu beheben */
 
 
-        Testing.PerftResults(visualBoard, 6, true);
+        //  visualBoard = visualBoard.GenerateBoardWithMove(Utility.ANtoPos("c1"), Utility.ANtoPos("a3"), Piece.wBishop);
+        errorComp = errorComp.GenerateBoardWithMove(Utility.ANtoPos("b2"), Utility.ANtoPos("b3"), Piece.wPawn);
+        errorComp = errorComp.GenerateBoardWithMove(Utility.ANtoPos("e7"), Utility.ANtoPos("e6"), Piece.bPawn);
+        errorComp = errorComp.GenerateBoardWithMove(Utility.ANtoPos("c1"), Utility.ANtoPos("a3"), Piece.wBishop);
 
+        DisplayBoard(errorComp);
+
+        Testing.PerftResults(visualBoard, 4, true);
+
+
+        /* TODO: 
+        updateattacksqrs func fixen weil sie dem king erlaubt pieces zu nehmen die gedeckt sind 
+        (weil gedeckte pieces natürlich nicht im moveBB auftauchen)
+        -> am besten auch GenerateMoves ändern, dass es flag gibt sagt ob gedeckte pieces gezählt werden (dann benchmarken) */
     }
 }
