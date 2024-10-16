@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using System.Text;
 
 using static System.Numerics.BitOperations;
@@ -26,16 +25,8 @@ public struct BitBoard
 
     public bool this[string pos]
     {
-        get => (_value & (1ul << ((pos[1] - '1') * 8 + (pos[0] - 'a')))) != 0;
-        set
-        {
-            int bit = ((pos[1] - '1') * 8 + (pos[0] - 'a'));
-
-            if (value)
-                _value |= (1ul << bit);
-            else
-                _value &= ~(1ul << bit);
-        }
+        get => this[((pos[1] - '1') * 8 + ((pos[0] | 0x60) - 'a'))];
+        set => this[((pos[1] - '1') * 8 + ((pos[0] | 0x60) - 'a'))] = value;
     }
 
     public BitBoard() { }
@@ -122,7 +113,6 @@ public struct BitBoard
 
     public static BitBoard AntiDiagonal(int x, int y)
         => antiDiagonals[x + y];
-
 
     public static BitBoard HorizontalLine(int rank)
         => 0xfful << (8 * rank);
