@@ -207,9 +207,9 @@ public class Program {
         errorComp = errorComp.GenerateBoardWithMove(Utility.ANtoPos("b2"), Utility.ANtoPos("b3"), Piece.wPawn);
         errorComp = errorComp.GenerateBoardWithMove(Utility.ANtoPos("e7"), Utility.ANtoPos("e6"), Piece.bPawn);
         errorComp = errorComp.GenerateBoardWithMove(Utility.ANtoPos("c1"), Utility.ANtoPos("a3"), Piece.wBishop);
-        Testing.PerftResults(visualBoard, 4, true);
+        //   Testing.PerftResults(visualBoard, 4, true);
 
-        // Testing.BenchMarkMINIMAX();
+        Testing.BenchMarkMINIMAX();
 
         //Das verbecherische Board
         //Index: 64162
@@ -219,14 +219,6 @@ public class Program {
         updateattacksqrs func fixen weil sie dem king erlaubt pieces zu nehmen die gedeckt sind 
         (weil gedeckte pieces natürlich nicht im moveBB auftauchen)
         -> am besten auch GenerateMoves ändern, dass es flag gibt sagt ob gedeckte pieces gezählt werden (dann benchmarken) 
-        
-        problem (vlt auch kein problem): in GenerateBoards wird der player geupdated der jetzt seinen zug macht, 
-        dh das Update hat erst im nächsten ply einen effekt
-        -> sollte eigentlich kein problem sein, da der andere spieler ja trotzdem in seinem eigenem ply (also 1 ply davor)
-        geupdated wurde
-        -> ist aber ein problem, weil das attackSqrBB ein update bekommt bevor der spieler dem es gehört seinen zug macht
-        das bedeutet, dass besagtes BB nach diesem zug schon wieder veraltet ist. Daher muss das Update erfolgen, nachdem 
-        das board bereits generiert wurde
 
 
         */
