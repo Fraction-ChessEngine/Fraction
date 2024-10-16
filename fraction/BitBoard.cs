@@ -5,17 +5,14 @@ using static System.Numerics.BitOperations;
 namespace fraction;
 
 // implemented with lsb = a1 and msb = h8 first increasing file then rank
-public struct BitBoard
-{
+public struct BitBoard {
     private ulong _value; // must have 64b!
 
     public int Count => PopCount(_value);
 
-    public bool this[int bit]
-    {
+    public bool this[int bit] {
         get => (_value & (1ul << bit)) != 0;
-        set
-        {
+        set {
             if (value)
                 _value |= (1ul << bit);
             else
@@ -23,8 +20,12 @@ public struct BitBoard
         }
     }
 
-    public bool this[string pos]
-    {
+    public bool this[int x, int y] {
+        get => this[y * 8 + x];
+        set => this[y * 8 + x] = value;
+    }
+
+    public bool this[string pos] {
         get => this[((pos[1] - '1') * 8 + ((pos[0] | 0x60) - 'a'))];
         set => this[((pos[1] - '1') * 8 + ((pos[0] | 0x60) - 'a'))] = value;
     }
@@ -32,8 +33,7 @@ public struct BitBoard
     public BitBoard() { }
 
     // draw a BitBoard with a1 in msb of a...
-    public BitBoard(byte h, byte g, byte f, byte e, byte d, byte c, byte b, byte a)
-    {
+    public BitBoard(byte h, byte g, byte f, byte e, byte d, byte c, byte b, byte a) {
         _value = Reverse(h);
         _value <<= 8;
         _value += Reverse(g);
@@ -79,7 +79,7 @@ public struct BitBoard
         => Diagonal(pos[0] - 'a', pos[1] - '1');
 
     public static BitBoard Diagonal(int bit)
-        => Diagonal(bit & 0xf, bit >> 3);
+        => Diagonal(bit & 0x7, bit >> 3);
 
     public static BitBoard Diagonal(int x, int y)
         => diagonals[y - x + 7];
@@ -109,7 +109,7 @@ public struct BitBoard
         => AntiDiagonal(pos[0] - 'a', pos[1] - '1');
 
     public static BitBoard AntiDiagonal(int bit)
-        => AntiDiagonal(bit & 0xf, bit >> 3);
+        => AntiDiagonal(bit & 0x7, bit >> 3);
 
     public static BitBoard AntiDiagonal(int x, int y)
         => antiDiagonals[x + y];
@@ -142,11 +142,9 @@ public struct BitBoard
     public override int GetHashCode()
         => ((ulong)this).GetHashCode();
 
-    public override string ToString()
-    {
+    public override string ToString() {
         StringBuilder sb = new();
-        for (int i = 0; i < 8; i++)
-        {
+        for (int i = 0; i < 8; i++) {
             for (int j = 0; i < 8; i++)
                 sb.Append((this[(8 - i) * 8 + j]) ? '1' : '0');
             sb.AppendLine();

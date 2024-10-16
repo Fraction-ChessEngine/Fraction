@@ -5,14 +5,12 @@ using System.Globalization;
 using System.Numerics;
 
 namespace fraction;
-public static class MoveSets
-{
+public static class MoveSets {
     public static ulong getPseudoLegalMoves_bb(
         Chessboard board,
         int posIndex,
         out Piece pieceType
-    )
-    {
+    ) {
         /*
         Algorithm:
         Find out which Piecetype we are currently handling
@@ -23,8 +21,7 @@ public static class MoveSets
         bool isWhite = IsBitSet(board.WhitePiecesBB, posIndex);
         ulong sameColorPieces = isWhite ? board.WhitePiecesBB : board.BlackPiecesBB;
 
-        if (IsBitSet(board.WPawnBB, posIndex))
-        {
+        if (IsBitSet(board.WPawnBB, posIndex)) {
             pieceType = Piece.wPawn;
             int y = posIndex >> 3;
             int x = posIndex & 7;
@@ -44,9 +41,7 @@ public static class MoveSets
                     ? (y == 1 ? 1ul << sqrTwoAbove : 0)
                     : 0;
             return targetSqrs | moveSqrs;
-        }
-        else if (IsBitSet(board.BPawnBB, posIndex))
-        {
+        } else if (IsBitSet(board.BPawnBB, posIndex)) {
             pieceType = Piece.bPawn;
 
             int y = posIndex >> 3;
@@ -68,9 +63,7 @@ public static class MoveSets
                     : 0;
 
             return targetSqrs | moveSqrs;
-        }
-        else if (IsBitSet(board.BRookBB | board.WRookBB, posIndex))
-        {
+        } else if (IsBitSet(board.BRookBB | board.WRookBB, posIndex)) {
             pieceType = isWhite ? Piece.wRook : Piece.bRook;
 
             ulong patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bRook, posIndex);
@@ -82,9 +75,7 @@ public static class MoveSets
             ulong targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
 
             return targetSqrs;
-        }
-        else if (IsBitSet(board.WKnightBB | board.BKnightBB, posIndex))
-        {
+        } else if (IsBitSet(board.WKnightBB | board.BKnightBB, posIndex)) {
             pieceType = isWhite ? Piece.wKnight : Piece.bKnight;
 
             ulong patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bKnight, posIndex);
@@ -93,8 +84,7 @@ public static class MoveSets
 
             return targetSqrs;
         } //es ist ein king, beinah selber code wie beim knight wegen der konstanten anzahl an mgl feldern
-        else if (IsBitSet(board.WKingBB | board.BKingBB, posIndex))
-        {
+          else if (IsBitSet(board.WKingBB | board.BKingBB, posIndex)) {
             pieceType = isWhite ? Piece.wKing : Piece.bKing;
 
             ulong patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bKing, posIndex);
@@ -104,8 +94,7 @@ public static class MoveSets
 
             return targetSqrs;
         } //es ist ein bishop, beinahe selber code wie rook wegen ähnlichem attackpattern
-        else if (IsBitSet(board.WBishopBB | board.BBishopBB, posIndex))
-        {
+          else if (IsBitSet(board.WBishopBB | board.BBishopBB, posIndex)) {
             pieceType = isWhite ? Piece.wBishop : Piece.bBishop;
             ulong patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bBishop, posIndex);
             ulong allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
@@ -117,8 +106,7 @@ public static class MoveSets
 
             return targetSqrs;
         } //es ist eine queen
-        else if (IsBitSet(board.WQueenBB | board.BQueenBB, posIndex))
-        {
+          else if (IsBitSet(board.WQueenBB | board.BQueenBB, posIndex)) {
             pieceType = isWhite ? Piece.wQueen : Piece.bQueen;
             ulong patternBB1 = BB_Lookup.GetBBforPieceAtSqr(Piece.bBishop, posIndex);
             ulong patternBB2 = BB_Lookup.GetBBforPieceAtSqr(Piece.bRook, posIndex);
@@ -151,8 +139,7 @@ public static class MoveSets
     /// <param name="sqrs"></param>
     /// <param name="posIndex"></param>
     /// <returns></returns>
-    public static ulong GetPseudoTargetSqrsBishop(ulong pieceBB, int posIndex)
-    {
+    public static ulong GetPseudoTargetSqrsBishop(ulong pieceBB, int posIndex) {
         pieceBB &= ~(1ul << posIndex);
         ; //das bit an der position von von posIndex wird 0 gesetzt um komplikationen zu vermeiden
 
@@ -220,8 +207,7 @@ public static class MoveSets
     };
 
     //NW>SE
-    public static ulong InterpolateAntiDiagonal(int indexNW, int indexSE)
-    {
+    public static ulong InterpolateAntiDiagonal(int indexNW, int indexSE) {
         ulong filler = InterpolateHorizontal(indexNW, indexSE);
         ulong diag = GetAntiDiagonal(indexNW);
 
@@ -229,8 +215,7 @@ public static class MoveSets
     }
 
     //NE>SW
-    public static ulong InterpolateDiagonal(int indexNE, int indexSW)
-    {
+    public static ulong InterpolateDiagonal(int indexNE, int indexSW) {
         ulong filler = InterpolateHorizontal(indexNE, indexSW);
         ulong diag = GetDiagonal(indexNE);
 
@@ -277,8 +262,7 @@ public static class MoveSets
         };
 
     //returnt die diagonale in der sich ein sqr befindet
-    public static ulong GetDiagonal(int posIndex)
-    {
+    public static ulong GetDiagonal(int posIndex) {
         int y = posIndex >> 3;
         int x = posIndex & 7;
 
@@ -287,8 +271,7 @@ public static class MoveSets
         return diagonals[diagonalIndex];
     }
 
-    public static ulong GetDiagonal(int x, int y)
-    {
+    public static ulong GetDiagonal(int x, int y) {
         int diagonalIndex = y - x + 7;
 
         return diagonals[diagonalIndex];
@@ -333,8 +316,7 @@ public static class MoveSets
         };
 
     //returnt die antidiagonale in der sich ein sqr befindet
-    public static ulong GetAntiDiagonal(int posIndex)
-    {
+    public static ulong GetAntiDiagonal(int posIndex) {
         int y = posIndex >> 3;
         int x = posIndex & 7;
 
@@ -343,8 +325,7 @@ public static class MoveSets
         return antiDiagonals[antiDiagonalIndex];
     }
 
-    public static ulong GetAntiDiagonal(int x, int y)
-    {
+    public static ulong GetAntiDiagonal(int x, int y) {
         int antiDiagonalIndex = x + y;
         return antiDiagonals[antiDiagonalIndex];
     }
@@ -358,8 +339,7 @@ public static class MoveSets
     /// <param name="sqrs"></param>
     /// <param name="posIndex"></param>
     /// <returns></returns>
-    public static ulong GetPseudoTargetSqrsRook(ulong pieceBB, int posIndex)
-    {
+    public static ulong GetPseudoTargetSqrsRook(ulong pieceBB, int posIndex) {
         int y = posIndex >> 3;
         int x = posIndex & 7;
 
@@ -402,8 +382,7 @@ public static class MoveSets
     /// <param name="index1"></param>
     /// <param name="index2"></param>
     /// <returns></returns>
-    public static ulong InterpolateHorizontal(int i1, int i2)
-    {
+    public static ulong InterpolateHorizontal(int i1, int i2) {
         /*
         ulong n1 = 1 << i1-i2;
         n1 <<= 1;
@@ -415,8 +394,7 @@ public static class MoveSets
 
     //  return ((1ul << (i1 - i2 + 1)) - 1) << i2;//gibt fehler bei 63 , 0 weil dann der mittlere term=64, dh gar kein shift findet statt
 
-    public static ulong InterpolateVertical(int i1, int i2)
-    {
+    public static ulong InterpolateVertical(int i1, int i2) {
         int x = i1 & 7; //basically modulo 8
 
         ulong filler = InterpolateHorizontal(i1, i2);
@@ -430,13 +408,11 @@ public static class MoveSets
     /// </summary>
     /// <param name="n"></param>
     /// <returns></returns>
-    public static int GetSmallestBit(ulong n)
-    {
+    public static int GetSmallestBit(ulong n) {
         return (int)System.Runtime.Intrinsics.X86.Bmi1.X64.TrailingZeroCount(n);
     }
 
-    public static int CountSetBits(ulong n)
-    {
+    public static int CountSetBits(ulong n) {
         return System.Numerics.BitOperations.PopCount(n);
     }
 
@@ -445,8 +421,7 @@ public static class MoveSets
     /// </summary>
     /// <param name="n"></param>
     /// <returns></returns>
-    public static int GetBiggestBit(ulong n)
-    {
+    public static int GetBiggestBit(ulong n) {
         return Utility.BitScanReverse(n);
         //return BitOperations.LeadingZeroCount(n);
     }
@@ -456,8 +431,7 @@ public static class MoveSets
     /// </summary>
     /// <param name="y"></param>
     /// <returns></returns>
-    public static ulong HorizontalLineBB(int y)
-    {
+    public static ulong HorizontalLineBB(int y) {
         //y Element von [0 , 7]
         return 0b11111111ul << (y * 8);
     }
@@ -467,16 +441,14 @@ public static class MoveSets
     /// </summary>
     /// <param name="x"></param>
     /// <returns></returns>
-    public static ulong VerticalLineBB(int x)
-    {
+    public static ulong VerticalLineBB(int x) {
         return 0b0000000100000001000000010000000100000001000000010000000100000001ul << x;
     }
 
     //eigentlich sehr obvious
     //https://stackoverflow.com/questions/43724490/how-to-reset-single-bit-in-ulong
     //https://stackoverflow.com/questions/2431732/checking-if-a-bit-is-set-or-not
-    public static bool IsBitSet(ulong b, int pos)
-    {
+    public static bool IsBitSet(ulong b, int pos) {
         return (b & (1ul << pos)) != 0;
     }
 }
