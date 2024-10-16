@@ -28,6 +28,10 @@ public class Chessboard {
 
     public bool AfterCapturePly { get; set; } = false;
 
+    //dient dem tracken einzelner boards im perft tree beim debuggen
+    public int boardIndex = 0, parentIndex = 0;
+    public static int BoardCount = 0;
+
     /// <summary>
     /// Hiermit kann durch FENtoPos funktionen ein board gebaut werden
     /// </summary>
@@ -54,21 +58,17 @@ public class Chessboard {
     public Chessboard() { }
 
     public Chessboard(
-        ulong wKingBB,
-        ulong bKingBB,
-        ulong wKnightBB,
-        ulong bKnightBB,
-        ulong wQueenBB,
-        ulong bQueenBB,
-        ulong wRookBB,
-        ulong bRookBB,
-        ulong wBishopBB,
-        ulong bBishopBB,
-        ulong wPawnBB,
-        ulong bPawnBB,
+        ulong wKingBB, ulong bKingBB,
+        ulong wKnightBB, ulong bKnightBB,
+        ulong wQueenBB, ulong bQueenBB,
+        ulong wRookBB, ulong bRookBB,
+        ulong wBishopBB, ulong bBishopBB,
+        ulong wPawnBB, ulong bPawnBB,
         bool afterCapturePly,
         ulong wCtrlBB,
-        ulong bCtrlBB
+        ulong bCtrlBB,
+        int BoardIndex,
+        int parentIndex
 
     ) {
         this.WKingBB = wKingBB;
@@ -90,6 +90,9 @@ public class Chessboard {
 
         WControlledSqrBB = wCtrlBB;
         BControlledSqrBB = bCtrlBB;
+
+        this.boardIndex = BoardIndex;
+        this.parentIndex = parentIndex;
     }
 
     //berechnet neue BBs für die kontrollierten sqrs der beiden seiten
@@ -303,6 +306,7 @@ public class Chessboard {
         ulong wPawnBB_ = Utility.SetBBtoNullAt(WPawnBB, endIndex);
         ulong bPawnBB_ = Utility.SetBBtoNullAt(BPawnBB, endIndex);
 
+
         //alle bitboards müssen geupdated werden
         switch (type) {
             case Piece.wPawn:
@@ -365,6 +369,8 @@ public class Chessboard {
                 break;
         }
 
+        BoardCount++;
+
         return new Chessboard(
             wKingBB_,
             bKingBB_,
@@ -380,7 +386,9 @@ public class Chessboard {
             bPawnBB_,
             isCapture,
             WControlledSqrBB,
-            BControlledSqrBB
+            BControlledSqrBB,
+            BoardCount,
+            boardIndex
         );
     }
 }

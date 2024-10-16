@@ -6,7 +6,6 @@ using System.Numerics;
 
 namespace fraction;
 public static class MoveSets {
-    static int debugCounter = 0;
     public static ulong getPseudoLegalMoves_bb(
         Chessboard board,
         int posIndex,
@@ -23,13 +22,6 @@ public static class MoveSets {
         ulong sameColorPieces = isWhite ? board.WhitePiecesBB : board.BlackPiecesBB;
         ulong enemyControlSqrs = isWhite ? board.BControlledSqrBB : board.WControlledSqrBB;
 
-
-        /* if (debugCounter >= 10000) {
-            Program.DisplayBoard(board);
-            Utility.PrintBitBoard(board.WControlledSqrBB);
-            Utility.PrintBitBoard(board.BControlledSqrBB);
-            throw new Exception("exit");
-        } */
 
         if (IsBitSet(board.WPawnBB, posIndex)) {
             pieceType = Piece.wPawn;
@@ -67,10 +59,8 @@ public static class MoveSets {
             ulong moveSqrs = (~allPiecesBB & (1ul << posIndex - 8));
 
             int sqrTwoAbove = posIndex - 16;
-            moveSqrs |=
-                (moveSqrs != 0 && !IsBitSet(allPiecesBB, sqrTwoAbove))
-                    ? (y == 6 ? 1ul << (sqrTwoAbove) : 0)
-                    : 0;
+            moveSqrs |= (moveSqrs != 0 && !IsBitSet(allPiecesBB, sqrTwoAbove)) ? (y == 6 ? 1ul << (sqrTwoAbove) : 0) : 0;
+
 
             return targetSqrs | moveSqrs;
         } else if (IsBitSet(board.BRookBB | board.WRookBB, posIndex)) {
@@ -101,7 +91,7 @@ public static class MoveSets {
 
             ulong targetSqrs = patternBB & ~sameColorPieces;
 
-            //  targetSqrs &= ~enemyControlSqrs; //hat bei perft 5 keinen effekt auf die zahlen, erst bei perft 6 gibt es unterschied
+            targetSqrs &= ~enemyControlSqrs; //hat bei perft 5 keinen effekt auf die zahlen, erst bei perft 6 gibt es unterschied
 
             return targetSqrs;
         } //es ist ein bishop, beinahe selber code wie rook wegen ähnlichem attackpattern
