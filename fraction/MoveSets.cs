@@ -6,10 +6,20 @@ using System.Numerics;
 
 namespace fraction;
 public static class MoveSets {
+    /// <summary>
+    /// includeCoverage: ob auch gedeckte pieces ins BB sollen, 
+    /// obwohl diese nicht als legaler move zur verfügung stehen
+    /// </summary>
+    /// <param name="board"></param>
+    /// <param name="posIndex"></param>
+    /// <param name="pieceType"></param>
+    /// <param name="includeCoverage"></param>
+    /// <returns></returns>
     public static ulong getPseudoLegalMoves_bb(
         Chessboard board,
         int posIndex,
-        out Piece pieceType
+        out Piece pieceType,
+        bool includeCoverage = false
     ) {
         /*
         Algorithm:
@@ -19,7 +29,7 @@ public static class MoveSets {
         */
 
         bool isWhite = IsBitSet(board.WhitePiecesBB, posIndex);
-        ulong sameColorPieces = isWhite ? board.WhitePiecesBB : board.BlackPiecesBB;
+        ulong sameColorPieces = includeCoverage ? 0 : isWhite ? board.WhitePiecesBB : board.BlackPiecesBB;
         ulong enemyControlSqrs = isWhite ? board.BControlledSqrBB : board.WControlledSqrBB;
 
 
@@ -38,11 +48,11 @@ public static class MoveSets {
             ulong moveSqrs = (~allPiecesBB & (1ul << posIndex + 8));
 
             int sqrTwoAbove = posIndex + 16;
-            moveSqrs |=
-                (moveSqrs != 0 && !IsBitSet(allPiecesBB, sqrTwoAbove))
-                    ? (y == 1 ? 1ul << sqrTwoAbove : 0)
-                    : 0;
+            moveSqrs |= (moveSqrs != 0 && !IsBitSet(allPiecesBB, sqrTwoAbove)) ?
+            (y == 1 ? 1ul << sqrTwoAbove : 0) : 0;
+
             return targetSqrs | moveSqrs;
+
         } else if (IsBitSet(board.BPawnBB, posIndex)) {
             pieceType = Piece.bPawn;
 
@@ -55,14 +65,14 @@ public static class MoveSets {
 
             ulong enemyPiecesBB = allPiecesBB & ~sameColorPieces;
 
-            ulong targetSqrs = (attackSqrs & enemyPiecesBB);
-            ulong moveSqrs = (~allPiecesBB & (1ul << posIndex - 8));
+            ulong targetSqrs = attackSqrs & enemyPiecesBB;
+            ulong moveSqrs = ~allPiecesBB & (1ul << posIndex - 8);
 
             int sqrTwoAbove = posIndex - 16;
             moveSqrs |= (moveSqrs != 0 && !IsBitSet(allPiecesBB, sqrTwoAbove)) ? (y == 6 ? 1ul << (sqrTwoAbove) : 0) : 0;
 
-
             return targetSqrs | moveSqrs;
+
         } else if (IsBitSet(board.BRookBB | board.WRookBB, posIndex)) {
             pieceType = isWhite ? Piece.wRook : Piece.bRook;
 
@@ -75,6 +85,7 @@ public static class MoveSets {
             ulong targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
 
             return targetSqrs;
+            
         } else if (IsBitSet(board.WKnightBB | board.BKnightBB, posIndex)) {
             pieceType = isWhite ? Piece.wKnight : Piece.bKnight;
 

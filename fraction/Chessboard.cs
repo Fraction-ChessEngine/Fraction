@@ -31,6 +31,7 @@ public class Chessboard {
     //dient dem tracken einzelner boards im perft tree beim debuggen
     public int boardIndex = 0, parentIndex = 0;
     public static int BoardCount = 0;
+    public ulong pinnedBB = 0;
 
     /// <summary>
     /// Hiermit kann durch FENtoPos funktionen ein board gebaut werden
@@ -178,12 +179,12 @@ public class Chessboard {
     }
 
     //kein unterschied zwischen weißen und schwarzen pins, weil sowieso nach jedem zug das BB aktualisiert werden muss
-    public ulong pinnedBB = 0;
+
     /// <summary>
     /// After GeneratePinnedPieceBB(...) is called, this contains BBs to pinLines in alle directions in the following order:
     /// Top, TopRight, Right, BottomRight, Bottom, BottomLeft, Left, TopLeft (<=> clockwise, starting with Top)
     /// </summary>
-    public ulong[] pinLineArr = new ulong[8];
+
 
     //forWhite = white is pinned
     public void GeneratePinnedPieceBB(bool forWhite) {
@@ -242,10 +243,7 @@ public class Chessboard {
             //wenn mehr oder weniger als ein piece der eigenen farbe auf der pinLine steht ist es kein pin
 
             friendsInSightlines |= sameColorPieces & (intersectionHoriEast | intersectionHoriWest | intersectionVertiBottom | intersectionVertiTop);
-            pinLineArr[0] = intersectionVertiTop;
-            pinLineArr[2] = intersectionHoriEast;
-            pinLineArr[4] = intersectionVertiBottom;
-            pinLineArr[6] = intersectionHoriWest;
+
         }
 
         if (intersectionDiags != 0) {
@@ -272,15 +270,11 @@ public class Chessboard {
             intersectionDiagSW = MoveSets.CountSetBits(intersectionDiagSW & sameColorPieces) == 2 ? intersectionDiagSW : 0;
 
             friendsInSightlines |= intersectionDiagNE | intersectionDiagNW | intersectionDiagSE | intersectionDiagSW;
-            pinLineArr[1] = intersectionDiagNE;
-            pinLineArr[3] = intersectionDiagSE;
-            pinLineArr[5] = intersectionDiagSW;
-            pinLineArr[7] = intersectionDiagNW;
         }
 
         /* TODO!!! sicherstellen dass nur EIN piece der eigenen farbe auf den linien steht */
 
-        pinnedBB = friendsInSightlines & ~WKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
+        pinnedBB = friendsInSightlines & ~WKingBB & ~BKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
     }
 
     /// <summary>

@@ -23,13 +23,14 @@ static class MoveGen {
         ulong pieceBB,
         bool forWhite,
         ref Vision[] possibleMoves,
-        ref int currIndex
+        ref int currIndex,
+        bool includeCoverage = false
     ) {
         int amount = Eval.NumberOfSetBits(pieceBB);
         switch (amount) {
             case 1:
                 int i1 = Utility.FindSingleSetBit(pieceBB);
-                Vision v = GetVisionForPieceAt(b, i1);
+                Vision v = GetVisionForPieceAt(b, i1, includeCoverage);
                 if (v.MoveBB == 0ul)
                     break;
                 possibleMoves[currIndex] = v;
@@ -39,8 +40,8 @@ static class MoveGen {
                 int j1,
                     j2;
                 Utility.FindTwoSetBits(pieceBB, out j1, out j2);
-                Vision v1 = GetVisionForPieceAt(b, j1);
-                Vision v2 = GetVisionForPieceAt(b, j2);
+                Vision v1 = GetVisionForPieceAt(b, j1, includeCoverage);
+                Vision v2 = GetVisionForPieceAt(b, j2, includeCoverage);
 
                 if (v1.MoveBB != 0ul) {
                     possibleMoves[currIndex] = v1;
@@ -58,7 +59,7 @@ static class MoveGen {
         }
     }
 
-    public static Span<Vision> GenerateMoves(Chessboard b, bool forWhite) {
+    public static Span<Vision> GenerateMoves(Chessboard b, bool forWhite, bool includeCoverage = false) {
         Vision[] possibleMoves = new Vision[16]; //weil maximal 16 pieces die je ein "Moves" bekommen
         b.GeneratePinnedPieceBB(forWhite);
 
@@ -92,7 +93,7 @@ static class MoveGen {
             int[] pawnArr = Utility.FindSetBitsMax(b.WPawnBB, pawns);
 
             for (int i = 0; i < pawns; i++) {
-                Vision v = GetVisionForPieceAt(b, pawnArr[i]);
+                Vision v = GetVisionForPieceAt(b, pawnArr[i], includeCoverage);
                 if (v.MoveBB == 0)
                     continue;
                 possibleMoves[currIndex] = v;
@@ -102,7 +103,8 @@ static class MoveGen {
             //king, es kann nur einen geben
             int kingIndex = Utility.FindSingleSetBit(b.WKingBB);
 
-            Vision vKing = GetVisionForPieceAt(b, kingIndex);
+            Vision vKing = GetVisionForPieceAt(b, kingIndex, includeCoverage);
+
             if (vKing.MoveBB != 0) {
                 possibleMoves[currIndex] = vKing;
                 currIndex++;
@@ -113,7 +115,7 @@ static class MoveGen {
             int[] queenArr = Utility.FindSetBitsMax(b.WQueenBB, queens);
 
             for (int i = 0; i < queens; i++) {
-                Vision v = GetVisionForPieceAt(b, queenArr[i]);
+                Vision v = GetVisionForPieceAt(b, queenArr[i], includeCoverage);
                 if (v.MoveBB == 0)
                     continue;
                 possibleMoves[currIndex] = v;
@@ -147,7 +149,7 @@ static class MoveGen {
             int[] pawnArr = Utility.FindSetBitsMax(b.BPawnBB, pawns);
 
             for (int i = 0; i < pawns; i++) {
-                Vision v = GetVisionForPieceAt(b, pawnArr[i]);
+                Vision v = GetVisionForPieceAt(b, pawnArr[i], includeCoverage);
                 if (v.MoveBB == 0)
                     continue;
                 possibleMoves[currIndex] = v;
@@ -157,7 +159,8 @@ static class MoveGen {
             //king, es kann nur einen geben
             int kingIndex = Utility.FindSingleSetBit(b.BKingBB);
 
-            Vision vKing = GetVisionForPieceAt(b, kingIndex);
+            Vision vKing = GetVisionForPieceAt(b, kingIndex, includeCoverage);
+
             if (vKing.MoveBB != 0) {
                 possibleMoves[currIndex] = vKing;
                 currIndex++;
@@ -168,7 +171,7 @@ static class MoveGen {
             int[] queenArr = Utility.FindSetBitsMax(b.BQueenBB, queens);
 
             for (int i = 0; i < queens; i++) {
-                Vision v = GetVisionForPieceAt(b, queenArr[i]);
+                Vision v = GetVisionForPieceAt(b, queenArr[i], includeCoverage);
                 if (v.MoveBB == 0)
                     continue;
                 possibleMoves[currIndex] = v;
@@ -181,21 +184,12 @@ static class MoveGen {
 
     public static Chessboard[] GenerateBoards(Chessboard b, bool whitesTurn) {
 
-
-
-        /* //damit im nächsten zug der gegner king keine illegalen moves macht
-        b.UpdateAttackedSqrBB(visions, whitesTurn);*/
         //provisorische lösung
-        Span<Vision> attackVisions = GenerateMoves(b, !whitesTurn);
+        Span<Vision> attackVisions = GenerateMoves(b, !whitesTurn, true);
         b.UpdateAttackedSqrBB(attackVisions, !whitesTurn);
 
         Span<Vision> visions = GenerateMoves(b, whitesTurn);
 
-        //debug
-        /* if (b.boardIndex == 64162) {
-            Utility.PrintBitBoard(b.WControlledSqrBB);
-        }
- */
 
         //gesamtlänge des endarrays wird bestimmt
         int endLength = 0;
@@ -235,11 +229,14 @@ static class MoveGen {
         bool whitesTurn,
         out string[] moves
     ) {
+        //provisorische lösung
+        Span<Vision> attackVisions = GenerateMoves(b, !whitesTurn);
+        b.UpdateAttackedSqrBB(attackVisions, !whitesTurn);
+
         Console.WriteLine();
         Span<Vision> visions = GenerateMoves(b, whitesTurn);
 
-        //damit im nächsten zug der gegner king keine illegalen moves macht
-        b.UpdateAttackedSqrBB(visions, whitesTurn);
+
 
         //gesamtlänge des endarrays wird bestimmt
         int endLength = 0;
@@ -271,15 +268,18 @@ static class MoveGen {
         return boards;
     }
 
-    public static Vision GetVisionForPieceAt(Chessboard b, int i) {
+    public static Vision GetVisionForPieceAt(Chessboard b, int i, bool includeCoverage = false) {
         Piece pieceType;
-        ulong bb = MoveSets.getPseudoLegalMoves_bb(b, i, out pieceType);
+        ulong bb = MoveSets.getPseudoLegalMoves_bb(b, i, out pieceType, includeCoverage);
         //  bool isCheck =isWhite ? (bb & b.bKingBB) != 0ul : (bb & b.wKingBB) != 0ul;
+
 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
         if (MoveSets.IsBitSet(b.pinnedBB, i)) {
             bb &= b.pinnedBB;
         }
+
+
 
         return new Vision(i, bb, pieceType);
     }

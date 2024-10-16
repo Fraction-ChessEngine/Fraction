@@ -202,25 +202,10 @@ public class Program {
         */
         visualBoard = new();
 
+        Testing.PerftResults(visualBoard, 4, true);
 
-        //  visualBoard = visualBoard.GenerateBoardWithMove(Utility.ANtoPos("c1"), Utility.ANtoPos("a3"), Piece.wBishop);
-        errorComp = errorComp.GenerateBoardWithMove(Utility.ANtoPos("b2"), Utility.ANtoPos("b3"), Piece.wPawn);
-        errorComp = errorComp.GenerateBoardWithMove(Utility.ANtoPos("e7"), Utility.ANtoPos("e6"), Piece.bPawn);
-        errorComp = errorComp.GenerateBoardWithMove(Utility.ANtoPos("c1"), Utility.ANtoPos("a3"), Piece.wBishop);
-        //   Testing.PerftResults(visualBoard, 4, true);
-
-        Testing.BenchMarkMINIMAX();
-
-        //Das verbecherische Board
-        //Index: 64162
-        //Parent index: 57702
-
-        /* TODO: 
-        updateattacksqrs func fixen weil sie dem king erlaubt pieces zu nehmen die gedeckt sind 
-        (weil gedeckte pieces natürlich nicht im moveBB auftauchen)
-        -> am besten auch GenerateMoves ändern, dass es flag gibt sagt ob gedeckte pieces gezählt werden (dann benchmarken) 
+        // Testing.BenchMarkMINIMAX();
 
 
-        */
     }
 }
