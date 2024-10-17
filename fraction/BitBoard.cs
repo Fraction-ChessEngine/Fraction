@@ -21,13 +21,13 @@ public struct BitBoard {
     }
 
     public bool this[int x, int y] {
-        get => this[y * 8 + x];
-        set => this[y * 8 + x] = value;
+        get => this[(y * 8) + x];
+        set => this[(y * 8) + x] = value;
     }
 
     public bool this[string pos] {
-        get => this[((pos[1] - '1') * 8 + ((pos[0] | 0x60) - 'a'))];
-        set => this[((pos[1] - '1') * 8 + ((pos[0] | 0x60) - 'a'))] = value;
+        get => this[((pos[1] - '1') * 8) + ((pos[0] | 0x60) - 'a')];
+        set => this[((pos[1] - '1') * 8) + ((pos[0] | 0x60) - 'a')] = value;
     }
 
     public BitBoard() { }
@@ -123,7 +123,7 @@ public struct BitBoard {
     public static BitBoard VerticalLine(int file)
         => 0x101010101010101ul << file;
 
-    // lsb is a file
+    // lsb is 'a' file
     public static BitBoard VerticalLines(byte files)
         => 0x101010101010101ul * files;
 

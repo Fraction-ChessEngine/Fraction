@@ -95,7 +95,7 @@ public class BitBoardTests {
     [Fact]
     public void AntiDiagonal_HorizontalTop_SetsDiagonalBits() {
         for (int i = 0; i < 8; i++) {
-            BitBoard bb = BitBoard.Diagonal(i, 7);
+            BitBoard bb = BitBoard.AntiDiagonal(i, 7);
             for (int j = 0; j < 8 - i; j++)
                 Assert.True(bb[j + i, 7 - j], $"i: {i}, j: {j}");
         }
@@ -104,9 +104,35 @@ public class BitBoardTests {
     [Fact]
     public void AntiDiagonal_VerticalLeft_SetsDiagonalBits() {
         for (int i = 0; i < 8; i++) {
-            BitBoard bb = BitBoard.Diagonal(0, 7 - i);
+            BitBoard bb = BitBoard.AntiDiagonal(0, 7 - i);
             for (int j = 0; j < 8 - i; j++)
-                Assert.True(bb[j, 7 - j + i], $"i: {i}, j: {j}");
+                Assert.True(bb[j, 7 - (j + i)], $"i: {i}, j: {j}");
         }
+    }
+
+    [Fact]
+    public void HorizontalLine_Ranks_SetsHorizontalLine() {
+        for (int i = 0; i < 8; i++) {
+            BitBoard bb = BitBoard.HorizontalLine(i);
+            for (int j = 0; j < 8; j++)
+                Assert.True(bb[j, i]);
+        }
+    }
+
+    [Fact]
+    public void VerticalLine_Ranks_SetsVerticalLine() {
+        for (int i = 0; i < 8; i++) {
+            BitBoard bb = BitBoard.VerticalLine(i);
+            for (int j = 0; j < 8; j++)
+                Assert.True(bb[i, j]);
+        }
+    }
+
+    [Theory]
+    [InlineData(0b11001010, 0xcacacacacacacacaul)]
+    public void VerticalLines_Files_SetsVerticalLines(byte files, ulong expected) {
+        BitBoard actual = BitBoard.VerticalLines(files);
+
+        Assert.Equal(expected, (ulong)actual);
     }
 }
