@@ -8,23 +8,23 @@ using System.Security.Cryptography.X509Certificates;
 namespace fraction;
 public class Chessboard {
     //0 ist ganz rechts, 63 ist ganz links, 0=a1, 63=h8
-    public ulong BRookBB { get; set; } = 0b1000000100000000000000000000000000000000000000000000000000000000;
-    public ulong WRookBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000010000001;
-    public ulong BBishopBB { get; set; } = 0b0010010000000000000000000000000000000000000000000000000000000000;
-    public ulong WBishopBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000000100100;
-    public ulong BKnightBB { get; set; } = 0b0100001000000000000000000000000000000000000000000000000000000000;
-    public ulong WKnightBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000001000010;
-    public ulong WQueenBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000000001000;
-    public ulong BQueenBB { get; set; } = 0b0000100000000000000000000000000000000000000000000000000000000000;
-    public ulong WKingBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000000010000;
-    public ulong BKingBB { get; set; } = 0b0001000000000000000000000000000000000000000000000000000000000000;
-    public ulong WPawnBB { get; set; } = 0b0000000000000000000000000000000000000000000000001111111100000000;
-    public ulong BPawnBB { get; set; } = 0b0000000011111111000000000000000000000000000000000000000000000000;
-    public ulong WhitePiecesBB { get; set; } = 0b0000000000000000000000000000000000000000000000001111111111111111;
-    public ulong BlackPiecesBB { get; set; } = 0b1111111111111111000000000000000000000000000000000000000000000000;
+    public BitBoard BRookBB { get; set; } = 0b1000000100000000000000000000000000000000000000000000000000000000;
+    public BitBoard WRookBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000010000001;
+    public BitBoard BBishopBB { get; set; } = 0b0010010000000000000000000000000000000000000000000000000000000000;
+    public BitBoard WBishopBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000000100100;
+    public BitBoard BKnightBB { get; set; } = 0b0100001000000000000000000000000000000000000000000000000000000000;
+    public BitBoard WKnightBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000001000010;
+    public BitBoard WQueenBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000000001000;
+    public BitBoard BQueenBB { get; set; } = 0b0000100000000000000000000000000000000000000000000000000000000000;
+    public BitBoard WKingBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000000010000;
+    public BitBoard BKingBB { get; set; } = 0b0001000000000000000000000000000000000000000000000000000000000000;
+    public BitBoard WPawnBB { get; set; } = 0b0000000000000000000000000000000000000000000000001111111100000000;
+    public BitBoard BPawnBB { get; set; } = 0b0000000011111111000000000000000000000000000000000000000000000000;
+    public BitBoard WhitePiecesBB { get; set; } = 0b0000000000000000000000000000000000000000000000001111111111111111;
+    public BitBoard BlackPiecesBB { get; set; } = 0b1111111111111111000000000000000000000000000000000000000000000000;
 
-    public ulong WControlledSqrBB { get; set; } = 0;// 0b11111111ul << 16;
-    public ulong BControlledSqrBB { get; set; } = 0;//0b11111111ul << 40;
+    public BitBoard WControlledSqrBB { get; set; } = 0;// 0b11111111ul << 16;
+    public BitBoard BControlledSqrBB { get; set; } = 0;//0b11111111ul << 40;
 
     public bool AfterCapturePly { get; set; } = false;
 
@@ -138,36 +138,36 @@ public class Chessboard {
         //kann optimiert werden mit blackPiecesBB und whitePiecesBB,
         //aber diese funktion ist nicht dafür gedacht in performance-critical
         //teilen des bots ausgeführt zu werden
-        if (MoveSets.IsBitSet(WPawnBB, posIndex))
+        if (WPawnBB[posIndex])
             return Piece.wPawn;
-        if (MoveSets.IsBitSet(BPawnBB, posIndex))
+        if (BPawnBB[posIndex])
             return Piece.bPawn;
-        if (MoveSets.IsBitSet(WKingBB, posIndex))
+        if (WKingBB[posIndex])
             return Piece.wKing;
-        if (MoveSets.IsBitSet(BKingBB, posIndex))
+        if (BKingBB[posIndex])
             return Piece.bKing;
-        if (MoveSets.IsBitSet(WKnightBB, posIndex))
+        if (WKnightBB[posIndex])
             return Piece.wKnight;
-        if (MoveSets.IsBitSet(BKnightBB, posIndex))
+        if (BKnightBB[posIndex])
             return Piece.bKnight;
-        if (MoveSets.IsBitSet(WQueenBB, posIndex))
+        if (WQueenBB[posIndex])
             return Piece.wQueen;
-        if (MoveSets.IsBitSet(BQueenBB, posIndex))
+        if (BQueenBB[posIndex])
             return Piece.bQueen;
-        if (MoveSets.IsBitSet(WRookBB, posIndex))
+        if (WRookBB[posIndex])
             return Piece.wRook;
-        if (MoveSets.IsBitSet(BRookBB, posIndex))
+        if (BRookBB[posIndex])
             return Piece.bRook;
-        if (MoveSets.IsBitSet(WBishopBB, posIndex))
+        if (WBishopBB[posIndex])
             return Piece.wBishop;
-        if (MoveSets.IsBitSet(BBishopBB, posIndex))
+        if (BBishopBB[posIndex])
             return Piece.bBishop;
 
         return 0;
     }
 
     public bool HasPieceAt(int posIndex) {
-        return MoveSets.IsBitSet(WhitePiecesBB | BlackPiecesBB, posIndex);
+        return WhitePiecesBB[posIndex] || BlackPiecesBB[posIndex];
     }
 
     /// <summary>
@@ -175,7 +175,7 @@ public class Chessboard {
     /// </summary>
     /// <returns></returns>
     public bool HasWhitePieceAt(int index) {
-        return MoveSets.IsBitSet(WhitePiecesBB, index);
+        return WhitePiecesBB[index];
     }
 
     //kein unterschied zwischen weißen und schwarzen pins, weil sowieso nach jedem zug das BB aktualisiert werden muss
@@ -190,12 +190,12 @@ public class Chessboard {
     public void GeneratePinnedPieceBB(bool forWhite) {
         int kingIndex;
 
-        ulong rookSightlines;
-        ulong bishopSightlines;
+        BitBoard rookSightlines;
+        BitBoard bishopSightlines;
 
         //enemy pieces die sightlines auf den king haben, aka intersections of sightlines with pieces
-        ulong intersectionsStraight;
-        ulong intersectionDiags;
+        BitBoard intersectionsStraight;
+        BitBoard intersectionDiags;
 
         if (forWhite) {
             kingIndex = Utility.FindSingleSetBit(WKingBB);
@@ -216,7 +216,7 @@ public class Chessboard {
             intersectionDiags = bishopSightlines & (WBishopBB | WQueenBB);
         }
 
-        ulong friendsInSightlines = 0;
+        BitBoard friendsInSightlines = 0;
         int y = kingIndex >> 3;
         int x = kingIndex & 7;
 
