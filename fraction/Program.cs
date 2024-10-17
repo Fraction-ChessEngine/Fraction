@@ -182,6 +182,7 @@ public class Program {
         Console.WriteLine("Sum: " + sum + " with depth = " + d);
     }
 
+    public static Chessboard errorComp = new();
     static Chessboard? visualBoard; //board auf dem die "wahre" position gespeichert wird
 
     static void Main(string[] args) {
@@ -199,16 +200,12 @@ public class Program {
             g1f3: 9748 vs g1f3: 9754
             g1h3: 8881 vs g1h3: 8883 
         */
-        visualBoard = Chessboard.FromFEN("rnbqkbnr/pppp1ppp/4p3/8/8/1P6/P1PPPPPP/RNBQKBNR");
+        visualBoard = new();
 
-        visualBoard = visualBoard.GenerateBoardWithMove(Utility.ANtoPos("c1"), Utility.ANtoPos("a3"), Piece.wBishop);
-        MoveGen.GenerateBoards(visualBoard, false);
-        MoveGen.GenerateBoards(visualBoard, true);
+        Testing.PerftResults(visualBoard, 4, true);
 
-        /* TODO bugfixing, perft updatet die scheisse aus irgendeinem grund nicht selbst, bitte perften um das zu beheben */
+        // Testing.BenchMarkMINIMAX();
 
-
-        Testing.PerftResults(visualBoard, 1, false);
 
     }
 }

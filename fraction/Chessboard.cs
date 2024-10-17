@@ -6,8 +6,7 @@ using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
 namespace fraction;
-public class Chessboard
-{
+public class Chessboard {
     //0 ist ganz rechts, 63 ist ganz links, 0=a1, 63=h8
     public ulong BRookBB { get; set; } = 0b1000000100000000000000000000000000000000000000000000000000000000;
     public ulong WRookBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000010000001;
@@ -18,23 +17,27 @@ public class Chessboard
     public ulong WQueenBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000000001000;
     public ulong BQueenBB { get; set; } = 0b0000100000000000000000000000000000000000000000000000000000000000;
     public ulong WKingBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000000010000;
-    public ulong BKingBB { get; set; } = 0b0000100000000000000000000000000000000000000000000000000000000000;
+    public ulong BKingBB { get; set; } = 0b0001000000000000000000000000000000000000000000000000000000000000;
     public ulong WPawnBB { get; set; } = 0b0000000000000000000000000000000000000000000000001111111100000000;
     public ulong BPawnBB { get; set; } = 0b0000000011111111000000000000000000000000000000000000000000000000;
     public ulong WhitePiecesBB { get; set; } = 0b0000000000000000000000000000000000000000000000001111111111111111;
     public ulong BlackPiecesBB { get; set; } = 0b1111111111111111000000000000000000000000000000000000000000000000;
 
-    public ulong WControlledSqrBB { get; set; } = 0b11111111ul << 16;
-    public ulong BControlledSqrBB { get; set; } = 0b11111111ul << 40;
+    public ulong WControlledSqrBB { get; set; } = 0;// 0b11111111ul << 16;
+    public ulong BControlledSqrBB { get; set; } = 0;//0b11111111ul << 40;
 
     public bool AfterCapturePly { get; set; } = false;
+
+    //dient dem tracken einzelner boards im perft tree beim debuggen
+    public int boardIndex = 0, parentIndex = 0;
+    public static int BoardCount = 0;
+    public ulong pinnedBB = 0;
 
     /// <summary>
     /// Hiermit kann durch FENtoPos funktionen ein board gebaut werden
     /// </summary>
     /// <param name="pieces_"></param>
-    public Chessboard(Dictionary<int, Piece> pieces_)
-    {
+    public Chessboard(Dictionary<int, Piece> pieces_) {
         //bitboards müssen generiert werden
         BPawnBB = Utility.GetBBofPosition(pieces_, Piece.bPawn);
         WPawnBB = Utility.GetBBofPosition(pieces_, Piece.wPawn);
@@ -56,21 +59,19 @@ public class Chessboard
     public Chessboard() { }
 
     public Chessboard(
-        ulong wKingBB,
-        ulong bKingBB,
-        ulong wKnightBB,
-        ulong bKnightBB,
-        ulong wQueenBB,
-        ulong bQueenBB,
-        ulong wRookBB,
-        ulong bRookBB,
-        ulong wBishopBB,
-        ulong bBishopBB,
-        ulong wPawnBB,
-        ulong bPawnBB,
-        bool afterCapturePly
-    )
-    {
+        ulong wKingBB, ulong bKingBB,
+        ulong wKnightBB, ulong bKnightBB,
+        ulong wQueenBB, ulong bQueenBB,
+        ulong wRookBB, ulong bRookBB,
+        ulong wBishopBB, ulong bBishopBB,
+        ulong wPawnBB, ulong bPawnBB,
+        bool afterCapturePly,
+        ulong wCtrlBB,
+        ulong bCtrlBB,
+        int BoardIndex,
+        int parentIndex
+
+    ) {
         this.WKingBB = wKingBB;
         this.BKingBB = bKingBB;
         this.WKnightBB = wKnightBB;
@@ -87,21 +88,24 @@ public class Chessboard
 
         this.WhitePiecesBB = wKingBB | wKnightBB | wQueenBB | wRookBB | wBishopBB | wPawnBB;
         this.BlackPiecesBB = bKingBB | bKnightBB | bQueenBB | bRookBB | bBishopBB | bPawnBB;
+
+        WControlledSqrBB = wCtrlBB;
+        BControlledSqrBB = bCtrlBB;
+
+        this.boardIndex = BoardIndex;
+        this.parentIndex = parentIndex;
     }
 
     //berechnet neue BBs für die kontrollierten sqrs der beiden seiten
-    public void UpdateAttackedSqrBB(Span<Vision> visions, bool forWhite)
-    {
+    public void UpdateAttackedSqrBB(Span<Vision> visions, bool forWhite) {
         ulong attackSqrBB = 0;
 
-        for (int i = 0; i < visions.Length; i++)
-        {
+        for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
             ulong bb = v.MoveBB;
 
             //pawns müssen gesondert berechnet werden wegen des unterschieds zwischen bewegung und schlagzug
-            if (v.pieceType == Piece.wPawn || v.pieceType == Piece.bPawn)
-            {
+            if (v.pieceType == Piece.wPawn || v.pieceType == Piece.bPawn) {
                 bb &= ~MoveSets.VerticalLineBB(v.PosIndex % 8);
 
                 int y = v.PosIndex >> 3;
@@ -113,18 +117,14 @@ public class Chessboard
             attackSqrBB |= bb;
         }
 
-        if (forWhite)
-        {
+        if (forWhite) {
             WControlledSqrBB = attackSqrBB;
-        }
-        else
-        {
+        } else {
             BControlledSqrBB = attackSqrBB;
         }
     }
 
-    public static Chessboard FromFEN(string fen)
-    {
+    public static Chessboard FromFEN(string fen) {
         return new Chessboard(Utility.FENtoPosition(fen));
     }
 
@@ -134,8 +134,7 @@ public class Chessboard
     /// </summary>
     /// <param name="posIndex"></param>
     /// <returns></returns>
-    public Piece GetPieceAt(int posIndex)
-    {
+    public Piece GetPieceAt(int posIndex) {
         //kann optimiert werden mit blackPiecesBB und whitePiecesBB,
         //aber diese funktion ist nicht dafür gedacht in performance-critical
         //teilen des bots ausgeführt zu werden
@@ -167,8 +166,7 @@ public class Chessboard
         return 0;
     }
 
-    public bool HasPieceAt(int posIndex)
-    {
+    public bool HasPieceAt(int posIndex) {
         return MoveSets.IsBitSet(WhitePiecesBB | BlackPiecesBB, posIndex);
     }
 
@@ -176,22 +174,20 @@ public class Chessboard
     /// Kann benutzt werden um die Farbe eines Pieces auf einem Sqr zu checken, Davor muss überprüft werden ob hier überhaupt ein Piece existiert !!!
     /// </summary>
     /// <returns></returns>
-    public bool HasWhitePieceAt(int index)
-    {
+    public bool HasWhitePieceAt(int index) {
         return MoveSets.IsBitSet(WhitePiecesBB, index);
     }
 
     //kein unterschied zwischen weißen und schwarzen pins, weil sowieso nach jedem zug das BB aktualisiert werden muss
-    public ulong pinnedBB = 0;
+
     /// <summary>
     /// After GeneratePinnedPieceBB(...) is called, this contains BBs to pinLines in alle directions in the following order:
     /// Top, TopRight, Right, BottomRight, Bottom, BottomLeft, Left, TopLeft (<=> clockwise, starting with Top)
     /// </summary>
-    public ulong[] pinLineArr = new ulong[8];
+
 
     //forWhite = white is pinned
-    public void GeneratePinnedPieceBB(bool forWhite)
-    {
+    public void GeneratePinnedPieceBB(bool forWhite) {
         int kingIndex;
 
         ulong rookSightlines;
@@ -201,8 +197,7 @@ public class Chessboard
         ulong intersectionsStraight;
         ulong intersectionDiags;
 
-        if (forWhite)
-        {
+        if (forWhite) {
             kingIndex = Utility.FindSingleSetBit(WKingBB);
 
             rookSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex);
@@ -211,9 +206,7 @@ public class Chessboard
 
             intersectionsStraight = rookSightlines & (BRookBB | BQueenBB);
             intersectionDiags = bishopSightlines & (BBishopBB | BQueenBB);
-        }
-        else
-        {
+        } else {
             kingIndex = Utility.FindSingleSetBit(BKingBB);
 
             rookSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex);
@@ -230,8 +223,7 @@ public class Chessboard
         ulong sameColorPieces = forWhite ? WhitePiecesBB : BlackPiecesBB;
 
 
-        if (intersectionsStraight != 0)
-        {
+        if (intersectionsStraight != 0) {
             ulong intersectionHoriWest = intersectionsStraight & MoveSets.InterpolateHorizontal(kingIndex, kingIndex - x);
             intersectionHoriWest = intersectionHoriWest == 0 ? 0 : MoveSets.InterpolateHorizontal(kingIndex, MoveSets.GetBiggestBit(intersectionHoriWest));
             intersectionHoriWest = MoveSets.CountSetBits(intersectionHoriWest & sameColorPieces) == 2 ? intersectionHoriWest : 0;//1x king, 1x piece, dh 2 bits
@@ -251,14 +243,10 @@ public class Chessboard
             //wenn mehr oder weniger als ein piece der eigenen farbe auf der pinLine steht ist es kein pin
 
             friendsInSightlines |= sameColorPieces & (intersectionHoriEast | intersectionHoriWest | intersectionVertiBottom | intersectionVertiTop);
-            pinLineArr[0] = intersectionVertiTop;
-            pinLineArr[2] = intersectionHoriEast;
-            pinLineArr[4] = intersectionVertiBottom;
-            pinLineArr[6] = intersectionHoriWest;
+
         }
 
-        if (intersectionDiags != 0)
-        {
+        if (intersectionDiags != 0) {
             ulong antiDiag = MoveSets.GetAntiDiagonal(x, y);
             int nw = MoveSets.GetBiggestBit(antiDiag);
             ulong intersectionDiagNW = intersectionDiags & MoveSets.InterpolateAntiDiagonal(nw, kingIndex);
@@ -282,15 +270,11 @@ public class Chessboard
             intersectionDiagSW = MoveSets.CountSetBits(intersectionDiagSW & sameColorPieces) == 2 ? intersectionDiagSW : 0;
 
             friendsInSightlines |= intersectionDiagNE | intersectionDiagNW | intersectionDiagSE | intersectionDiagSW;
-            pinLineArr[1] = intersectionDiagNE;
-            pinLineArr[3] = intersectionDiagSE;
-            pinLineArr[5] = intersectionDiagSW;
-            pinLineArr[7] = intersectionDiagNW;
         }
 
         /* TODO!!! sicherstellen dass nur EIN piece der eigenen farbe auf den linien steht */
 
-        pinnedBB = friendsInSightlines & ~WKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
+        pinnedBB = friendsInSightlines & ~WKingBB & ~BKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
     }
 
     /// <summary>
@@ -298,8 +282,7 @@ public class Chessboard
     /// </summary>
     /// <param name="startIndex"></param>
     /// <param name="endIndex"></param>
-    public Chessboard GenerateBoardWithMove(int startIndex, int endIndex, Piece type)
-    {
+    public Chessboard GenerateBoardWithMove(int startIndex, int endIndex, Piece type) {
         bool isCapture = MoveSets.IsBitSet(BlackPiecesBB | WhitePiecesBB, endIndex);
 
         //der king kann gecaptured werden weil das capturen des king essentiell für checkmate detection ist
@@ -317,14 +300,13 @@ public class Chessboard
         ulong wPawnBB_ = Utility.SetBBtoNullAt(WPawnBB, endIndex);
         ulong bPawnBB_ = Utility.SetBBtoNullAt(BPawnBB, endIndex);
 
+
         //alle bitboards müssen geupdated werden
-        switch (type)
-        {
+        switch (type) {
             case Piece.wPawn:
                 wPawnBB_ = Utility.UpdateBB(WPawnBB, startIndex, endIndex);
                 //auto queen
-                if (endIndex > 55)
-                {
+                if (endIndex > 55) {
                     wPawnBB_ = Utility.SetBBtoNullAt(wPawnBB_, endIndex);
                     wQueenBB_ += 1ul << endIndex;
                 }
@@ -333,8 +315,7 @@ public class Chessboard
             case Piece.bPawn:
                 bPawnBB_ = Utility.UpdateBB(BPawnBB, startIndex, endIndex);
 
-                if (endIndex < 8)
-                {
+                if (endIndex < 8) {
                     bPawnBB_ = Utility.SetBBtoNullAt(bPawnBB_, endIndex);
                     bQueenBB_ += 1ul << endIndex;
                 }
@@ -382,6 +363,8 @@ public class Chessboard
                 break;
         }
 
+        BoardCount++;
+
         return new Chessboard(
             wKingBB_,
             bKingBB_,
@@ -395,7 +378,11 @@ public class Chessboard
             bBishopBB_,
             wPawnBB_,
             bPawnBB_,
-            isCapture
+            isCapture,
+            WControlledSqrBB,
+            BControlledSqrBB,
+            BoardCount,
+            boardIndex
         );
     }
 }
