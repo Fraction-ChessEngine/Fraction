@@ -270,7 +270,7 @@ static class MoveGen {
 
     public static Vision GetVisionForPieceAt(Chessboard b, int i, bool includeCoverage = false) {
         Piece pieceType;
-        ulong bb = MoveSets.getPseudoLegalMoves_bb(b, i, out pieceType, includeCoverage);
+        ulong bb = MoveSets.GetPseudoLegalMoves(b, i, out pieceType, includeCoverage);
         //  bool isCheck =isWhite ? (bb & b.bKingBB) != 0ul : (bb & b.wKingBB) != 0ul;
 
 
@@ -278,8 +278,6 @@ static class MoveGen {
         if (MoveSets.IsBitSet(b.pinnedBB, i)) {
             bb &= b.pinnedBB;
         }
-
-
 
         return new Vision(i, bb, pieceType);
     }

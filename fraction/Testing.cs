@@ -213,7 +213,7 @@ static class Testing {
                     if (currPiece != p)
                         continue; //nur für die richtige pieceArt checken
 
-                    ulong bb = MoveSets.getPseudoLegalMoves_bb(
+                    ulong bb = MoveSets.GetPseudoLegalMoves(
                         new Chessboard(pos),
                         index,
                         out outValue
@@ -232,7 +232,7 @@ static class Testing {
                         continue; //nur für die richtige pieceArt checken
                     if (
                         MoveSets.IsBitSet(
-                            MoveSets.getPseudoLegalMoves_bb(
+                            MoveSets.GetPseudoLegalMoves(
                                 new Chessboard(pos),
                                 index,
                                 out outValue
@@ -252,7 +252,7 @@ static class Testing {
                     if (currPiece != p)
                         continue; //nur für die richtige pieceArt checken
 
-                    ulong bb = MoveSets.getPseudoLegalMoves_bb(
+                    ulong bb = MoveSets.GetPseudoLegalMoves(
                         new Chessboard(pos),
                         i,
                         out outValue
@@ -422,5 +422,15 @@ static class Testing {
         }
 
         Console.WriteLine("Sum: " + sum);
+    }
+
+    public static void Checks() {
+        Chessboard[] checkBoards = {
+            Chessboard.FromFEN("rnbqkbnr/ppp1pppp/3p4/8/Q2P4/8/PPP1PPPP/RNB1KBNR"),
+            Chessboard.FromFEN("rnbqkbnr/ppp1pppp/2Qp4/8/3P4/8/PPP1PPPP/RNB1KBNR"),
+            Chessboard.FromFEN(""),
+            Chessboard.FromFEN(""),
+            Chessboard.FromFEN("")
+    };
     }
 }

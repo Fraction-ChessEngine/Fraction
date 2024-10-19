@@ -15,7 +15,7 @@ public static class MoveSets {
     /// <param name="pieceType"></param>
     /// <param name="includeCoverage"></param>
     /// <returns></returns>
-    public static ulong getPseudoLegalMoves_bb(
+    public static ulong GetPseudoLegalMoves(
         Chessboard board,
         int posIndex,
         out Piece pieceType,
@@ -44,12 +44,11 @@ public static class MoveSets {
 
             ulong enemyPiecesBB = allPiecesBB & ~sameColorPieces;
 
-            ulong targetSqrs = (attackSqrs & enemyPiecesBB);
-            ulong moveSqrs = (~allPiecesBB & (1ul << posIndex + 8));
+            ulong targetSqrs = attackSqrs & enemyPiecesBB;
+            ulong moveSqrs = ~allPiecesBB & (1ul << posIndex + 8);
 
             int sqrTwoAbove = posIndex + 16;
-            moveSqrs |= (moveSqrs != 0 && !IsBitSet(allPiecesBB, sqrTwoAbove)) ?
-            (y == 1 ? 1ul << sqrTwoAbove : 0) : 0;
+            moveSqrs |= (moveSqrs != 0 && !IsBitSet(allPiecesBB, sqrTwoAbove)) ? (y == 1 ? 1ul << sqrTwoAbove : 0) : 0;
 
             return targetSqrs | moveSqrs;
 
@@ -85,7 +84,7 @@ public static class MoveSets {
             ulong targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
 
             return targetSqrs;
-            
+
         } else if (IsBitSet(board.WKnightBB | board.BKnightBB, posIndex)) {
             pieceType = isWhite ? Piece.wKnight : Piece.bKnight;
 
@@ -141,6 +140,8 @@ public static class MoveSets {
         Program.DisplayBoard(board);
         return 0;
     }
+
+
 
     /// <summary>
     /// Nimmt BB mit sqrs die im sichtfeld eines pieces liegen, entfernt sqrs die das
@@ -345,8 +346,7 @@ public static class MoveSets {
     /// <summary>
     /// Nimmt BB mit sqrs die im sichtfeld eines pieces liegen, entfernt sqrs die das
     /// piece effektiv nicht sehen kann weil andere pieces im Weg stehen; enthält noch pieces derselben farbe
-    /// |Gilt für pieces mit dem Rook attackpattern;
-    /// Macht >21mio iterations/second
+    /// |Gilt für pieces mit dem Rook attackpattern
     /// </summary>
     /// <param name="sqrs"></param>
     /// <param name="posIndex"></param>

@@ -187,24 +187,19 @@ public class Program {
 
     static void Main(string[] args) {
 
-        /* 
-            b2b3: 9345 vs b2b3: 9347
-            c2c3: 9272 vs c2c3: 9313
-            d2d3: 11959 vs d2d3: 11961
-            e2e3: 13134 vs e2e3: 13164
-            g2g3: 9345 vs g2g3: 9347
-            c2c4: 9744 vs c2c4: 9784
-            d2d4: 12435 vs d2d4: 12437
-            e2e4: 13160 vs e2e4: 13193
-            b1c3: 9755 vs b1c3: 9757
-            g1f3: 9748 vs g1f3: 9754
-            g1h3: 8881 vs g1h3: 8883 
-        */
-        visualBoard = new();
 
-        Testing.PerftResults(visualBoard, 4, true);
+        visualBoard = Chessboard.FromFEN("rnbqkbnr/ppp1pppp/3p4/8/Q7/2P5/PP1PPPPP/RNB1KBNR");
+        MoveGen.GenerateBoards(visualBoard, true);
+        MoveGen.GenerateBoards(visualBoard, false);
+
+
+
+        Testing.PerftResults(visualBoard, 1, false);
 
         // Testing.BenchMarkMINIMAX();
+
+        //todo: IsInCheck funktion für pawns erweitern
+
 
 
     }

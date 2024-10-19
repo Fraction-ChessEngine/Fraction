@@ -277,6 +277,60 @@ public class Chessboard {
         pinnedBB = friendsInSightlines & ~WKingBB & ~BKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
     }
 
+    //forWhite = white is in check
+    public bool IsInCheck(bool forWhite) {
+
+        ulong knightBB, queenBB, rookBB, bishopBB, pawnBB;
+        ulong pawnDoub;//einzigen beiden bits wo pawns checken können
+        int kingIndex;
+
+        if (forWhite) {
+            knightBB = BKnightBB;
+            queenBB = BQueenBB;
+            rookBB = BRookBB;
+            bishopBB = BBishopBB;
+            pawnBB = BPawnBB;
+
+            kingIndex = Utility.FindSingleSetBit(WKingBB);
+
+            int x = kingIndex & 7;
+            int y = kingIndex >> 3;
+
+            pawnDoub = ((0b11111111ul << (y * 8 + 8)) & BPawnBB);
+        } else {
+            knightBB = WKnightBB;
+            queenBB = WQueenBB;
+            rookBB = WRookBB;
+            bishopBB = WBishopBB;
+            pawnBB = WPawnBB;
+
+            kingIndex = Utility.FindSingleSetBit(BKingBB);
+
+            int x = kingIndex & 7;
+            int y = kingIndex >> 3;
+
+            pawnDoub = (0b11111111ul << (y * 8 - 8)) & WPawnBB;
+        }
+
+        //king perspective 
+        ulong kingPersKnight = BB_Lookup.GetBBforPieceAtSqr(Piece.wKnight, kingIndex);
+        ulong kingPersRook = MoveSets.GetPseudoTargetSqrsRook(BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex), kingIndex);
+        ulong kingPersBishop = MoveSets.GetPseudoTargetSqrsBishop(BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex), kingIndex);
+        ulong kingPersQueen = kingPersBishop | kingPersRook;
+
+        //hier sind bits gesetzt wo pieces stehen die check geben
+        //wenn leer gibt kein piece check
+        ulong checkKnightBB = knightBB & kingPersKnight;
+        ulong checkQueenBB = queenBB & kingPersQueen;
+        ulong checkRookBB = rookBB & kingPersRook;
+        ulong checkBishopBB = bishopBB & kingPersBishop;
+
+        ulong checkPawnBB = pawnBB & pawnDoub;
+
+        return (checkKnightBB | checkQueenBB | checkRookBB | checkBishopBB) == 0;
+    }
+
+
     /// <summary>
     /// Generiert stumpf ein Board wo das Piece von StartIndex zu EndIndex bewegt wurde
     /// </summary>
@@ -385,4 +439,6 @@ public class Chessboard {
             boardIndex
         );
     }
+
+
 }
