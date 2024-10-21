@@ -4,8 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 
 namespace fraction;
-public enum Piece : int
-{
+public enum Piece : int {
     wPawn,
     wBishop,
     wKnight,
@@ -20,16 +19,13 @@ public enum Piece : int
     bQueen,
 }
 
-public static class PieceUtil
-{
-    public static bool IsWhite(this Piece p)
-    {
+public static class PieceUtil {
+    public static bool IsWhite(this Piece p) {
         return (int)p < (int)Piece.bPawn;
     }
 
     //kovertiert pieces.irgendwas zu symbol
-    public static string GetSymbol(this Piece p)
-    {
+    public static string GetSymbol(this Piece p) {
         int n = (int)p;
         string symbols = "PBNRKQ  pbnrkq";
         //string symbols2 = "♙♗♘♖♔♕♟♝♞♜♚♛"; coole idee, kann er aber nicht printen
