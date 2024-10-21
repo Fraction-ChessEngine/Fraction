@@ -7,24 +7,114 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace fraction;
 public class Chessboard {
-    //0 ist ganz rechts, 63 ist ganz links, 0=a1, 63=h8
-    public BitBoard BRookBB { get; set; } = 0b1000000100000000000000000000000000000000000000000000000000000000;
-    public BitBoard WRookBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000010000001;
-    public BitBoard BBishopBB { get; set; } = 0b0010010000000000000000000000000000000000000000000000000000000000;
-    public BitBoard WBishopBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000000100100;
-    public BitBoard BKnightBB { get; set; } = 0b0100001000000000000000000000000000000000000000000000000000000000;
-    public BitBoard WKnightBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000001000010;
-    public BitBoard WQueenBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000000001000;
-    public BitBoard BQueenBB { get; set; } = 0b0000100000000000000000000000000000000000000000000000000000000000;
-    public BitBoard WKingBB { get; set; } = 0b0000000000000000000000000000000000000000000000000000000000010000;
-    public BitBoard BKingBB { get; set; } = 0b0001000000000000000000000000000000000000000000000000000000000000;
-    public BitBoard WPawnBB { get; set; } = 0b0000000000000000000000000000000000000000000000001111111100000000;
-    public BitBoard BPawnBB { get; set; } = 0b0000000011111111000000000000000000000000000000000000000000000000;
-    public BitBoard WhitePiecesBB { get; set; } = 0b0000000000000000000000000000000000000000000000001111111111111111;
-    public BitBoard BlackPiecesBB { get; set; } = 0b1111111111111111000000000000000000000000000000000000000000000000;
+    private BitBoard bRookBB = new(0b1000_0001, 0, 0, 0, 0, 0, 0, 0);
+    private BitBoard wRookBB = new(0, 0, 0, 0, 0, 0, 0, 0b1000_0001);
+    private BitBoard bBishopBB = new(0b0010_0100, 0, 0, 0, 0, 0, 0, 0);
+    private BitBoard wBishopBB = new(0, 0, 0, 0, 0, 0, 0, 0b0010_0100);
+    private BitBoard bKnightBB = new(0b0100_0010, 0, 0, 0, 0, 0, 0, 0);
+    private BitBoard wKnightBB = new(0, 0, 0, 0, 0, 0, 0, 0b0100_0010);
+    private BitBoard bQueenBB = new(0b0001_0000, 0, 0, 0, 0, 0, 0, 0);
+    private BitBoard wQueenBB = new(0, 0, 0, 0, 0, 0, 0, 0b0001_0000);
+    private BitBoard bKingBB = new(0b0000_1000, 0, 0, 0, 0, 0, 0, 0);
+    private BitBoard wKingBB = new(0, 0, 0, 0, 0, 0, 0, 0b0000_1000);
+    private BitBoard bPawnBB = new(0, 0b1111_1111, 0, 0, 0, 0, 0, 0);
+    private BitBoard wPawnBB = new(0, 0, 0, 0, 0, 0, 0b1111_1111, 0);
+    private BitBoard whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
+    private BitBoard blackPiecesBB = 0b1111111111111111000000000000000000000000000000000000000000000000;
 
-    public BitBoard WControlledSqrBB { get; set; } = 0;// 0b11111111ul << 16;
-    public BitBoard BControlledSqrBB { get; set; } = 0;//0b11111111ul << 40;
+    private BitBoard wControlledSqrBB = 0;// 0b11111111ul << 16;
+    private BitBoard bControlledSqrBB = 0;//0b11111111ul << 40;
+
+    //0 ist ganz rechts, 63 ist ganz links, 0=a1, 63=h8
+    public BitBoard BRookBB { get => bRookBB; set => bRookBB = value; }
+    public BitBoard WRookBB { get => wRookBB; set => wRookBB = value; }
+    public BitBoard BBishopBB { get => bBishopBB; set => bBishopBB = value; }
+    public BitBoard WBishopBB { get => wBishopBB; set => wBishopBB = value; }
+    public BitBoard BKnightBB { get => bKnightBB; set => bKnightBB = value; }
+    public BitBoard WKnightBB { get => wKnightBB; set => wKnightBB = value; }
+    public BitBoard WQueenBB { get => wQueenBB; set => wQueenBB = value; }
+    public BitBoard BQueenBB { get => bQueenBB; set => bQueenBB = value; }
+    public BitBoard WKingBB { get => wKingBB; set => wKingBB = value; }
+    public BitBoard BKingBB { get => bKingBB; set => bKingBB = value; }
+    public BitBoard WPawnBB { get => wPawnBB; set => wPawnBB = value; }
+    public BitBoard BPawnBB { get => bPawnBB; set => bPawnBB = value; }
+    public BitBoard WhitePiecesBB => wPawnBB | wBishopBB | wRookBB | wKnightBB | wKingBB | wQueenBB;
+    public BitBoard BlackPiecesBB => bPawnBB | bBishopBB | bRookBB | bKnightBB | bKingBB | bQueenBB;
+
+    public BitBoard this[Piece type] {
+        get => type switch {
+            Piece.wPawn => wPawnBB,
+            Piece.wBishop => wBishopBB,
+            Piece.wKnight => wKnightBB,
+            Piece.wRook => wRookBB,
+            Piece.wKing => wKingBB,
+            Piece.wQueen => wQueenBB,
+            Piece.bPawn => bPawnBB,
+            Piece.bBishop => bBishopBB,
+            Piece.bKnight => bKnightBB,
+            Piece.bRook => bRookBB,
+            Piece.bKing => bKingBB,
+            Piece.bQueen => bQueenBB,
+            _ => throw new UnreachableException(),
+        };
+        set {
+            switch (type) {
+                case Piece.wPawn:
+                    wPawnBB = value;
+                    break;
+
+                case Piece.wBishop:
+                    wBishopBB = value;
+                    break;
+
+                case Piece.wKnight:
+                    wKnightBB = value;
+                    break;
+
+                case Piece.wRook:
+                    wRookBB = value;
+                    break;
+
+                case Piece.wKing:
+                    wKingBB = value;
+                    break;
+
+                case Piece.wQueen:
+                    wQueenBB = value;
+                    break;
+
+                case Piece.bPawn:
+                    bPawnBB = value;
+                    break;
+
+                case Piece.bBishop:
+                    bBishopBB = value;
+                    break;
+
+                case Piece.bKnight:
+                    bKnightBB = value;
+                    break;
+
+                case Piece.bRook:
+                    bRookBB = value;
+                    break;
+
+                case Piece.bKing:
+                    bKingBB = value;
+                    break;
+
+                case Piece.bQueen:
+                    bQueenBB = value;
+                    break;
+                default:
+                    throw new UnreachableException();
+            }
+        }
+    }
+
+
+    public BitBoard WControlledSqrBB { get => wControlledSqrBB; set => wControlledSqrBB = value; }
+    public BitBoard BControlledSqrBB { get => bControlledSqrBB; set => bControlledSqrBB = value; }
 
     public bool AfterCapturePly { get; set; } = false;
 
@@ -52,8 +142,8 @@ public class Chessboard {
         BRookBB = Utility.GetBBofPosition(pieces_, Piece.bRook);
         WRookBB = Utility.GetBBofPosition(pieces_, Piece.wRook);
 
-        WhitePiecesBB = WPawnBB | WBishopBB | WKingBB | WKnightBB | WRookBB | WQueenBB;
-        BlackPiecesBB = BPawnBB | BBishopBB | BKingBB | BKnightBB | BRookBB | BQueenBB;
+        whitePiecesBB = wPawnBB | wBishopBB | wKingBB | wKnightBB | wRookBB | wQueenBB;
+        blackPiecesBB = bPawnBB | bBishopBB | bKingBB | bKnightBB | bRookBB | bQueenBB;
     }
 
     public Chessboard() { }
@@ -86,8 +176,8 @@ public class Chessboard {
         this.BPawnBB = bPawnBB;
         this.AfterCapturePly = afterCapturePly;
 
-        this.WhitePiecesBB = wKingBB | wKnightBB | wQueenBB | wRookBB | wBishopBB | wPawnBB;
-        this.BlackPiecesBB = bKingBB | bKnightBB | bQueenBB | bRookBB | bBishopBB | bPawnBB;
+        this.whitePiecesBB = wKingBB | wKnightBB | wQueenBB | wRookBB | wBishopBB | wPawnBB;
+        this.blackPiecesBB = bKingBB | bKnightBB | bQueenBB | bRookBB | bBishopBB | bPawnBB;
 
         WControlledSqrBB = wCtrlBB;
         BControlledSqrBB = bCtrlBB;
@@ -277,112 +367,96 @@ public class Chessboard {
         pinnedBB = friendsInSightlines & ~WKingBB & ~BKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
     }
 
+    public Chessboard Clone() {
+        return new() {
+            wPawnBB = wPawnBB,
+            wKingBB = wKingBB,
+            wRookBB = wRookBB,
+            wQueenBB = wQueenBB,
+            wBishopBB = wBishopBB,
+            wKnightBB = wKnightBB,
+            whitePiecesBB = whitePiecesBB,
+            wControlledSqrBB = wControlledSqrBB,
+            bPawnBB = bPawnBB,
+            bKingBB = bKingBB,
+            bRookBB = bRookBB,
+            bQueenBB = bQueenBB,
+            bBishopBB = bBishopBB,
+            bKnightBB = bKnightBB,
+            blackPiecesBB = blackPiecesBB,
+            bControlledSqrBB = bControlledSqrBB,
+            AfterCapturePly = AfterCapturePly,
+            pinnedBB = pinnedBB,
+            boardIndex = ++BoardCount,
+            parentIndex = boardIndex,
+        };
+    }
+
+    public void Move(int start, int end, Piece type) {
+        AfterCapturePly = blackPiecesBB[end] || whitePiecesBB[end];
+
+        // essential for checkmate detection
+        wKingBB[end] = false;
+        bKingBB[end] = false;
+
+        wKnightBB[end] = false;
+        bKnightBB[end] = false;
+        wQueenBB[end] = false;
+        bQueenBB[end] = false;
+        wRookBB[end] = false;
+        bRookBB[end] = false;
+        wBishopBB[end] = false;
+        bBishopBB[end] = false;
+        wPawnBB[end] = false;
+        bPawnBB[end] = false;
+
+        switch (type) {
+            case Piece.wPawn:
+                wPawnBB[start] = false;
+                wPawnBB[end] = true;
+                //auto queen
+                if (end > 55) {
+                    wPawnBB[end] = false;
+                    wQueenBB[end] = true;
+                }
+                break;
+
+            case Piece.bPawn:
+                bPawnBB[start] = false;
+                bPawnBB[end] = true;
+
+                if (end < 8) {
+                    bPawnBB[end] = false;
+                    bQueenBB[end] = true;
+                }
+                break;
+
+            //funktioniert weil es nur einen king geben darf
+            case Piece.wKing:
+                wKingBB = 1ul << end;
+                break;
+
+            case Piece.bKing:
+                bKingBB = 1ul << end;
+                break;
+
+            default:
+                BitBoard bb = this[type];
+                bb[start] = false;
+                bb[end] = true;
+                this[type] = bb;
+                break;
+        }
+    }
+
     /// <summary>
     /// Generiert stumpf ein Board wo das Piece von StartIndex zu EndIndex bewegt wurde
     /// </summary>
     /// <param name="startIndex"></param>
     /// <param name="endIndex"></param>
     public Chessboard GenerateBoardWithMove(int startIndex, int endIndex, Piece type) {
-        bool isCapture = MoveSets.IsBitSet(BlackPiecesBB | WhitePiecesBB, endIndex);
-
-        //der king kann gecaptured werden weil das capturen des king essentiell für checkmate detection ist
-        ulong wKingBB_ = Utility.SetBBtoNullAt(WKingBB, endIndex);
-        ulong bKingBB_ = Utility.SetBBtoNullAt(BKingBB, endIndex);
-
-        ulong wKnightBB_ = Utility.SetBBtoNullAt(WKnightBB, endIndex);
-        ulong bKnightBB_ = Utility.SetBBtoNullAt(BKnightBB, endIndex);
-        ulong wQueenBB_ = Utility.SetBBtoNullAt(WQueenBB, endIndex);
-        ulong bQueenBB_ = Utility.SetBBtoNullAt(BQueenBB, endIndex);
-        ulong wRookBB_ = Utility.SetBBtoNullAt(WRookBB, endIndex);
-        ulong bRookBB_ = Utility.SetBBtoNullAt(BRookBB, endIndex);
-        ulong wBishopBB_ = Utility.SetBBtoNullAt(WBishopBB, endIndex);
-        ulong bBishopBB_ = Utility.SetBBtoNullAt(BBishopBB, endIndex);
-        ulong wPawnBB_ = Utility.SetBBtoNullAt(WPawnBB, endIndex);
-        ulong bPawnBB_ = Utility.SetBBtoNullAt(BPawnBB, endIndex);
-
-
-        //alle bitboards müssen geupdated werden
-        switch (type) {
-            case Piece.wPawn:
-                wPawnBB_ = Utility.UpdateBB(WPawnBB, startIndex, endIndex);
-                //auto queen
-                if (endIndex > 55) {
-                    wPawnBB_ = Utility.SetBBtoNullAt(wPawnBB_, endIndex);
-                    wQueenBB_ += 1ul << endIndex;
-                }
-                break;
-
-            case Piece.bPawn:
-                bPawnBB_ = Utility.UpdateBB(BPawnBB, startIndex, endIndex);
-
-                if (endIndex < 8) {
-                    bPawnBB_ = Utility.SetBBtoNullAt(bPawnBB_, endIndex);
-                    bQueenBB_ += 1ul << endIndex;
-                }
-                break;
-
-            //funktioniert weil es nur einen king geben darf
-            case Piece.wKing:
-                wKingBB_ = 1ul << endIndex;
-                break;
-
-            case Piece.bKing:
-                bKingBB_ = 1ul << endIndex;
-                break;
-
-            case Piece.wKnight:
-                wKnightBB_ = Utility.UpdateBB(WKnightBB, startIndex, endIndex);
-                break;
-
-            case Piece.bKnight:
-                bKnightBB_ = Utility.UpdateBB(BKnightBB, startIndex, endIndex);
-                break;
-
-            case Piece.wQueen:
-                wQueenBB_ = Utility.UpdateBB(WQueenBB, startIndex, endIndex);
-                break;
-
-            case Piece.bQueen:
-                bQueenBB_ = Utility.UpdateBB(BQueenBB, startIndex, endIndex);
-                break;
-
-            case Piece.wRook:
-                wRookBB_ = Utility.UpdateBB(WRookBB, startIndex, endIndex);
-                break;
-
-            case Piece.bRook:
-                bRookBB_ = Utility.UpdateBB(BRookBB, startIndex, endIndex);
-                break;
-
-            case Piece.wBishop:
-                wBishopBB_ = Utility.UpdateBB(WBishopBB, startIndex, endIndex);
-                break;
-
-            case Piece.bBishop:
-                bBishopBB_ = Utility.UpdateBB(BBishopBB, startIndex, endIndex);
-                break;
-        }
-
-        BoardCount++;
-
-        return new Chessboard(
-            wKingBB_,
-            bKingBB_,
-            wKnightBB_,
-            bKnightBB_,
-            wQueenBB_,
-            bQueenBB_,
-            wRookBB_,
-            bRookBB_,
-            wBishopBB_,
-            bBishopBB_,
-            wPawnBB_,
-            bPawnBB_,
-            isCapture,
-            WControlledSqrBB,
-            BControlledSqrBB,
-            BoardCount,
-            boardIndex
-        );
+        Chessboard board = Clone();
+        board.Move(startIndex, endIndex, type);
+        return board;
     }
 }
