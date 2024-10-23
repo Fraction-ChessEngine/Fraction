@@ -202,7 +202,7 @@ public class Program {
 
         //visualBoard = new();
         perft(3);
-        Console.WriteLine(Chessboard.BoardCount);
+        // Console.WriteLine(Chessboard.BoardCount);
 
 
         // Testing.PerftResults(visualBoard, 4, true);
@@ -212,13 +212,6 @@ public class Program {
             in MoveGen.cs:
             wenn king im check steht muss garantiert werden dass nur züge generiert werden
             die verhindern dass er im nächsten zug immer noch im check steht
-
-            Optionen: 
-            wenn nicht knight: 
-                -prüfen ob andere pieces sich in den weg stellen können
-            -kingMoves auf felder die nicht vom gegner kontrolliert werden
-            
-        
          */
 
     }

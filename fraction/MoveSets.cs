@@ -84,50 +84,58 @@ public static class MoveSets {
 
         } else if (IsBitSet(board.WKnightBB | board.BKnightBB, posIndex)) {
             pieceType = isWhite ? Piece.wKnight : Piece.bKnight;
+            return GetKnightPseudoLegalMoves(posIndex, sameColorPieces);
 
-            ulong patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bKnight, posIndex);
-
-            ulong targetSqrs = patternBB & ~sameColorPieces;
-
-            return targetSqrs;
         } //es ist ein king, beinah selber code wie beim knight wegen der konstanten anzahl an mgl feldern
           else if (IsBitSet(board.WKingBB | board.BKingBB, posIndex)) {
             pieceType = isWhite ? Piece.wKing : Piece.bKing;
 
-            ulong patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bKing, posIndex);
-
-            ulong targetSqrs = patternBB & ~sameColorPieces;
-
-            targetSqrs &= ~enemyControlSqrs; //hat bei perft 5 keinen effekt auf die zahlen, erst bei perft 6 gibt es unterschied
-
-            return targetSqrs;
+            return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs);
+            
         }  //es ist eine queen
           else if (IsBitSet(board.WQueenBB | board.BQueenBB, posIndex)) {
             pieceType = isWhite ? Piece.wQueen : Piece.bQueen;
-            ulong patternBB1 = BB_Lookup.GetBBforPieceAtSqr(Piece.bBishop, posIndex);
-            ulong patternBB2 = BB_Lookup.GetBBforPieceAtSqr(Piece.bRook, posIndex);
 
-            ulong allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
-
-            ulong targetBB1 = patternBB1 & allPiecesBB;
-            ulong targetBB2 = patternBB2 & allPiecesBB;
-            ulong pseudoTargetSqrs =
-                GetPseudoTargetSqrsBishop(targetBB1, posIndex)
-                | GetPseudoTargetSqrsRook(targetBB2, posIndex);
-
-            ulong targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
-
-            return targetSqrs;
+            return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wRook)
+            | GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wBishop);
         } //das moveset der pawns ist abhängig von der farbe
 
         pieceType = Piece.wKing; //default value
-        Console.WriteLine("Something went wrong in getPseudoLegalMovesBB");
+        Console.WriteLine("-- Something went wrong in getPseudoLegalMovesBB --");
         Program.DisplayBoard(board);
         Console.WriteLine("posIndex: " + posIndex);
         Console.WriteLine("includeCoverage: " + includeCoverage);
+
         throw new Exception("Ich halte mal an damit du dir die Fehlermeldung angucken kannst, Potz Blitz!");
     }
 
+    public static ulong GetKingPseudoLegalMoves(int posIndex, ulong sameColorPieces, ulong enemyControlSqrs) {
+        ulong patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bKing, posIndex);
+
+        ulong targetSqrs = patternBB & ~sameColorPieces;
+
+        targetSqrs &= ~enemyControlSqrs; //hat bei perft 5 keinen effekt auf die zahlen, erst bei perft 6 gibt es unterschied
+
+        return targetSqrs;
+    }
+
+
+    public static ulong GetKnightPseudoLegalMoves(int posIndex, ulong sameColorPieces) {
+        ulong patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.wKnight, posIndex);
+
+        ulong targetSqrs = patternBB & ~sameColorPieces;
+
+        return targetSqrs;
+    }
+
+    /// <summary>
+    /// Für Rook und Bishop
+    /// </summary>
+    /// <param name="board"></param>
+    /// <param name="posIndex"></param>
+    /// <param name="sameColorPieces"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
     public static ulong GetSliderPseudoLegalMoves(Chessboard board, int posIndex, ulong sameColorPieces, Piece type) {
 
         ulong patternBB = BB_Lookup.GetBBforPieceAtSqr(type, posIndex);

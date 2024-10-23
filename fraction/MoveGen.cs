@@ -21,7 +21,6 @@ static class MoveGen {
     private static void GenerateMovesForDoublePiece(
         Chessboard b,
         ulong pieceBB,
-        bool forWhite,
         ref Vision[] possibleMoves,
         ref int currIndex,
         bool includeCoverage = false
@@ -63,124 +62,138 @@ static class MoveGen {
         Vision[] possibleMoves = new Vision[16]; //weil maximal 16 pieces die je ein "Moves" bekommen
         b.GeneratePinnedPieceBB(forWhite);
 
-        bool isCheck = b.IsInCheck(forWhite);
         int currIndex = 0;
 
         if (forWhite) {
-            GenerateMovesForDoublePiece(
-                b,
-                b.WRookBB,
-                forWhite,
-                ref possibleMoves,
-                ref currIndex
-            );
-            GenerateMovesForDoublePiece(
-                b,
-                b.WKnightBB,
-                forWhite,
-                ref possibleMoves,
-                ref currIndex
-            );
-            GenerateMovesForDoublePiece(
-                b,
-                b.WBishopBB,
-                forWhite,
-                ref possibleMoves,
-                ref currIndex
-            );
+            GenerateMovesForDoublePiece(b, b.WRookBB, ref possibleMoves, ref currIndex);
+            GenerateMovesForDoublePiece(b, b.WKnightBB, ref possibleMoves, ref currIndex);
+            GenerateMovesForDoublePiece(b, b.WBishopBB, ref possibleMoves, ref currIndex);
 
-            //pawns
-            int pawns = Eval.NumberOfSetBits(b.WPawnBB);
-            int[] pawnArr = Utility.FindSetBitsMax(b.WPawnBB, pawns);
+            GenerateMovesForPawns(b, b.WPawnBB, ref possibleMoves, ref currIndex, includeCoverage);
 
-            for (int i = 0; i < pawns; i++) {
-                Vision v = GetVisionForPieceAt(b, pawnArr[i], includeCoverage);
-                if (v.MoveBB == 0)
-                    continue;
-                possibleMoves[currIndex] = v;
-                currIndex++;
-            }
+            GenerateMovesForKing(b, b.WKingBB, ref possibleMoves, ref currIndex, includeCoverage);
+            GenerateMovesForQueens(b, b.WQueenBB, ref possibleMoves, ref currIndex);
 
-            //king, es kann nur einen geben
-            int kingIndex = Utility.FindSingleSetBit(b.WKingBB);
-
-            Vision vKing = GetVisionForPieceAt(b, kingIndex, includeCoverage);
-
-            if (vKing.MoveBB != 0) {
-                possibleMoves[currIndex] = vKing;
-                currIndex++;
-            }
-
-            //queens, es kann maximal 8 geben
-            int queens = Eval.NumberOfSetBits(b.WQueenBB);
-            int[] queenArr = Utility.FindSetBitsMax(b.WQueenBB, queens);
-
-            for (int i = 0; i < queens; i++) {
-                Vision v = GetVisionForPieceAt(b, queenArr[i], includeCoverage);
-                if (v.MoveBB == 0)
-                    continue;
-                possibleMoves[currIndex] = v;
-                currIndex++;
-            }
         } else {
-            GenerateMovesForDoublePiece(
-                b,
-                b.BRookBB,
-                forWhite,
-                ref possibleMoves,
-                ref currIndex
-            );
-            GenerateMovesForDoublePiece(
-                b,
-                b.BKnightBB,
-                forWhite,
-                ref possibleMoves,
-                ref currIndex
-            );
-            GenerateMovesForDoublePiece(
-                b,
-                b.BBishopBB,
-                forWhite,
-                ref possibleMoves,
-                ref currIndex
-            );
+            GenerateMovesForDoublePiece(b, b.BRookBB, ref possibleMoves, ref currIndex);
+            GenerateMovesForDoublePiece(b, b.BKnightBB, ref possibleMoves, ref currIndex);
+            GenerateMovesForDoublePiece(b, b.BBishopBB, ref possibleMoves, ref currIndex);
 
-            //pawns
-            int pawns = Eval.NumberOfSetBits(b.BPawnBB);
-            int[] pawnArr = Utility.FindSetBitsMax(b.BPawnBB, pawns);
+            GenerateMovesForPawns(b, b.BPawnBB, ref possibleMoves, ref currIndex, includeCoverage);
 
-            for (int i = 0; i < pawns; i++) {
-                Vision v = GetVisionForPieceAt(b, pawnArr[i], includeCoverage);
-                if (v.MoveBB == 0)
-                    continue;
-                possibleMoves[currIndex] = v;
-                currIndex++;
-            }
-
-            //king, es kann nur einen geben
-            int kingIndex = Utility.FindSingleSetBit(b.BKingBB);
-
-            Vision vKing = GetVisionForPieceAt(b, kingIndex, includeCoverage);
-
-            if (vKing.MoveBB != 0) {
-                possibleMoves[currIndex] = vKing;
-                currIndex++;
-            }
-
-            //queens, es kann maximal 8 geben
-            int queens = Eval.NumberOfSetBits(b.BQueenBB);
-            int[] queenArr = Utility.FindSetBitsMax(b.BQueenBB, queens);
-
-            for (int i = 0; i < queens; i++) {
-                Vision v = GetVisionForPieceAt(b, queenArr[i], includeCoverage);
-                if (v.MoveBB == 0)
-                    continue;
-                possibleMoves[currIndex] = v;
-                currIndex++;
-            }
+            GenerateMovesForKing(b, b.BKingBB, ref possibleMoves, ref currIndex, includeCoverage);
+            GenerateMovesForQueens(b, b.BQueenBB, ref possibleMoves, ref currIndex);
         }
 
         return possibleMoves[0..currIndex];
+    }
+
+    private static void GenerateMovesForKing(Chessboard b, ulong kingBB, ref Vision[] possibleMoves,
+            ref int currIndex, bool includeCoverage = false) {
+
+        int kingIndex = Utility.FindSingleSetBit(kingBB);
+
+        Vision vKing = GetVisionForPieceAt(b, kingIndex, includeCoverage);
+
+        if (vKing.MoveBB != 0) {
+            possibleMoves[currIndex] = vKing;
+            currIndex++;
+        }
+    }
+
+    private static void GenerateMovesForPawns(
+            Chessboard b, ulong pawnBB, ref Vision[] possibleMoves,
+            ref int currIndex, bool includeCoverage = false) {
+
+
+        int pawns = Eval.NumberOfSetBits(pawnBB);
+        int[] pawnArr = Utility.FindSetBitsMax(pawnBB, pawns);
+
+        for (int i = 0; i < pawns; i++) {
+            Vision v = GetVisionForPieceAt(b, pawnArr[i], includeCoverage);
+            if (v.MoveBB == 0)
+                continue;
+            possibleMoves[currIndex] = v;
+            currIndex++;
+        }
+
+    }
+
+    //das einzige piece zu dem man promoten kann, dh es kann 8 geben
+    private static void GenerateMovesForQueens(Chessboard b, ulong queenBB,
+            ref Vision[] possibleMoves, ref int currIndex, bool includeCoverage = false) {
+
+        int queens = Eval.NumberOfSetBits(queenBB);
+        int[] queenArr = Utility.FindSetBitsMax(queenBB, queens);
+
+        for (int i = 0; i < queens; i++) {
+            Vision v = GetVisionForPieceAt(b, queenArr[i], includeCoverage);
+            if (v.MoveBB == 0)
+                continue;
+            possibleMoves[currIndex] = v;
+            currIndex++;
+        }
+    }
+
+
+    /// <summary>
+    /// wird gecalled wenn eindeutig ein check vorhanden ist, forWhite = white is in check
+    /// </summary>
+    /// <param name="b"></param>
+    /// <param name="forWhite"></param>
+    /// <returns></returns>
+    static Span<Vision> GenerateMovesForCheck(Chessboard b, bool forWhite) {
+        /* 
+        Algo: rausfinden ob doubleCheck
+        Wenn doubleCheck:
+            king bewegen
+        
+        ansonsten: 
+            wenn knight:
+                king bewegen oder knight nehmen
+            ansonsten:
+                king bewegen, piece nehmen, blocken
+
+        */
+        ulong combined = 0;
+        foreach (ulong bb in b.CheckPieceBBs) combined |= bb;
+        int amount = MoveSets.CountSetBits(combined);
+
+        int posIndex = Utility.FindSingleSetBit(forWhite ? b.WKingBB : b.BKingBB);
+        ulong sameColorPieces = forWhite ? b.WhitePiecesBB : b.BlackPiecesBB;
+        ulong enemyControlSqrs = forWhite ? b.BControlledSqrBB : b.WControlledSqrBB;
+        Piece king = forWhite ? Piece.wKing : Piece.bKing;
+
+        //selbe struktur wie in generateMoves, nur dass nur moves genommen werden die check verhindern können
+        Vision[] possibleMoves = new Vision[16]; //weil maximal 16 pieces die je ein "Moves" bekommen
+        b.GeneratePinnedPieceBB(forWhite);
+
+        //weil ein kingmove immer ein valider ausweg ist
+        Vision kingVision = new(
+            posIndex,
+            MoveSets.GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs),
+            king
+            );
+
+        bool kingMobile = kingVision.MoveBB != 0;//wenn 0: darf nicht returnt werden
+
+        //double check, king muss bewegt werden
+        if (amount > 1) {
+            return new Vision[] { kingVision };
+
+        } else {//nur ein piece checkt den king
+
+            if (b.CheckPieceBBs[1] != 0) {//es ist ein knight
+                                          //überprüfen ob knight genommen werden kann
+
+
+
+            } else {//es ist ein slider
+
+            }
+
+            return null;
+        }
     }
 
     public static Chessboard[] GenerateBoards(Chessboard b, bool whitesTurn) {
@@ -189,8 +202,16 @@ static class MoveGen {
         Span<Vision> attackVisions = GenerateMoves(b, !whitesTurn, true);
         b.UpdateAttackedSqrBB(attackVisions, !whitesTurn);
 
-        Span<Vision> visions = GenerateMoves(b, whitesTurn);
+        //wenn check ist muss white in einer anderen funktion moves generieren
+        //sowas wie GenerateMovesForCheck(...)
+        bool isCheck = b.IsInCheck(whitesTurn);
 
+        Span<Vision> visions;
+        if (isCheck && false) {
+            visions = GenerateMovesForCheck(b, whitesTurn);
+        } else {
+            visions = GenerateMoves(b, whitesTurn);
+        }
 
         //gesamtlänge des endarrays wird bestimmt
         int endLength = 0;
@@ -204,13 +225,6 @@ static class MoveGen {
 
         for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
-
-
-            if (v.pieceType == Piece.wKing || v.pieceType == Piece.bKing) {
-                ulong enemyCtrlSqrs = whitesTurn ? b.BControlledSqrBB : b.WControlledSqrBB;
-
-                v.MoveBB &= ~enemyCtrlSqrs;
-            }
 
             int[] moveArr = Utility.FindSetBitsMax(v.MoveBB, v.setBits);
             for (int j = 0; j < v.setBits; j++) {

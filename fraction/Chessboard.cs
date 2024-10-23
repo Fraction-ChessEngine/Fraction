@@ -181,12 +181,9 @@ public class Chessboard {
     //kein unterschied zwischen weißen und schwarzen pins, weil sowieso nach jedem zug das BB aktualisiert werden muss
 
     /// <summary>
-    /// After GeneratePinnedPieceBB(...) is called, this contains BBs to pinLines in alle directions in the following order:
-    /// Top, TopRight, Right, BottomRight, Bottom, BottomLeft, Left, TopLeft (<=> clockwise, starting with Top)
+    /// forWhite = white wird gepinned
     /// </summary>
-
-
-    //forWhite = white is pinned
+    /// <param name="forWhite"></param>
     public void GeneratePinnedPieceBB(bool forWhite) {
         int kingIndex;
 
@@ -243,7 +240,6 @@ public class Chessboard {
             //wenn mehr oder weniger als ein piece der eigenen farbe auf der pinLine steht ist es kein pin
 
             friendsInSightlines |= sameColorPieces & (intersectionHoriEast | intersectionHoriWest | intersectionVertiBottom | intersectionVertiTop);
-
         }
 
         if (intersectionDiags != 0) {
@@ -272,10 +268,13 @@ public class Chessboard {
             friendsInSightlines |= intersectionDiagNE | intersectionDiagNW | intersectionDiagSE | intersectionDiagSW;
         }
 
-        /* TODO!!! sicherstellen dass nur EIN piece der eigenen farbe auf den linien steht */
-
         pinnedBB = friendsInSightlines & ~WKingBB & ~BKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
     }
+
+    /// <summary>
+    /// Reihenfolge (nach Wert sortiert, aufsteigend): Pawn, Knight, Bishop, Rook, Queen
+    /// </summary>
+    public ulong[] CheckPieceBBs = new ulong[5];
 
     //forWhite = white is in check
     public bool IsInCheck(bool forWhite) {
@@ -325,14 +324,14 @@ public class Chessboard {
 
         //hier sind bits gesetzt wo pieces stehen die check geben
         //wenn leer gibt kein piece check
-        ulong checkKnightBB = knightBB & kingPersKnight;
-        ulong checkQueenBB = queenBB & kingPersQueen;
-        ulong checkRookBB = rookBB & kingPersRook;
-        ulong checkBishopBB = bishopBB & kingPersBishop;
+        CheckPieceBBs[1] = knightBB & kingPersKnight;
+        CheckPieceBBs[4] = queenBB & kingPersQueen;
+        CheckPieceBBs[3] = rookBB & kingPersRook;
+        CheckPieceBBs[2] = bishopBB & kingPersBishop;
 
-        ulong checkPawnBB = pawnBB & pawnDoub;
+        CheckPieceBBs[0] = pawnBB & pawnDoub;
 
-        return (checkKnightBB | checkQueenBB | checkRookBB | checkBishopBB | checkPawnBB) != 0;
+        return (CheckPieceBBs[0] | CheckPieceBBs[1] | CheckPieceBBs[2] | CheckPieceBBs[3] | CheckPieceBBs[4]) != 0;
     }
 
 
