@@ -63,6 +63,7 @@ static class MoveGen {
         Vision[] possibleMoves = new Vision[16]; //weil maximal 16 pieces die je ein "Moves" bekommen
         b.GeneratePinnedPieceBB(forWhite);
 
+        bool isCheck = b.IsInCheck(forWhite);
         int currIndex = 0;
 
         if (forWhite) {

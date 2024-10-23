@@ -188,19 +188,38 @@ public class Program {
     static void Main(string[] args) {
 
 
-        visualBoard = Chessboard.FromFEN("rnbqkbnr/ppp1pppp/3p4/8/Q7/2P5/PP1PPPPP/RNB1KBNR");
-        MoveGen.GenerateBoards(visualBoard, true);
-        MoveGen.GenerateBoards(visualBoard, false);
+        Chessboard[] checks = new Chessboard[]{
+            Chessboard.FromFEN("rnb1kbnr/pp1ppppp/2p5/q7/3P4/8/PPP1PPPP/RNBQKBNR"),
+            Chessboard.FromFEN("3k4/8/8/4n3/8/r1PK4/8/8"),
+            Chessboard.FromFEN("3k3r/8/b7/8/8/2PK4/7b/8")
+        };
+
+        Chessboard[] noChecks = new Chessboard[]{
+            Chessboard.FromFEN("r1bqr1k1/pp1n1pbp/2pp1np1/4p3/P1BP1B2/4PN1P/1PPN1PP1/R2Q1RK1"),
+            Chessboard.FromFEN("1r1q1rk1/2p2ppp/2np1n2/2bNp3/1pB1P1b1/2P2N2/1P1PQPPP/R1B2RK1"),
+            Chessboard.FromFEN("rnbqkb1r/pp3ppp/4pn2/2ppN3/3P1B2/8/PPP1PPPP/RN1QKB1R")
+         };
+
+        //visualBoard = new();
+        perft(3);
+        Console.WriteLine(Chessboard.BoardCount);
 
 
+        // Testing.PerftResults(visualBoard, 4, true);
 
-        Testing.PerftResults(visualBoard, 1, false);
+        /* 
+            TODO:
+            in MoveGen.cs:
+            wenn king im check steht muss garantiert werden dass nur züge generiert werden
+            die verhindern dass er im nächsten zug immer noch im check steht
 
-        // Testing.BenchMarkMINIMAX();
-
-        //todo: IsInCheck funktion für pawns erweitern
-
-
+            Optionen: 
+            wenn nicht knight: 
+                -prüfen ob andere pieces sich in den weg stellen können
+            -kingMoves auf felder die nicht vom gegner kontrolliert werden
+            
+        
+         */
 
     }
 }

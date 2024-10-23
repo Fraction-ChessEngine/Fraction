@@ -74,16 +74,13 @@ public static class MoveSets {
 
         } else if (IsBitSet(board.BRookBB | board.WRookBB, posIndex)) {
             pieceType = isWhite ? Piece.wRook : Piece.bRook;
+            return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wRook);
 
-            ulong patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bRook, posIndex);
-            ulong allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
 
-            ulong targetBB = patternBB & allPiecesBB;
-
-            ulong pseudoTargetSqrs = GetPseudoTargetSqrsRook(targetBB, posIndex);
-            ulong targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
-
-            return targetSqrs;
+        }//es ist ein bishop, beinahe selber code wie rook wegen ähnlichem attackpattern
+          else if (IsBitSet(board.WBishopBB | board.BBishopBB, posIndex)) {
+            pieceType = isWhite ? Piece.wBishop : Piece.bBishop;
+            return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wBishop);
 
         } else if (IsBitSet(board.WKnightBB | board.BKnightBB, posIndex)) {
             pieceType = isWhite ? Piece.wKnight : Piece.bKnight;
@@ -104,19 +101,7 @@ public static class MoveSets {
             targetSqrs &= ~enemyControlSqrs; //hat bei perft 5 keinen effekt auf die zahlen, erst bei perft 6 gibt es unterschied
 
             return targetSqrs;
-        } //es ist ein bishop, beinahe selber code wie rook wegen ähnlichem attackpattern
-          else if (IsBitSet(board.WBishopBB | board.BBishopBB, posIndex)) {
-            pieceType = isWhite ? Piece.wBishop : Piece.bBishop;
-            ulong patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bBishop, posIndex);
-            ulong allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
-
-            ulong targetBB = patternBB & allPiecesBB;
-
-            ulong pseudoTargetSqrs = GetPseudoTargetSqrsBishop(targetBB, posIndex);
-            ulong targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
-
-            return targetSqrs;
-        } //es ist eine queen
+        }  //es ist eine queen
           else if (IsBitSet(board.WQueenBB | board.BQueenBB, posIndex)) {
             pieceType = isWhite ? Piece.wQueen : Piece.bQueen;
             ulong patternBB1 = BB_Lookup.GetBBforPieceAtSqr(Piece.bBishop, posIndex);
@@ -136,12 +121,27 @@ public static class MoveSets {
         } //das moveset der pawns ist abhängig von der farbe
 
         pieceType = Piece.wKing; //default value
-        Console.WriteLine("Something went wrong in getPseudoLegalMovesBB, index = " + posIndex);
+        Console.WriteLine("Something went wrong in getPseudoLegalMovesBB");
         Program.DisplayBoard(board);
-        return 0;
+        Console.WriteLine("posIndex: " + posIndex);
+        Console.WriteLine("includeCoverage: " + includeCoverage);
+        throw new Exception("Ich halte mal an damit du dir die Fehlermeldung angucken kannst, Potz Blitz!");
     }
 
+    public static ulong GetSliderPseudoLegalMoves(Chessboard board, int posIndex, ulong sameColorPieces, Piece type) {
 
+        ulong patternBB = BB_Lookup.GetBBforPieceAtSqr(type, posIndex);
+        ulong allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
+
+        ulong targetBB = patternBB & allPiecesBB;
+
+        ulong pseudoTargetSqrs = type == Piece.wBishop || type == Piece.bBishop ?
+        GetPseudoTargetSqrsBishop(targetBB, posIndex) : GetPseudoTargetSqrsRook(targetBB, posIndex);
+
+        ulong targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
+
+        return targetSqrs;
+    }
 
     /// <summary>
     /// Nimmt BB mit sqrs die im sichtfeld eines pieces liegen, entfernt sqrs die das

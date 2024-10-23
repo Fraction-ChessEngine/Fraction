@@ -280,11 +280,12 @@ public class Chessboard {
     //forWhite = white is in check
     public bool IsInCheck(bool forWhite) {
 
-        ulong knightBB, queenBB, rookBB, bishopBB, pawnBB;
+        ulong knightBB, queenBB, rookBB, bishopBB, pawnBB, sameColorPieces;
         ulong pawnDoub;//einzigen beiden bits wo pawns checken können
         int kingIndex;
 
         if (forWhite) {
+            sameColorPieces = WhitePiecesBB;
             knightBB = BKnightBB;
             queenBB = BQueenBB;
             rookBB = BRookBB;
@@ -296,8 +297,9 @@ public class Chessboard {
             int x = kingIndex & 7;
             int y = kingIndex >> 3;
 
-            pawnDoub = ((0b11111111ul << (y * 8 + 8)) & BPawnBB);
+            pawnDoub = MoveSets.HorizontalLineBB(y + 1) & (0b101ul << (kingIndex + 7)) & BPawnBB;
         } else {
+            sameColorPieces = BlackPiecesBB;
             knightBB = WKnightBB;
             queenBB = WQueenBB;
             rookBB = WRookBB;
@@ -309,14 +311,17 @@ public class Chessboard {
             int x = kingIndex & 7;
             int y = kingIndex >> 3;
 
-            pawnDoub = (0b11111111ul << (y * 8 - 8)) & WPawnBB;
+            pawnDoub = MoveSets.HorizontalLineBB(y - 1) & (0b101ul << (kingIndex - 9)) & WPawnBB;
         }
+
 
         //king perspective 
         ulong kingPersKnight = BB_Lookup.GetBBforPieceAtSqr(Piece.wKnight, kingIndex);
-        ulong kingPersRook = MoveSets.GetPseudoTargetSqrsRook(BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex), kingIndex);
-        ulong kingPersBishop = MoveSets.GetPseudoTargetSqrsBishop(BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex), kingIndex);
+        /* MoveSets.GetPseudoTargetSqrsRook(BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex), kingIndex) */
+        ulong kingPersRook = MoveSets.GetSliderPseudoLegalMoves(this, kingIndex, sameColorPieces, Piece.wRook);
+        ulong kingPersBishop = MoveSets.GetSliderPseudoLegalMoves(this, kingIndex, sameColorPieces, Piece.wBishop);
         ulong kingPersQueen = kingPersBishop | kingPersRook;
+
 
         //hier sind bits gesetzt wo pieces stehen die check geben
         //wenn leer gibt kein piece check
@@ -327,7 +332,7 @@ public class Chessboard {
 
         ulong checkPawnBB = pawnBB & pawnDoub;
 
-        return (checkKnightBB | checkQueenBB | checkRookBB | checkBishopBB) == 0;
+        return (checkKnightBB | checkQueenBB | checkRookBB | checkBishopBB | checkPawnBB) != 0;
     }
 
 
