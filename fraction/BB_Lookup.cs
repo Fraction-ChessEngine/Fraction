@@ -2,12 +2,9 @@ using System;
 using System.Runtime.ConstrainedExecution;
 
 namespace fraction;
-static class BB_Lookup
-{
-    static void PrintBBArray(ulong[] bbs)
-    {
-        foreach (ulong bb in bbs)
-        {
+static class BB_Lookup {
+    static void PrintBBArray(ulong[] bbs) {
+        foreach (ulong bb in bbs) {
             Console.WriteLine(bb + " , ");
         }
     }
@@ -18,10 +15,8 @@ static class BB_Lookup
     /// <param name="p"></param>
     /// <param name="posIndex"></param>
     /// <returns></returns>
-    public static ulong GetBBforPieceAtSqr(Piece p, int posIndex)
-    {
-        switch (p)
-        {
+    public static ulong GetBBforPieceAtSqr(Piece p, int posIndex) {
+        switch (p) {
             case Piece.wBishop:
             case Piece.bBishop:
                 return BishopBitboards[posIndex];
@@ -407,8 +402,7 @@ static class BB_Lookup
         };
 
     //pawns sind redundant weil die nächste position mit einem simplen bitshift erledigt ist
-    public static ulong GetPawnAttackSqrs(int x, int y, bool isWhite)
-    {
+    public static ulong GetPawnAttackSqrs(int x, int y, bool isWhite) {
         ulong pattern = pawnAttackPatterns[x];
         return pattern << (y * 8 + (isWhite ? 8 : -8));
     }

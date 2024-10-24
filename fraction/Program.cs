@@ -200,18 +200,16 @@ public class Program {
             Chessboard.FromFEN("rnbqkb1r/pp3ppp/4pn2/2ppN3/3P1B2/8/PPP1PPPP/RN1QKB1R")
          };
 
-        //visualBoard = new();
-        perft(3);
+        visualBoard = Chessboard.FromFEN("rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPPQPPP/RNB1KBNR");
+        MoveGen.GenerateBoards(visualBoard, true);
+        MoveGen.GenerateBoards(visualBoard, false);
         // Console.WriteLine(Chessboard.BoardCount);
-       
 
-        // Testing.PerftResults(visualBoard, 4, true);
+
+        Testing.PerftResults(visualBoard, 1, false);
 
         /* 
-            TODO:
-            in MoveGen.cs:
-            wenn king im check steht muss garantiert werden dass nur züge generiert werden
-            die verhindern dass er im nächsten zug immer noch im check steht
+            e2e3, e2e4 machen probleme, generieren zu wenig züge
          */
 
     }

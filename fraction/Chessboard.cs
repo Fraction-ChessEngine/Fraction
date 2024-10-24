@@ -70,7 +70,6 @@ public class Chessboard {
         ulong bCtrlBB,
         int BoardIndex,
         int parentIndex
-
     ) {
         this.WKingBB = wKingBB;
         this.BKingBB = bKingBB;
