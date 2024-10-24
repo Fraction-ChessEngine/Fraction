@@ -184,7 +184,7 @@ public class Program {
 
     public static Chessboard errorComp = new();
     static Chessboard? visualBoard; //board auf dem die "wahre" position gespeichert wird
-
+    public static bool debug = false;
     static void Main(string[] args) {
 
 
@@ -198,19 +198,32 @@ public class Program {
             Chessboard.FromFEN("r1bqr1k1/pp1n1pbp/2pp1np1/4p3/P1BP1B2/4PN1P/1PPN1PP1/R2Q1RK1"),
             Chessboard.FromFEN("1r1q1rk1/2p2ppp/2np1n2/2bNp3/1pB1P1b1/2P2N2/1P1PQPPP/R1B2RK1"),
             Chessboard.FromFEN("rnbqkb1r/pp3ppp/4pn2/2ppN3/3P1B2/8/PPP1PPPP/RN1QKB1R")
-         };
+        };
 
         visualBoard = Chessboard.FromFEN("rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPPQPPP/RNB1KBNR");
-        MoveGen.GenerateBoards(visualBoard, true);
-        MoveGen.GenerateBoards(visualBoard, false);
-        // Console.WriteLine(Chessboard.BoardCount);
-
-
-        Testing.PerftResults(visualBoard, 1, false);
-
+        perft(3);
         /* 
-            e2e3, e2e4 machen probleme, generieren zu wenig züge
-         */
+                Chessboard[] boards = MoveGen.GenerateBoards(visualBoard, false);
+
+
+                // Testing.PerftResults(visualBoard, 1, false);
+
+                int pos = (5 * 8 + 4);
+
+                debug = true;
+                var x = MoveGen.GetVisionForPieceAt(visualBoard, pos);
+                Console.WriteLine("\njetzt kommt move BB");
+                Utility.PrintBitBoard(x.MoveBB);
+
+
+
+
+                pins machen probleme, in der gebenen situation pinnt die queen den pawn auf e6 (inkorrekt)
+                sogar wenn es korrekt wäre dürfte er sich trotzdem bewegen
+
+                todo: pin funktion an diversen boards testen
+                check funktion an diversen boards (procedure für checkmate)
+                 */
 
     }
 }

@@ -107,6 +107,7 @@ static class MoveGen {
 
 
         int pawns = Eval.NumberOfSetBits(pawnBB);
+
         int[] pawnArr = Utility.FindSetBitsMax(pawnBB, pawns);
 
         for (int i = 0; i < pawns; i++) {
@@ -116,7 +117,6 @@ static class MoveGen {
             possibleMoves[currIndex] = v;
             currIndex++;
         }
-
     }
 
     //das einzige piece zu dem man promoten kann, dh es kann 8 geben
@@ -363,10 +363,15 @@ static class MoveGen {
         ulong bb = MoveSets.GetPseudoLegalMoves(b, i, out pieceType, includeCoverage);
 
 
+        if (Program.debug){
+            Console.WriteLine("\njetzt kommt pinned BB");
+            Utility.PrintBitBoard(b.pinnedBB);
+        } 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
         if (MoveSets.IsBitSet(b.pinnedBB, i)) {
             bb &= b.pinnedBB;
         }
+
 
         return new Vision(i, bb, pieceType);
     }
