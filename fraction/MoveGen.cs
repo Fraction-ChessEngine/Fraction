@@ -164,10 +164,6 @@ static class MoveGen {
         ulong enemyControlSqrs = forWhite ? b.BControlledSqrBB : b.WControlledSqrBB;
         Piece king = forWhite ? Piece.wKing : Piece.bKing;
 
-        //selbe struktur wie in generateMoves, nur dass nur moves genommen werden die check verhindern können
-        Vision[] possibleMoves = new Vision[16]; //weil maximal 16 pieces die je ein "Moves" bekommen
-        b.GeneratePinnedPieceBB(forWhite);
-
         //weil ein kingmove immer ein valider ausweg ist
         Vision kingVision = new(
             posIndex,
@@ -175,25 +171,104 @@ static class MoveGen {
             king
             );
 
-        bool kingMobile = kingVision.MoveBB != 0;//wenn 0: darf nicht returnt werden
+        bool kingMobile = kingVision.MoveBB != 0;//wenn 0: kingVision darf nicht returnt werden
+
+
+        b.GeneratePinnedPieceBB(forWhite);
 
         //double check, king muss bewegt werden
         if (amount > 1) {
-            return new Vision[] { kingVision };
+            if (kingMobile) return new Vision[] { kingVision };
+            return null;//entspricht checkmate
 
         } else {//nur ein piece checkt den king
 
-            if (b.CheckPieceBBs[1] != 0) {//es ist ein knight
-                                          //überprüfen ob knight genommen werden kann
+            return GenerateMovesForSingleCheck(b, forWhite, combined, posIndex);
+        }
+    }
 
+    /// <summary>
+    /// Wird in GenerateMovesForCheck gecalled wenn es nur ein Piece check gibt
+    /// </summary>
+    /// <returns></returns>
+    private static Span<Vision> GenerateMovesForSingleCheck(Chessboard b, bool forWhite, ulong combined, int kingIndex) {
+        Span<Vision> pseudoLegal = GenerateMoves(b, forWhite);
+        Vision[] legal = new Vision[16];
+        int currIndex = 0;
 
+        if ((b.CheckPieceBBs[0] | b.CheckPieceBBs[1]) != 0) {//es ist ein knight oder pawn, dh kein piece kann blocken
 
-            } else {//es ist ein slider
+            //überprüfen ob knight genommen werden kann
+            for (int i = 0; i < pseudoLegal.Length; i++) {
+                Vision v = pseudoLegal[i];
+
+                //der king dürfte auch andere moves ausser captures machen
+                if (v.PosIndex != kingIndex) {
+                    v.MoveBB &= combined;//nur moves die das checkPiece capturen werden zugelassen
+                }
+
+                if (v.MoveBB != 0) {
+                    legal[currIndex] = v;
+                    currIndex++;
+                }
 
             }
+            return legal[0..(currIndex)];
 
-            return null;
+        } else {//es ist ein slider
+            ulong checkLine = GetCheckLine(kingIndex, Utility.FindSingleSetBit(combined)) & ~(1ul << kingIndex);
+
+            for (int i = 0; i < pseudoLegal.Length; i++) {
+                Vision v = pseudoLegal[i];
+
+                //der king darf nicht blocken
+                if (v.PosIndex != kingIndex) {
+                    v.MoveBB &= checkLine;
+                }
+
+                if (v.MoveBB != 0) {
+                    legal[currIndex] = v;
+                    currIndex++;
+                }
+            }
+            return legal[0..(currIndex)];
         }
+    }
+
+
+    /// <summary>
+    /// kingIndex, checkPieceIndex, enthält noch beide PieceSqrs 
+    ///(king muss nicht entfernt werden weil ergebnis sowieso mit pseudoLegalmoves ver-und-et wird)
+    /// </summary>
+    /// <param name="k"></param>
+    /// <param name="c"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public static ulong GetCheckLine(int k, int c) {
+        int yKing = k >> 3;
+        int xKing = k & 7;
+
+        int yCheck = c >> 3;
+        int xCheck = c & 7;
+
+        int xDiff = xCheck - xKing;
+        int yDiff = yCheck - yKing;
+
+        int big, small;
+        if (k > c) {
+            big = k;
+            small = c;
+        } else {
+            big = c;
+            small = k;
+        }
+
+        if (yKing == yCheck) return MoveSets.InterpolateHorizontal(big, small);
+        if (xKing == xCheck) return MoveSets.InterpolateVertical(big, small);
+        if (xDiff == yDiff) return MoveSets.InterpolateDiagonal(big, small);
+        if (xDiff == -yDiff) return MoveSets.InterpolateAntiDiagonal(big, small);
+
+        throw new Exception("GetCheckLine macht Probleme, korrekte Interpolation nicht eindeutig");
     }
 
     public static Chessboard[] GenerateBoards(Chessboard b, bool whitesTurn) {
@@ -207,7 +282,7 @@ static class MoveGen {
         bool isCheck = b.IsInCheck(whitesTurn);
 
         Span<Vision> visions;
-        if (isCheck && false) {
+        if (isCheck) {
             visions = GenerateMovesForCheck(b, whitesTurn);
         } else {
             visions = GenerateMoves(b, whitesTurn);
@@ -286,7 +361,6 @@ static class MoveGen {
     public static Vision GetVisionForPieceAt(Chessboard b, int i, bool includeCoverage = false) {
         Piece pieceType;
         ulong bb = MoveSets.GetPseudoLegalMoves(b, i, out pieceType, includeCoverage);
-        //  bool isCheck =isWhite ? (bb & b.bKingBB) != 0ul : (bb & b.wKingBB) != 0ul;
 
 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt

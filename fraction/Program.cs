@@ -203,7 +203,7 @@ public class Program {
         //visualBoard = new();
         perft(3);
         // Console.WriteLine(Chessboard.BoardCount);
-
+       
 
         // Testing.PerftResults(visualBoard, 4, true);
 
