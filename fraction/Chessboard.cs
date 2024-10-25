@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
 
 namespace fraction;
 public class Chessboard {
