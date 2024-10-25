@@ -205,33 +205,14 @@ public class Program {
             Chessboard.FromFEN("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR")
          };
 
-        var ni = checkMates[1];
-        var a = MoveGen.GenerateBoards(ni, true);
-        var b = MoveGen.GenerateBoards(ni, false);
+        //intended usage of perftresults
+        Chessboard def = new();
+        MoveGen.GenerateBoards(def, true);
+        MoveGen.GenerateBoards(def, false);
 
-        Console.WriteLine("b länge : " + b.Length);
-        DisplayBoard(b[0]);
+        Testing.PerftResults(def, 4, true);
 
-        /* foreach (Chessboard cb in checkMates) {
-            var a = MoveGen.GenerateBoards(cb, true);
-            var b = MoveGen.GenerateBoards(cb, false);
-
-            Console.WriteLine("\n" + a.Length);
-            Console.WriteLine(b.Length);
-        } */
-
-
-
-        // visualBoard = Chessboard.FromFEN("rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPPQPPP/RNB1KBNR");
 
         Chessboard c = Chessboard.FromFEN("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR");//fools mate
-                                                                                                   //  MoveGen.GenerateBoards(c, true);
-
-        //Console.WriteLine(m.Length);
-
-        /* Bug: king läuft in check die gedeckt sind (test bei laddermate mit king in horizontaler mitter)
-            oder test bei fools mate
-         */
-        // Testing.PerftResults(visualBoard, 1, false);
     }
 }

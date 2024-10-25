@@ -271,7 +271,7 @@ static class MoveGen {
         throw new Exception("GetCheckLine macht Probleme, korrekte Interpolation nicht eindeutig");
     }
 
-    public static Chessboard[] GenerateBoards(Chessboard b, bool whitesTurn) {
+    public static Chessboard[] GenerateBoards(Chessboard b, bool whitesTurn, bool perft = false) {
 
         //provisorische lösung
         Span<Vision> attackVisions = GenerateMoves(b, !whitesTurn, true);
@@ -307,49 +307,12 @@ static class MoveGen {
                 Chessboard cb = b.GenerateBoardWithMove(v.PosIndex, moveArr[j], v.pieceType);
                 boards[index] = cb;
                 index++;
-            }
-        }
 
-
-        return boards;
-    }
-
-
-
-    public static Chessboard[] GenerateBoards_DEBUG(
-        Chessboard b, bool whitesTurn, out string[] moves
-    ) {
-        //provisorische lösung
-        Span<Vision> attackVisions = GenerateMoves(b, !whitesTurn);
-
-        b.UpdateAttackedSqrBB(attackVisions, !whitesTurn);
-
-        Span<Vision> visions = GenerateMoves(b, whitesTurn);
-
-        //gesamtlänge des endarrays wird bestimmt
-        int endLength = 0;
-        for (int i = 0; i < visions.Length; i++) {
-            Vision v = visions[i];
-            endLength += v.setBits;
-        }
-
-        Chessboard[] boards = new Chessboard[endLength];
-        moves = new string[endLength];
-
-        int index = 0;
-
-        for (int i = 0; i < visions.Length; i++) {
-            Vision v = visions[i];
-
-            int[] moveArr = Utility.FindSetBitsMax(v.MoveBB, v.setBits);
-            for (int j = 0; j < v.setBits; j++) {
-                boards[index] = b.GenerateBoardWithMove(v.PosIndex, moveArr[j], v.pieceType);
-                moves[index] =
-                    v.pieceType.GetSymbol()
-                    + " "
-                    + Utility.PosToAN(v.PosIndex)
-                    + Utility.PosToAN(moveArr[j]);
-                index++;
+                //frisst hoffentlich nicht zu viel performance
+                if (perft) {
+                    Testing.perftmoves[index - 1] = Utility.PosToAN(Utility.IndexToPos(v.PosIndex)) +
+                        Utility.PosToAN(Utility.IndexToPos(moveArr[j]));
+                }
             }
         }
 
