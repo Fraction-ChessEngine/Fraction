@@ -65,24 +65,24 @@ static class MoveGen {
         int currIndex = 0;
 
         if (forWhite) {
-            GenerateMovesForDoublePiece(b, b.WRookBB, ref possibleMoves, ref currIndex);
-            GenerateMovesForDoublePiece(b, b.WKnightBB, ref possibleMoves, ref currIndex);
-            GenerateMovesForDoublePiece(b, b.WBishopBB, ref possibleMoves, ref currIndex);
+            GenerateMovesForDoublePiece(b, b.WRookBB, ref possibleMoves, ref currIndex, includeCoverage);
+            GenerateMovesForDoublePiece(b, b.WKnightBB, ref possibleMoves, ref currIndex, includeCoverage);
+            GenerateMovesForDoublePiece(b, b.WBishopBB, ref possibleMoves, ref currIndex, includeCoverage);
 
             GenerateMovesForPawns(b, b.WPawnBB, ref possibleMoves, ref currIndex, includeCoverage);
 
             GenerateMovesForKing(b, b.WKingBB, ref possibleMoves, ref currIndex, includeCoverage);
-            GenerateMovesForQueens(b, b.WQueenBB, ref possibleMoves, ref currIndex);
+            GenerateMovesForQueens(b, b.WQueenBB, ref possibleMoves, ref currIndex, includeCoverage);
 
         } else {
-            GenerateMovesForDoublePiece(b, b.BRookBB, ref possibleMoves, ref currIndex);
-            GenerateMovesForDoublePiece(b, b.BKnightBB, ref possibleMoves, ref currIndex);
-            GenerateMovesForDoublePiece(b, b.BBishopBB, ref possibleMoves, ref currIndex);
+            GenerateMovesForDoublePiece(b, b.BRookBB, ref possibleMoves, ref currIndex, includeCoverage);
+            GenerateMovesForDoublePiece(b, b.BKnightBB, ref possibleMoves, ref currIndex, includeCoverage);
+            GenerateMovesForDoublePiece(b, b.BBishopBB, ref possibleMoves, ref currIndex, includeCoverage);
 
             GenerateMovesForPawns(b, b.BPawnBB, ref possibleMoves, ref currIndex, includeCoverage);
 
             GenerateMovesForKing(b, b.BKingBB, ref possibleMoves, ref currIndex, includeCoverage);
-            GenerateMovesForQueens(b, b.BQueenBB, ref possibleMoves, ref currIndex);
+            GenerateMovesForQueens(b, b.BQueenBB, ref possibleMoves, ref currIndex, includeCoverage);
         }
 
         return possibleMoves[0..currIndex];
@@ -142,7 +142,7 @@ static class MoveGen {
     /// <param name="b"></param>
     /// <param name="forWhite"></param>
     /// <returns></returns>
-    static Span<Vision> GenerateMovesForCheck(Chessboard b, bool forWhite) {
+    public static Span<Vision> GenerateMovesForCheck(Chessboard b, bool forWhite) {
         /* 
         Algo: rausfinden ob doubleCheck
         Wenn doubleCheck:
@@ -298,6 +298,7 @@ static class MoveGen {
         Chessboard[] boards = new Chessboard[endLength];
         int index = 0;
 
+
         for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
 
@@ -309,24 +310,21 @@ static class MoveGen {
             }
         }
 
+
         return boards;
     }
 
 
 
     public static Chessboard[] GenerateBoards_DEBUG(
-        Chessboard b,
-        bool whitesTurn,
-        out string[] moves
+        Chessboard b, bool whitesTurn, out string[] moves
     ) {
         //provisorische lösung
         Span<Vision> attackVisions = GenerateMoves(b, !whitesTurn);
+
         b.UpdateAttackedSqrBB(attackVisions, !whitesTurn);
 
-        Console.WriteLine();
         Span<Vision> visions = GenerateMoves(b, whitesTurn);
-
-
 
         //gesamtlänge des endarrays wird bestimmt
         int endLength = 0;
@@ -361,7 +359,6 @@ static class MoveGen {
     public static Vision GetVisionForPieceAt(Chessboard b, int i, bool includeCoverage = false) {
         Piece pieceType;
         ulong bb = MoveSets.GetPseudoLegalMoves(b, i, out pieceType, includeCoverage);
-
 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
         if (MoveSets.IsBitSet(b.pinnedBB, i)) {

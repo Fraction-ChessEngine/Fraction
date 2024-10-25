@@ -26,6 +26,10 @@ public static class MoveSets {
         Find out which Piecetype we are currently handling
         Dependent on piecetype and position on the board, a bitboard with the sightlines of the given piece at the given position is chosen
         -> Some bit manipulations result in a bitboard which contains all squares that the given piece can (pseudolegally) move to
+        
+        if includeCoverageFlag is set, king needs to be ignored as the functions purpose
+        is to generate controlled squrs, and the king does not block sliders
+        from controlling the sqrs behind him
         */
 
         bool isWhite = IsBitSet(board.WhitePiecesBB, posIndex);
@@ -74,13 +78,13 @@ public static class MoveSets {
 
         } else if (IsBitSet(board.BRookBB | board.WRookBB, posIndex)) {
             pieceType = isWhite ? Piece.wRook : Piece.bRook;
-            return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wRook);
+            return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wRook, includeCoverage, isWhite);
 
 
         }//es ist ein bishop, beinahe selber code wie rook wegen ähnlichem attackpattern
           else if (IsBitSet(board.WBishopBB | board.BBishopBB, posIndex)) {
             pieceType = isWhite ? Piece.wBishop : Piece.bBishop;
-            return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wBishop);
+            return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wBishop, includeCoverage, isWhite);
 
         } else if (IsBitSet(board.WKnightBB | board.BKnightBB, posIndex)) {
             pieceType = isWhite ? Piece.wKnight : Piece.bKnight;
@@ -91,13 +95,13 @@ public static class MoveSets {
             pieceType = isWhite ? Piece.wKing : Piece.bKing;
 
             return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs);
-            
+
         }  //es ist eine queen
           else if (IsBitSet(board.WQueenBB | board.BQueenBB, posIndex)) {
             pieceType = isWhite ? Piece.wQueen : Piece.bQueen;
 
-            return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wRook)
-            | GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wBishop);
+            return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wRook, includeCoverage, isWhite)
+            | GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wBishop, includeCoverage, isWhite);
         } //das moveset der pawns ist abhängig von der farbe
 
         pieceType = Piece.wKing; //default value
@@ -136,10 +140,18 @@ public static class MoveSets {
     /// <param name="sameColorPieces"></param>
     /// <param name="type"></param>
     /// <returns></returns>
-    public static ulong GetSliderPseudoLegalMoves(Chessboard board, int posIndex, ulong sameColorPieces, Piece type) {
+    public static ulong GetSliderPseudoLegalMoves(Chessboard board, int posIndex,
+                ulong sameColorPieces, Piece type, bool includeCoverage = false, bool isWhite = true) {
 
         ulong patternBB = BB_Lookup.GetBBforPieceAtSqr(type, posIndex);
         ulong allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
+
+        //der enemyKing blockiert die sightlines eines sliders auf die felder
+        //hinter dem king nicht, weil er dann per definition im nächsten zug verhindern muss in dieser sightline zu stehen
+        if (includeCoverage) {
+            ulong enemyKingBB = isWhite ? board.BKingBB : board.WKingBB;
+            allPiecesBB &= ~enemyKingBB;
+        }
 
         ulong targetBB = patternBB & allPiecesBB;
 

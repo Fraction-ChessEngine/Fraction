@@ -186,9 +186,7 @@ public class Program {
     static Chessboard? visualBoard; //board auf dem die "wahre" position gespeichert wird
 
     static void Main(string[] args) {
-
-
-        Chessboard[] checks = new Chessboard[]{
+        /* Chessboard[] checks = new Chessboard[]{
             Chessboard.FromFEN("rnb1kbnr/pp1ppppp/2p5/q7/3P4/8/PPP1PPPP/RNBQKBNR"),
             Chessboard.FromFEN("3k4/8/8/4n3/8/r1PK4/8/8"),
             Chessboard.FromFEN("3k3r/8/b7/8/8/2PK4/7b/8")
@@ -198,19 +196,43 @@ public class Program {
             Chessboard.FromFEN("r1bqr1k1/pp1n1pbp/2pp1np1/4p3/P1BP1B2/4PN1P/1PPN1PP1/R2Q1RK1"),
             Chessboard.FromFEN("1r1q1rk1/2p2ppp/2np1n2/2bNp3/1pB1P1b1/2P2N2/1P1PQPPP/R1B2RK1"),
             Chessboard.FromFEN("rnbqkb1r/pp3ppp/4pn2/2ppN3/3P1B2/8/PPP1PPPP/RN1QKB1R")
+         }; */
+
+        Chessboard[] checkMates ={
+            Chessboard.FromFEN("8/8/8/8/8/2k5/1q6/1K6"),
+            Chessboard.FromFEN("1k5R/6R1/8/8/8/8/8/1K6"),
+            Chessboard.FromFEN("1k6/2P5/Q2P4/8/8/8/8/1K6"),
+            Chessboard.FromFEN("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR")
          };
 
-        visualBoard = Chessboard.FromFEN("rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPPQPPP/RNB1KBNR");
-        MoveGen.GenerateBoards(visualBoard, true);
-        MoveGen.GenerateBoards(visualBoard, false);
-        // Console.WriteLine(Chessboard.BoardCount);
+        var ni = checkMates[1];
+        var a = MoveGen.GenerateBoards(ni, true);
+        var b = MoveGen.GenerateBoards(ni, false);
+
+        Console.WriteLine("b länge : " + b.Length);
+        DisplayBoard(b[0]);
 
 
-        Testing.PerftResults(visualBoard, 1, false);
+        /* foreach (Chessboard cb in checkMates) {
+            var a = MoveGen.GenerateBoards(cb, true);
+            var b = MoveGen.GenerateBoards(cb, false);
 
-        /* 
-            e2e3, e2e4 machen probleme, generieren zu wenig züge
+            Console.WriteLine("\n" + a.Length);
+            Console.WriteLine(b.Length);
+        } */
+
+
+
+        // visualBoard = Chessboard.FromFEN("rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPPQPPP/RNB1KBNR");
+
+        Chessboard c = Chessboard.FromFEN("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR");//fools mate
+                                                                                                   //  MoveGen.GenerateBoards(c, true);
+
+        //Console.WriteLine(m.Length);
+
+        /* Bug: king läuft in check die gedeckt sind (test bei laddermate mit king in horizontaler mitter)
+            oder test bei fools mate
          */
-
+        // Testing.PerftResults(visualBoard, 1, false);
     }
 }
