@@ -4,6 +4,11 @@ using System.Diagnostics;
 
 namespace fraction;
 public class Chessboard {
+    public static int BoardCount = 0;
+    //dient dem tracken einzelner boards im perft tree beim debuggen
+    public int boardIndex;
+    public int parentIndex;
+
     private BitBoard bRookBB = new(0b1000_0001, 0, 0, 0, 0, 0, 0, 0);
     private BitBoard wRookBB = new(0, 0, 0, 0, 0, 0, 0, 0b1000_0001);
     private BitBoard bBishopBB = new(0b0010_0100, 0, 0, 0, 0, 0, 0, 0);
@@ -18,7 +23,6 @@ public class Chessboard {
     private BitBoard wPawnBB = new(0, 0, 0, 0, 0, 0, 0b1111_1111, 0);
     //private BitBoard whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
     //private BitBoard blackPiecesBB = 0b1111111111111111000000000000000000000000000000000000000000000000;
-
     private BitBoard wControlledSqrBB = 0;// 0b11111111ul << 16;
     private BitBoard bControlledSqrBB = 0;//0b11111111ul << 40;
 
@@ -35,8 +39,15 @@ public class Chessboard {
     public BitBoard BKingBB { get => bKingBB; set => bKingBB = value; }
     public BitBoard WPawnBB { get => wPawnBB; set => wPawnBB = value; }
     public BitBoard BPawnBB { get => bPawnBB; set => bPawnBB = value; }
+    public BitBoard WControlledSqrBB { get => wControlledSqrBB; set => wControlledSqrBB = value; }
+    public BitBoard BControlledSqrBB { get => bControlledSqrBB; set => bControlledSqrBB = value; }
+
     public BitBoard WhitePiecesBB => wPawnBB | wBishopBB | wRookBB | wKnightBB | wKingBB | wQueenBB;
     public BitBoard BlackPiecesBB => bPawnBB | bBishopBB | bRookBB | bKnightBB | bKingBB | bQueenBB;
+
+    public bool AfterCapturePly { get; set; } = false;
+
+    public BitBoard pinnedBB = 0;
 
     public BitBoard this[Piece type] {
         get => type switch {
@@ -109,16 +120,6 @@ public class Chessboard {
         }
     }
 
-
-    public BitBoard WControlledSqrBB { get => wControlledSqrBB; set => wControlledSqrBB = value; }
-    public BitBoard BControlledSqrBB { get => bControlledSqrBB; set => bControlledSqrBB = value; }
-
-    public bool AfterCapturePly { get; set; } = false;
-
-    //dient dem tracken einzelner boards im perft tree beim debuggen
-    public int boardIndex = 0, parentIndex = 0;
-    public static int BoardCount = 0;
-    public ulong pinnedBB = 0;
 
     /// <summary>
     /// Hiermit kann durch FENtoPos funktionen ein board gebaut werden
