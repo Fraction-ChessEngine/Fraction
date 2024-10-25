@@ -142,11 +142,13 @@ public struct BitBoard {
     public override int GetHashCode()
         => ((ulong)this).GetHashCode();
 
+    // do not use Console.WriteLine(bb);
+    // use Console.WriteLine(bb.ToString());
     public override string ToString() {
         StringBuilder sb = new();
         for (int i = 0; i < 8; i++) {
-            for (int j = 0; i < 8; i++)
-                sb.Append((this[(8 - i) * 8 + j]) ? '1' : '0');
+            for (int j = 0; j < 8; j++)
+                sb.Append((this[(8 - i) * 8 + j]) ? '1' : '0').Append(' ');
             sb.AppendLine();
         }
 
