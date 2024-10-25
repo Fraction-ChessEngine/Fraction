@@ -6,7 +6,7 @@ using System.Linq;
 using System.Numerics;
 
 namespace fraction;
-static class MoveGen {
+public static class MoveGen {
     /*
     Architektur:
     -funktion die einmal über das board loopt und für alle sqrs die mgl moves berechnet

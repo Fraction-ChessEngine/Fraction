@@ -1,7 +1,7 @@
 using System;
 
 namespace fraction;
-sealed class Minimax {
+public sealed class Minimax {
     public bool AlphaBetaPruning { get; init; } = true;
     public int MaxQuiescenceSearchPlies { get; init; } = 3;
     public int Positions { get; private set; } = 0;
