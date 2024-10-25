@@ -184,7 +184,7 @@ public class Program {
 
     public static Chessboard errorComp = new();
     static Chessboard? visualBoard; //board auf dem die "wahre" position gespeichert wird
-
+    public static bool debug = false;
     static void Main(string[] args) {
         /* Chessboard[] checks = new Chessboard[]{
             Chessboard.FromFEN("rnb1kbnr/pp1ppppp/2p5/q7/3P4/8/PPP1PPPP/RNBQKBNR"),
@@ -211,7 +211,6 @@ public class Program {
 
         Console.WriteLine("b länge : " + b.Length);
         DisplayBoard(b[0]);
-
 
         /* foreach (Chessboard cb in checkMates) {
             var a = MoveGen.GenerateBoards(cb, true);
