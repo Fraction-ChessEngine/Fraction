@@ -19,8 +19,8 @@ public class Chessboard {
     private BitBoard wKingBB = new(0, 0, 0, 0, 0, 0, 0, 0b0000_1000);
     private BitBoard bPawnBB = new(0, 0b1111_1111, 0, 0, 0, 0, 0, 0);
     private BitBoard wPawnBB = new(0, 0, 0, 0, 0, 0, 0b1111_1111, 0);
-    private BitBoard whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
-    private BitBoard blackPiecesBB = 0b1111111111111111000000000000000000000000000000000000000000000000;
+    //private BitBoard whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
+    //private BitBoard blackPiecesBB = 0b1111111111111111000000000000000000000000000000000000000000000000;
 
     private BitBoard wControlledSqrBB = 0;// 0b11111111ul << 16;
     private BitBoard bControlledSqrBB = 0;//0b11111111ul << 40;
@@ -142,8 +142,8 @@ public class Chessboard {
         BRookBB = Utility.GetBBofPosition(pieces_, Piece.bRook);
         WRookBB = Utility.GetBBofPosition(pieces_, Piece.wRook);
 
-        whitePiecesBB = wPawnBB | wBishopBB | wKingBB | wKnightBB | wRookBB | wQueenBB;
-        blackPiecesBB = bPawnBB | bBishopBB | bKingBB | bKnightBB | bRookBB | bQueenBB;
+        //whitePiecesBB = wPawnBB | wBishopBB | wKingBB | wKnightBB | wRookBB | wQueenBB;
+        //blackPiecesBB = bPawnBB | bBishopBB | bKingBB | bKnightBB | bRookBB | bQueenBB;
     }
 
     public Chessboard() { }
@@ -176,8 +176,8 @@ public class Chessboard {
         this.BPawnBB = bPawnBB;
         this.AfterCapturePly = afterCapturePly;
 
-        this.whitePiecesBB = wKingBB | wKnightBB | wQueenBB | wRookBB | wBishopBB | wPawnBB;
-        this.blackPiecesBB = bKingBB | bKnightBB | bQueenBB | bRookBB | bBishopBB | bPawnBB;
+        //this.whitePiecesBB = wKingBB | wKnightBB | wQueenBB | wRookBB | wBishopBB | wPawnBB;
+        //this.blackPiecesBB = bKingBB | bKnightBB | bQueenBB | bRookBB | bBishopBB | bPawnBB;
 
         WControlledSqrBB = wCtrlBB;
         BControlledSqrBB = bCtrlBB;
@@ -375,7 +375,7 @@ public class Chessboard {
             wQueenBB = wQueenBB,
             wBishopBB = wBishopBB,
             wKnightBB = wKnightBB,
-            whitePiecesBB = whitePiecesBB,
+            //whitePiecesBB = whitePiecesBB,
             wControlledSqrBB = wControlledSqrBB,
             bPawnBB = bPawnBB,
             bKingBB = bKingBB,
@@ -383,7 +383,7 @@ public class Chessboard {
             bQueenBB = bQueenBB,
             bBishopBB = bBishopBB,
             bKnightBB = bKnightBB,
-            blackPiecesBB = blackPiecesBB,
+            //blackPiecesBB = blackPiecesBB,
             bControlledSqrBB = bControlledSqrBB,
             AfterCapturePly = AfterCapturePly,
             pinnedBB = pinnedBB,
@@ -393,7 +393,7 @@ public class Chessboard {
     }
 
     public void Move(int start, int end, Piece type) {
-        AfterCapturePly = blackPiecesBB[end] || whitePiecesBB[end];
+        AfterCapturePly = BlackPiecesBB[end] || WhitePiecesBB[end];
 
         // essential for checkmate detection
         wKingBB[end] = false;
