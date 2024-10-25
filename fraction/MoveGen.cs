@@ -310,8 +310,8 @@ static class MoveGen {
 
                 //frisst hoffentlich nicht zu viel performance
                 if (perft) {
-                    Testing.perftmoves[index - 1] = Utility.PosToAN(Utility.IndexToPos(v.PosIndex)) +
-                        Utility.PosToAN(Utility.IndexToPos(moveArr[j]));
+                    Testing.perftmoves[index - 1] = Utility.PosToAN((v.PosIndex)) +
+                        Utility.PosToAN((moveArr[j]));
                 }
             }
         }

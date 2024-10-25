@@ -198,6 +198,12 @@ public class Program {
             Chessboard.FromFEN("rnbqkb1r/pp3ppp/4pn2/2ppN3/3P1B2/8/PPP1PPPP/RN1QKB1R")
          }; */
 
+        /* Perft: e2e3 d7d6 f1b5
+        error in der position: bishop der das check blocken könnte bekommt 
+        mehrere verschiedene moves nach a1 (illegal move)  
+        -> wahrscheinlich error bei generateLegalMoves für wenn in check
+        */
+
         Chessboard[] checkMates ={
             Chessboard.FromFEN("8/8/8/8/8/2k5/1q6/1K6"),
             Chessboard.FromFEN("1k5R/6R1/8/8/8/8/8/1K6"),
@@ -205,12 +211,18 @@ public class Program {
             Chessboard.FromFEN("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR")
          };
 
-        //intended usage of perftresults
+        //intended usage of perftResults
         Chessboard def = new();
+        def = def.GenerateBoardWithMove(Utility.ANtoPos("e2"), Utility.ANtoPos("e3"), Piece.wPawn);
+        def = def.GenerateBoardWithMove(Utility.ANtoPos("d7"), Utility.ANtoPos("d6"), Piece.bPawn);
+        def = def.GenerateBoardWithMove(Utility.ANtoPos("f1"), Utility.ANtoPos("b5"), Piece.wBishop);
+
         MoveGen.GenerateBoards(def, true);
         MoveGen.GenerateBoards(def, false);
 
-        Testing.PerftResults(def, 4, true);
+        Testing.PerftResults(def, 1, false);
+
+        DisplayBoard(def);
 
 
         Chessboard c = Chessboard.FromFEN("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR");//fools mate
