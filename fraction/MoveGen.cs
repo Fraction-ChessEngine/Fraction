@@ -304,7 +304,7 @@ static class MoveGen {
 
             int[] moveArr = Utility.FindSetBitsMax(v.MoveBB, v.setBits);
             for (int j = 0; j < v.setBits; j++) {
-                Chessboard cb = b.GenerateBsoardWithMove(v.PosIndex, moveArr[j], v.pieceType);
+                Chessboard cb = b.GenerateBoardWithMove(v.PosIndex, moveArr[j], v.pieceType);
                 boards[index] = cb;
                 index++;
 
