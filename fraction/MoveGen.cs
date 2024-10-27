@@ -20,7 +20,7 @@ public static class MoveGen {
 
     private static void GenerateMovesForDoublePiece(
         Chessboard b,
-        ulong pieceBB,
+        BitBoard pieceBB,
         bool forWhite,
         ref Vision[] possibleMoves,
         ref int currIndex,
@@ -206,7 +206,7 @@ public static class MoveGen {
 
 
             if (v.pieceType == Piece.wKing || v.pieceType == Piece.bKing) {
-                ulong enemyCtrlSqrs = whitesTurn ? b.BControlledSqrBB : b.WControlledSqrBB;
+                BitBoard enemyCtrlSqrs = whitesTurn ? b.BControlledSqrBB : b.WControlledSqrBB;
 
                 v.MoveBB &= ~enemyCtrlSqrs;
             }
@@ -270,7 +270,7 @@ public static class MoveGen {
 
     public static Vision GetVisionForPieceAt(Chessboard b, int i, bool includeCoverage = false) {
         Piece pieceType;
-        ulong bb = MoveSets.getPseudoLegalMoves_bb(b, i, out pieceType, includeCoverage);
+        BitBoard bb = MoveSets.getPseudoLegalMoves_bb(b, i, out pieceType, includeCoverage);
         //  bool isCheck =isWhite ? (bb & b.bKingBB) != 0ul : (bb & b.wKingBB) != 0ul;
 
 

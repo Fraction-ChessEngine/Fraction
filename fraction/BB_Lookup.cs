@@ -4,9 +4,9 @@ using System.Runtime.ConstrainedExecution;
 namespace fraction;
 static class BB_Lookup
 {
-    static void PrintBBArray(ulong[] bbs)
+    static void PrintBBArray(BitBoard[] bbs)
     {
-        foreach (ulong bb in bbs)
+        foreach (BitBoard bb in bbs)
         {
             Console.WriteLine(bb + " , ");
         }
@@ -18,7 +18,7 @@ static class BB_Lookup
     /// <param name="p"></param>
     /// <param name="posIndex"></param>
     /// <returns></returns>
-    public static ulong GetBBforPieceAtSqr(Piece p, int posIndex)
+    public static BitBoard GetBBforPieceAtSqr(Piece p, int posIndex)
     {
         switch (p)
         {
@@ -50,7 +50,7 @@ static class BB_Lookup
 
     //wurden stichprobenartig getestet, sind korrekt
     //funktioniert
-    readonly private static ulong[] BishopBitboards = new ulong[]
+    readonly private static BitBoard[] BishopBitboards = new BitBoard[]
     {
             9241421688590303744,
             36099303471056128,
@@ -119,7 +119,7 @@ static class BB_Lookup
     };
 
     //funktioniert
-    readonly private static ulong[] RookBitboards = new ulong[]
+    readonly private static BitBoard[] RookBitboards = new BitBoard[]
     {
             72340172838076926 + 1,
             144680345676153596 + 1,
@@ -188,7 +188,7 @@ static class BB_Lookup
     };
 
     //funtioniert
-    readonly private static ulong[] KnightBitboards = new ulong[]
+    readonly private static BitBoard[] KnightBitboards = new BitBoard[]
     {
             132096,
             329728,
@@ -257,7 +257,7 @@ static class BB_Lookup
     };
 
     //funktioniert
-    readonly private static ulong[] QueenBitboards = new ulong[]
+    readonly private static BitBoard[] QueenBitboards = new BitBoard[]
     {
             9313761861428380670,
             180779649147209725,
@@ -326,7 +326,7 @@ static class BB_Lookup
     };
 
     //funktioniert
-    readonly private static ulong[] KingBitboards = new ulong[]
+    readonly private static BitBoard[] KingBitboards = new BitBoard[]
     {
             770,
             1797,
@@ -394,7 +394,7 @@ static class BB_Lookup
             4665729213955833856
     };
 
-    private static readonly ulong[] pawnAttackPatterns =
+    private static readonly BitBoard[] pawnAttackPatterns =
     {
             0b00000010,
             0b00000101,
@@ -407,9 +407,9 @@ static class BB_Lookup
         };
 
     //pawns sind redundant weil die nächste position mit einem simplen bitshift erledigt ist
-    public static ulong GetPawnAttackSqrs(int x, int y, bool isWhite)
+    public static BitBoard GetPawnAttackSqrs(int x, int y, bool isWhite)
     {
-        ulong pattern = pawnAttackPatterns[x];
+        BitBoard pattern = pawnAttackPatterns[x];
         return pattern << (y * 8 + (isWhite ? 8 : -8));
     }
 }

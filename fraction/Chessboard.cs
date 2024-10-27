@@ -147,15 +147,15 @@ public class Chessboard {
     public Chessboard() { }
 
     public Chessboard(
-        ulong wKingBB, ulong bKingBB,
-        ulong wKnightBB, ulong bKnightBB,
-        ulong wQueenBB, ulong bQueenBB,
-        ulong wRookBB, ulong bRookBB,
-        ulong wBishopBB, ulong bBishopBB,
-        ulong wPawnBB, ulong bPawnBB,
+        BitBoard wKingBB, BitBoard bKingBB,
+        BitBoard wKnightBB, BitBoard bKnightBB,
+        BitBoard wQueenBB, BitBoard bQueenBB,
+        BitBoard wRookBB, BitBoard bRookBB,
+        BitBoard wBishopBB, BitBoard bBishopBB,
+        BitBoard wPawnBB, BitBoard bPawnBB,
         bool afterCapturePly,
-        ulong wCtrlBB,
-        ulong bCtrlBB,
+        BitBoard wCtrlBB,
+        BitBoard bCtrlBB,
         int BoardIndex,
         int parentIndex
 
@@ -186,11 +186,11 @@ public class Chessboard {
 
     //berechnet neue BBs für die kontrollierten sqrs der beiden seiten
     public void UpdateAttackedSqrBB(Span<Vision> visions, bool forWhite) {
-        ulong attackSqrBB = 0;
+        BitBoard attackSqrBB = 0;
 
         for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
-            ulong bb = v.MoveBB;
+            BitBoard bb = v.MoveBB;
 
             //pawns müssen gesondert berechnet werden wegen des unterschieds zwischen bewegung und schlagzug
             if (v.pieceType == Piece.wPawn || v.pieceType == Piece.bPawn) {
@@ -308,23 +308,23 @@ public class Chessboard {
         int y = kingIndex >> 3;
         int x = kingIndex & 7;
 
-        ulong sameColorPieces = forWhite ? WhitePiecesBB : BlackPiecesBB;
+        BitBoard sameColorPieces = forWhite ? WhitePiecesBB : BlackPiecesBB;
 
 
         if (intersectionsStraight != 0) {
-            ulong intersectionHoriWest = intersectionsStraight & MoveSets.InterpolateHorizontal(kingIndex, kingIndex - x);
+            BitBoard intersectionHoriWest = intersectionsStraight & MoveSets.InterpolateHorizontal(kingIndex, kingIndex - x);
             intersectionHoriWest = intersectionHoriWest == 0 ? 0 : MoveSets.InterpolateHorizontal(kingIndex, MoveSets.GetBiggestBit(intersectionHoriWest));
             intersectionHoriWest = MoveSets.CountSetBits(intersectionHoriWest & sameColorPieces) == 2 ? intersectionHoriWest : 0;//1x king, 1x piece, dh 2 bits
 
-            ulong intersectionHoriEast = intersectionsStraight & MoveSets.InterpolateHorizontal(kingIndex + (7 - x), kingIndex);
+            BitBoard intersectionHoriEast = intersectionsStraight & MoveSets.InterpolateHorizontal(kingIndex + (7 - x), kingIndex);
             intersectionHoriEast = intersectionHoriEast == 0 ? 0 : MoveSets.InterpolateHorizontal(MoveSets.GetSmallestBit(intersectionHoriEast), kingIndex);
             intersectionHoriEast = MoveSets.CountSetBits(intersectionHoriEast & sameColorPieces) == 2 ? intersectionHoriEast : 0;
 
-            ulong intersectionVertiBottom = intersectionsStraight & MoveSets.InterpolateVertical(kingIndex, kingIndex - y * 8);
+            BitBoard intersectionVertiBottom = intersectionsStraight & MoveSets.InterpolateVertical(kingIndex, kingIndex - y * 8);
             intersectionVertiBottom = intersectionVertiBottom == 0 ? 0 : MoveSets.InterpolateVertical(kingIndex, MoveSets.GetBiggestBit(intersectionVertiBottom));
             intersectionVertiBottom = MoveSets.CountSetBits(intersectionVertiBottom & sameColorPieces) == 2 ? intersectionVertiBottom : 0;
 
-            ulong intersectionVertiTop = intersectionsStraight & MoveSets.InterpolateVertical(kingIndex + (8 - y) * 8, kingIndex);
+            BitBoard intersectionVertiTop = intersectionsStraight & MoveSets.InterpolateVertical(kingIndex + (8 - y) * 8, kingIndex);
             intersectionVertiTop = intersectionVertiTop == 0 ? 0 : MoveSets.InterpolateVertical(MoveSets.GetSmallestBit(intersectionVertiTop), kingIndex);
             intersectionVertiTop = MoveSets.CountSetBits(intersectionVertiTop & sameColorPieces) == 2 ? intersectionVertiTop : 0;
 
@@ -335,25 +335,25 @@ public class Chessboard {
         }
 
         if (intersectionDiags != 0) {
-            ulong antiDiag = MoveSets.GetAntiDiagonal(x, y);
+            BitBoard antiDiag = MoveSets.GetAntiDiagonal(x, y);
             int nw = MoveSets.GetBiggestBit(antiDiag);
-            ulong intersectionDiagNW = intersectionDiags & MoveSets.InterpolateAntiDiagonal(nw, kingIndex);
+            BitBoard intersectionDiagNW = intersectionDiags & MoveSets.InterpolateAntiDiagonal(nw, kingIndex);
             intersectionDiagNW = intersectionDiagNW == 0 ? 0 : MoveSets.InterpolateAntiDiagonal(MoveSets.GetSmallestBit(intersectionDiagNW), kingIndex);
             intersectionDiagNW = MoveSets.CountSetBits(intersectionDiagNW & sameColorPieces) == 2 ? intersectionDiagNW : 0;
 
             int se = MoveSets.GetSmallestBit(antiDiag);
-            ulong intersectionDiagSE = intersectionDiags & MoveSets.InterpolateAntiDiagonal(kingIndex, se);
+            BitBoard intersectionDiagSE = intersectionDiags & MoveSets.InterpolateAntiDiagonal(kingIndex, se);
             intersectionDiagSE = intersectionDiagSE == 0 ? 0 : MoveSets.InterpolateAntiDiagonal(kingIndex, MoveSets.GetBiggestBit(intersectionDiagSE));
             intersectionDiagSE = MoveSets.CountSetBits(intersectionDiagSE & sameColorPieces) == 2 ? intersectionDiagSE : 0;
 
-            ulong diag = MoveSets.GetDiagonal(x, y);
+            BitBoard diag = MoveSets.GetDiagonal(x, y);
             int ne = MoveSets.GetBiggestBit(diag);
-            ulong intersectionDiagNE = intersectionDiags & MoveSets.InterpolateDiagonal(ne, kingIndex);
+            BitBoard intersectionDiagNE = intersectionDiags & MoveSets.InterpolateDiagonal(ne, kingIndex);
             intersectionDiagNE = intersectionDiagNE == 0 ? 0 : MoveSets.InterpolateDiagonal(MoveSets.GetSmallestBit(intersectionDiagNE), kingIndex);
             intersectionDiagNE = MoveSets.CountSetBits(intersectionDiagNE & sameColorPieces) == 2 ? intersectionDiagNE : 0;
 
             int sw = MoveSets.GetSmallestBit(diag);
-            ulong intersectionDiagSW = intersectionDiags & MoveSets.InterpolateDiagonal(kingIndex, sw);
+            BitBoard intersectionDiagSW = intersectionDiags & MoveSets.InterpolateDiagonal(kingIndex, sw);
             intersectionDiagSW = intersectionDiagSW == 0 ? 0 : MoveSets.InterpolateDiagonal(kingIndex, MoveSets.GetBiggestBit(intersectionDiagSW));
             intersectionDiagSW = MoveSets.CountSetBits(intersectionDiagSW & sameColorPieces) == 2 ? intersectionDiagSW : 0;
 

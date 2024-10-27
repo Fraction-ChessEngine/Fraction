@@ -130,7 +130,7 @@ public struct BitBoard {
     public static implicit operator BitBoard(ulong val) => new() { _value = val };
     public static implicit operator ulong(BitBoard val) => val._value;
     public static BitBoard operator ~(BitBoard bb) => ~(ulong)bb;
-    public static BitBoard operator &(BitBoard left, BitBoard right) => (ulong)left | (ulong)right;
+    public static BitBoard operator &(BitBoard left, BitBoard right) => (ulong)left & (ulong)right;
     public static BitBoard operator |(BitBoard left, BitBoard right) => (ulong)left | (ulong)right;
     public static BitBoard operator ^(BitBoard left, BitBoard right) => (ulong)left ^ (ulong)right;
     public static bool operator ==(BitBoard left, BitBoard right) => (ulong)left == (ulong)right;

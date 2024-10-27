@@ -42,12 +42,12 @@ static class Eval
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int NumberOfSetBits(ulong i)
+    public static int NumberOfSetBits(BitBoard i)
     {
         return (int)System.Runtime.Intrinsics.X86.Popcnt.X64.PopCount(i);
     }
 
-    /*private static Dictionary<Piece, ulong> pieceMasks1 = new Dictionary<Piece, ulong>{
+    /*private static Dictionary<Piece, BitBoard> pieceMasks1 = new Dictionary<Piece, BitBoard>{
                     {Piece.wPawn,0b1111111111111111111111111111111100000000000000000000000000000000},
                     {Piece.wBishop,0b0000000000011000001111000011110000111100001111000001100000000000},
                     {Piece.wKnight,0b0000000000011000001111000011110000111100001111000001100000000000},
@@ -61,7 +61,7 @@ static class Eval
                     {Piece.bKing,  0b1110011100000000000000000000000000000000000000000000000000000000},
                     {Piece.bQueen,  0b0000000000111100000000000000000000000000000000000000000011111111},
             };*/
-    private static ulong[] pieceMasks1 = new ulong[]
+    private static BitBoard[] pieceMasks1 = new BitBoard[]
     {
             0b1111111111111111111111111111111100000000000000000000000000000000,
             0b0000000000011000001111000011110000111100001111000001100000000000,
@@ -80,7 +80,7 @@ static class Eval
     };
 
     // trifft nur auf pawns zu, rest wird ignoriert
-    private static ulong[] pieceMasks2 = new ulong[]
+    private static BitBoard[] pieceMasks2 = new BitBoard[]
     {
             0b111111111111111100000000000000000000000000000000,
             0, 0, 0, 0, 0, // other pieces
@@ -109,7 +109,7 @@ static class Eval
     };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static float RelativeValue(ulong bb, Piece type)
+    static float RelativeValue(BitBoard bb, Piece type)
     {
         float value = NumberOfSetBits(bb & pieceMasks1[(int)type]) * pieceFightValue[(int)type] * 0.1f;
 

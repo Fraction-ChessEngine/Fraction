@@ -236,9 +236,9 @@ static class Utility
     /// </summary>
     /// <param name="sqrs"></param>
     /// <returns></returns>
-    public static ulong SqrArrToBB(int[] sqrs)
+    public static BitBoard SqrArrToBB(int[] sqrs)
     {
-        ulong bb = 0ul;
+        BitBoard bb = 0ul;
         foreach (int sqr in sqrs)
         {
             if (sqr >= 0)
@@ -327,7 +327,7 @@ static class Utility
         return MagicTable[((ulong)((long)b & -(long)b) * Magic) >> 58]; //digga was
     }
 
-    public static int BitScanReverse(ulong b)
+    public static int BitScanReverse(BitBoard b)
     {
         b |= b >> 1;
         b |= b >> 2;
@@ -339,7 +339,7 @@ static class Utility
         return MagicTable[b * Magic >> 58];
     }
 
-    public static void PrintBitBoard(ulong bb, int specialIndex = -1)
+    public static void PrintBitBoard(BitBoard bb, int specialIndex = -1)
     {
         byte[] bytes = BitConverter.GetBytes(bb);
         int[] pos = specialIndex >= 0 ? Utility.IndexToPos(specialIndex) : new int[2];
@@ -400,9 +400,9 @@ static class Utility
     /// <param name="pieces"></param>
     /// <param name="p"></param>
     /// <returns></returns>
-    public static ulong GetBBofPosition(Dictionary<int, Piece> pieces, Piece p)
+    public static BitBoard GetBBofPosition(Dictionary<int, Piece> pieces, Piece p)
     {
-        ulong retBB = 0;
+        BitBoard retBB = 0;
         for (int i = 0; i < 64; i++)
         {
             Piece currPiece;
@@ -418,19 +418,19 @@ static class Utility
         return retBB;
     }
 
-    public static ulong SetBBtoNullAt(ulong bb, int index)
+    public static BitBoard SetBBtoNullAt(BitBoard bb, int index)
     {
         return bb & ~(1ul << index);
     }
 
     //noch nicht getestet, könnte fehlerquelle sein
     //index 1 wird auf null gesetzt, index 2 auf 1
-    public static ulong UpdateBB(ulong bb, int i1, int i2)
+    public static BitBoard UpdateBB(BitBoard bb, int i1, int i2)
     {
         return SetBBtoNullAt(bb, i1) + (1ul << i2);
     }
 
-    public static ulong UpdateBBFast(ulong bb, int i1, int i2)
+    public static BitBoard UpdateBBFast(BitBoard bb, int i1, int i2)
     {
         return bb ^ (ulong)(i1 | i2);
     }
@@ -450,7 +450,7 @@ static class Utility
         }
     }
 
-    public static List<int> FindSetBits(ulong bb)
+    public static List<int> FindSetBits(BitBoard bb)
     {
         List<int> setBits = new List<int>();
 
@@ -472,7 +472,7 @@ static class Utility
     /// </summary>
     /// <param name="bb"></param>
     /// <returns></returns>
-    public static int[] FindSetBitsMax(ulong bb, int max)
+    public static int[] FindSetBitsMax(BitBoard bb, int max)
     {
         int[] setBits = new int[max];
         int i = 0;
@@ -490,14 +490,14 @@ static class Utility
         return setBits;
     }
 
-    public static void FindTwoSetBits(ulong bb, out int index1, out int index2)
+    public static void FindTwoSetBits(BitBoard bb, out int index1, out int index2)
     {
         index1 = BitScanForward(bb);
         bb &= bb - 1; // Clear the least significant set bit
         index2 = BitScanForward(bb);
     }
 
-    public static int FindSingleSetBit(ulong bb)
+    public static int FindSingleSetBit(BitBoard bb)
     {
         return BitScanForward(bb);
     }
