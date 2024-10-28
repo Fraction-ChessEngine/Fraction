@@ -210,22 +210,7 @@ public class Program {
             Chessboard.FromFEN("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR")
          };
 
-        //intended usage of perftResults
-        Chessboard def = new();
-        def = def.GenerateBoardWithMove(Utility.ANtoPos("e2"), Utility.ANtoPos("e3"), Piece.wPawn);
-        def = def.GenerateBoardWithMove(Utility.ANtoPos("d7"), Utility.ANtoPos("d6"), Piece.bPawn);
-        def = def.GenerateBoardWithMove(Utility.ANtoPos("f1"), Utility.ANtoPos("b5"), Piece.wBishop);
-
-        MoveGen.GenerateBoards(def, true);
-        MoveGen.GenerateBoards(def, false);
-
-        Testing.PerftResults(def, 1, false);
-
-        DisplayBoard(def);
-
-
-        Chessboard c = Chessboard.FromFEN("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR");//fools mate
-
-        Testing.PerftResults(new(), 4, true);
+        //perft(3);
+         Testing.BenchMarkMINIMAX();
     }
 }

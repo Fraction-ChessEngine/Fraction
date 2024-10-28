@@ -8,8 +8,7 @@ public class Chessboard {
     //dient dem tracken einzelner boards im perft tree beim debuggen
     public int boardIndex;
     public int parentIndex;
-
-    private BitBoard bRookBB = new(0b1000_0001, 0, 0, 0, 0, 0, 0, 0);
+    /* private BitBoard bRookBB = new(0b1000_0001, 0, 0, 0, 0, 0, 0, 0);
     private BitBoard wRookBB = new(0, 0, 0, 0, 0, 0, 0, 0b1000_0001);
     private BitBoard bBishopBB = new(0b0010_0100, 0, 0, 0, 0, 0, 0, 0);
     private BitBoard wBishopBB = new(0, 0, 0, 0, 0, 0, 0, 0b0010_0100);
@@ -20,7 +19,20 @@ public class Chessboard {
     private BitBoard bKingBB = new(0b0000_1000, 0, 0, 0, 0, 0, 0, 0);
     private BitBoard wKingBB = new(0, 0, 0, 0, 0, 0, 0, 0b0000_1000);
     private BitBoard bPawnBB = new(0, 0b1111_1111, 0, 0, 0, 0, 0, 0);
-    private BitBoard wPawnBB = new(0, 0, 0, 0, 0, 0, 0b1111_1111, 0);
+    private BitBoard wPawnBB = new(0, 0, 0, 0, 0, 0, 0b1111_1111, 0); */
+
+    private BitBoard bRookBB = 0b10000001ul << 56;
+    private BitBoard wRookBB = 0b10000001ul;
+    private BitBoard bBishopBB = 0b0100100ul << 56;
+    private BitBoard wBishopBB = 0b0100100ul;
+    private BitBoard bKnightBB = 0b01000010ul << 56;
+    private BitBoard wKnightBB = 0b01000010ul;
+    private BitBoard bQueenBB = 0b00001000ul << 56;
+    private BitBoard wQueenBB = 0b00001000ul;
+    private BitBoard bKingBB = 0b00010000ul << 56;
+    private BitBoard wKingBB = 0b00010000ul;
+    private BitBoard bPawnBB = 0b11111111ul << 48;
+    private BitBoard wPawnBB = 0b11111111ul << 8;
     //private BitBoard whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
     //private BitBoard blackPiecesBB = 0b1111111111111111000000000000000000000000000000000000000000000000;
     private BitBoard wControlledSqrBB = 0;// 0b11111111ul << 16;

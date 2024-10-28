@@ -20,7 +20,7 @@ public sealed class Minimax {
         bool whitesTurn,
         int quiescenceSearchPlies
     ) {
-        //checkmate detection
+        //checkmate detection, deprecated, wir haben jetzt eine richtige
         float staticEval = Eval.BasicStaticEval(pos);
 
         if (Math.Abs(staticEval) > 9000) {

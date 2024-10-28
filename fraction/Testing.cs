@@ -340,7 +340,7 @@ static class Testing {
     public static void BenchMarkMINIMAX() {
         Stopwatch sw = new Stopwatch();
 
-        int depth = 6;
+        int depth = 7;
 
         sw.Start();
 
