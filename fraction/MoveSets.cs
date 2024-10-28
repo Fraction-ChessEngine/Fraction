@@ -15,7 +15,7 @@ public static class MoveSets {
     /// <param name="pieceType"></param>
     /// <param name="includeCoverage"></param>
     /// <returns></returns>
-    public static BitBoard getPseudoLegalMoves_bb(
+    public static BitBoard GetPseudoLegalMoves(
         Chessboard board,
         int posIndex,
         out Piece pieceType,
@@ -26,6 +26,10 @@ public static class MoveSets {
         Find out which Piecetype we are currently handling
         Dependent on piecetype and position on the board, a bitboard with the sightlines of the given piece at the given position is chosen
         -> Some bit manipulations result in a bitboard which contains all squares that the given piece can (pseudolegally) move to
+        
+        if includeCoverageFlag is set, king needs to be ignored as the functions purpose
+        is to generate controlled squrs, and the king does not block sliders
+        from controlling the sqrs behind him
         */
 
         bool isWhite = IsBitSet(board.WhitePiecesBB, posIndex);
@@ -43,12 +47,11 @@ public static class MoveSets {
 
             BitBoard enemyPiecesBB = allPiecesBB & ~sameColorPieces;
 
-            BitBoard targetSqrs = (attackSqrs & enemyPiecesBB);
-            BitBoard moveSqrs = (~allPiecesBB & (1ul << posIndex + 8));
+            BitBoard targetSqrs = attackSqrs & enemyPiecesBB;
+            BitBoard moveSqrs = ~allPiecesBB & (1ul << posIndex + 8);
 
             int sqrTwoAbove = posIndex + 16;
-            moveSqrs |= (moveSqrs != 0 && !IsBitSet(allPiecesBB, sqrTwoAbove)) ?
-            (y == 1 ? 1ul << sqrTwoAbove : 0) : 0;
+            moveSqrs |= (moveSqrs != 0 && !IsBitSet(allPiecesBB, sqrTwoAbove)) ? (y == 1 ? 1ul << sqrTwoAbove : 0) : 0;
 
             return targetSqrs | moveSqrs;
         } else if (IsBitSet(board.BPawnBB, posIndex)) {
@@ -72,70 +75,89 @@ public static class MoveSets {
             return targetSqrs | moveSqrs;
         } else if (IsBitSet(board.BRookBB | board.WRookBB, posIndex)) {
             pieceType = isWhite ? Piece.wRook : Piece.bRook;
+            return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wRook, includeCoverage, isWhite);
 
-            BitBoard patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bRook, posIndex);
-            BitBoard allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
 
-            BitBoard targetBB = patternBB & allPiecesBB;
+        }//es ist ein bishop, beinahe selber code wie rook wegen ähnlichem attackpattern
+          else if (IsBitSet(board.WBishopBB | board.BBishopBB, posIndex)) {
+            pieceType = isWhite ? Piece.wBishop : Piece.bBishop;
+            return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wBishop, includeCoverage, isWhite);
 
-            BitBoard pseudoTargetSqrs = GetPseudoTargetSqrsRook(targetBB, posIndex);
-            BitBoard targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
-
-            return targetSqrs;
         } else if (IsBitSet(board.WKnightBB | board.BKnightBB, posIndex)) {
             pieceType = isWhite ? Piece.wKnight : Piece.bKnight;
+            return GetKnightPseudoLegalMoves(posIndex, sameColorPieces);
 
-            BitBoard patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bKnight, posIndex);
-
-            BitBoard targetSqrs = patternBB & ~sameColorPieces;
-
-            return targetSqrs;
         } //es ist ein king, beinah selber code wie beim knight wegen der konstanten anzahl an mgl feldern
           else if (IsBitSet(board.WKingBB | board.BKingBB, posIndex)) {
             pieceType = isWhite ? Piece.wKing : Piece.bKing;
 
-            BitBoard patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bKing, posIndex);
+            return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs);
 
-            BitBoard targetSqrs = patternBB & ~sameColorPieces;
-
-            targetSqrs &= ~enemyControlSqrs; //hat bei perft 5 keinen effekt auf die zahlen, erst bei perft 6 gibt es unterschied
-
-            return targetSqrs;
-        } //es ist ein bishop, beinahe selber code wie rook wegen ähnlichem attackpattern
-          else if (IsBitSet(board.WBishopBB | board.BBishopBB, posIndex)) {
-            pieceType = isWhite ? Piece.wBishop : Piece.bBishop;
-            BitBoard patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bBishop, posIndex);
-            BitBoard allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
-
-            BitBoard targetBB = patternBB & allPiecesBB;
-
-            BitBoard pseudoTargetSqrs = GetPseudoTargetSqrsBishop(targetBB, posIndex);
-            BitBoard targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
-
-            return targetSqrs;
-        } //es ist eine queen
+        }  //es ist eine queen
           else if (IsBitSet(board.WQueenBB | board.BQueenBB, posIndex)) {
             pieceType = isWhite ? Piece.wQueen : Piece.bQueen;
-            BitBoard patternBB1 = BB_Lookup.GetBBforPieceAtSqr(Piece.bBishop, posIndex);
-            BitBoard patternBB2 = BB_Lookup.GetBBforPieceAtSqr(Piece.bRook, posIndex);
 
-            BitBoard allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
-
-            BitBoard targetBB1 = patternBB1 & allPiecesBB;
-            BitBoard targetBB2 = patternBB2 & allPiecesBB;
-            BitBoard pseudoTargetSqrs =
-                GetPseudoTargetSqrsBishop(targetBB1, posIndex)
-                | GetPseudoTargetSqrsRook(targetBB2, posIndex);
-
-            BitBoard targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
-
-            return targetSqrs;
+            return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wRook, includeCoverage, isWhite)
+            | GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wBishop, includeCoverage, isWhite);
         } //das moveset der pawns ist abhängig von der farbe
 
         pieceType = Piece.wKing; //default value
-        Console.WriteLine("Something went wrong in getPseudoLegalMovesBB, index = " + posIndex);
+        Console.WriteLine("-- Something went wrong in getPseudoLegalMovesBB --");
         Program.DisplayBoard(board);
-        return 0;
+        Console.WriteLine("posIndex: " + posIndex);
+        Console.WriteLine("includeCoverage: " + includeCoverage);
+
+        throw new Exception("Ich halte mal an damit du dir die Fehlermeldung angucken kannst, Potz Blitz!");
+    }
+
+    public static BitBoard GetKingPseudoLegalMoves(int posIndex, BitBoard sameColorPieces, BitBoard enemyControlSqrs) {
+        BitBoard patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bKing, posIndex);
+
+        BitBoard targetSqrs = patternBB & ~sameColorPieces;
+
+        targetSqrs &= ~enemyControlSqrs; //hat bei perft 5 keinen effekt auf die zahlen, erst bei perft 6 gibt es unterschied
+
+        return targetSqrs;
+    }
+
+
+    public static BitBoard GetKnightPseudoLegalMoves(int posIndex, BitBoard sameColorPieces) {
+        BitBoard patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.wKnight, posIndex);
+
+        BitBoard targetSqrs = patternBB & ~sameColorPieces;
+
+        return targetSqrs;
+    }
+
+    /// <summary>
+    /// Für Rook und Bishop
+    /// </summary>
+    /// <param name="board"></param>
+    /// <param name="posIndex"></param>
+    /// <param name="sameColorPieces"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public static BitBoard GetSliderPseudoLegalMoves(Chessboard board, int posIndex,
+                BitBoard sameColorPieces, Piece type, bool includeCoverage = false, bool isWhite = true) {
+
+        BitBoard patternBB = BB_Lookup.GetBBforPieceAtSqr(type, posIndex);
+        BitBoard allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
+
+        //der enemyKing blockiert die sightlines eines sliders auf die felder
+        //hinter dem king nicht, weil er dann per definition im nächsten zug verhindern muss in dieser sightline zu stehen
+        if (includeCoverage) {
+            BitBoard enemyKingBB = isWhite ? board.BKingBB : board.WKingBB;
+            allPiecesBB &= ~enemyKingBB;
+        }
+
+        BitBoard targetBB = patternBB & allPiecesBB;
+
+        BitBoard pseudoTargetSqrs = type == Piece.wBishop || type == Piece.bBishop ?
+        GetPseudoTargetSqrsBishop(targetBB, posIndex) : GetPseudoTargetSqrsRook(targetBB, posIndex);
+
+        BitBoard targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
+
+        return targetSqrs;
     }
 
     /// <summary>
@@ -341,8 +363,7 @@ public static class MoveSets {
     /// <summary>
     /// Nimmt BB mit sqrs die im sichtfeld eines pieces liegen, entfernt sqrs die das
     /// piece effektiv nicht sehen kann weil andere pieces im Weg stehen; enthält noch pieces derselben farbe
-    /// |Gilt für pieces mit dem Rook attackpattern;
-    /// Macht >21mio iterations/second
+    /// |Gilt für pieces mit dem Rook attackpattern
     /// </summary>
     /// <param name="sqrs"></param>
     /// <param name="posIndex"></param>

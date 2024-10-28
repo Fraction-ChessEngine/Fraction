@@ -213,7 +213,7 @@ static class Testing {
                     if (currPiece != p)
                         continue; //nur für die richtige pieceArt checken
 
-                    BitBoard bb = MoveSets.getPseudoLegalMoves_bb(
+                    BitBoard bb = MoveSets.GetPseudoLegalMoves(
                         new Chessboard(pos),
                         index,
                         out outValue
@@ -232,7 +232,7 @@ static class Testing {
                         continue; //nur für die richtige pieceArt checken
                     if (
                         MoveSets.IsBitSet(
-                            MoveSets.getPseudoLegalMoves_bb(
+                            MoveSets.GetPseudoLegalMoves(
                                 new Chessboard(pos),
                                 index,
                                 out outValue
@@ -252,7 +252,7 @@ static class Testing {
                     if (currPiece != p)
                         continue; //nur für die richtige pieceArt checken
 
-                    BitBoard bb = MoveSets.getPseudoLegalMoves_bb(
+                    BitBoard bb = MoveSets.GetPseudoLegalMoves(
                         new Chessboard(pos),
                         i,
                         out outValue
@@ -408,9 +408,10 @@ static class Testing {
         return boards;
     }
 
+    //es gibt wohl nie mehr als 128 moves
+    public static string[] perftmoves = new string[128];
     public static void PerftResults(Chessboard b, int d, bool whitesTurn) {
-        string[] moves;
-        Chessboard[] boards = MoveGen.GenerateBoards_DEBUG(b, whitesTurn, out moves);
+        Chessboard[] boards = MoveGen.GenerateBoards(b, whitesTurn, true);
 
         int sum = 0;
         for (int i = 0; i < boards.Length; i++) {
@@ -418,9 +419,19 @@ static class Testing {
             minimax.Run(boards[i], d - 1, !whitesTurn);
             sum += minimax.Positions;
 
-            Console.WriteLine(moves[i] + ": " + minimax.Positions);
+            Console.WriteLine(perftmoves[i] + ": " + minimax.Positions);
         }
 
         Console.WriteLine("Sum: " + sum);
+    }
+
+    public static void Checks() {
+        Chessboard[] checkBoards = {
+            Chessboard.FromFEN("rnbqkbnr/ppp1pppp/3p4/8/Q2P4/8/PPP1PPPP/RNB1KBNR"),
+            Chessboard.FromFEN("rnbqkbnr/ppp1pppp/2Qp4/8/3P4/8/PPP1PPPP/RNB1KBNR"),
+            Chessboard.FromFEN(""),
+            Chessboard.FromFEN(""),
+            Chessboard.FromFEN("")
+    };
     }
 }

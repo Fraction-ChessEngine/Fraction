@@ -184,28 +184,47 @@ public class Program {
 
     public static Chessboard errorComp = new();
     static Chessboard? visualBoard; //board auf dem die "wahre" position gespeichert wird
-
+    public static bool debug = false;
     static void Main(string[] args) {
+        /* Chessboard[] checks = new Chessboard[]{
+            Chessboard.FromFEN("rnb1kbnr/pp1ppppp/2p5/q7/3P4/8/PPP1PPPP/RNBQKBNR"),
+            Chessboard.FromFEN("3k4/8/8/4n3/8/r1PK4/8/8"),
+            Chessboard.FromFEN("3k3r/8/b7/8/8/2PK4/7b/8")
+        };
 
-        /* 
-            b2b3: 9345 vs b2b3: 9347
-            c2c3: 9272 vs c2c3: 9313
-            d2d3: 11959 vs d2d3: 11961
-            e2e3: 13134 vs e2e3: 13164
-            g2g3: 9345 vs g2g3: 9347
-            c2c4: 9744 vs c2c4: 9784
-            d2d4: 12435 vs d2d4: 12437
-            e2e4: 13160 vs e2e4: 13193
-            b1c3: 9755 vs b1c3: 9757
-            g1f3: 9748 vs g1f3: 9754
-            g1h3: 8881 vs g1h3: 8883 
+        Chessboard[] noChecks = new Chessboard[]{
+            Chessboard.FromFEN("r1bqr1k1/pp1n1pbp/2pp1np1/4p3/P1BP1B2/4PN1P/1PPN1PP1/R2Q1RK1"),
+            Chessboard.FromFEN("1r1q1rk1/2p2ppp/2np1n2/2bNp3/1pB1P1b1/2P2N2/1P1PQPPP/R1B2RK1"),
+            Chessboard.FromFEN("rnbqkb1r/pp3ppp/4pn2/2ppN3/3P1B2/8/PPP1PPPP/RN1QKB1R")
+         }; */
+
+        /* Perft: e2e3 d7d6 f1b5
+        error in der position: bishop der das check blocken könnte bekommt 
+        mehrere verschiedene moves nach a1 (illegal move)  
+        -> wahrscheinlich error bei generateLegalMoves für wenn in check
         */
-        visualBoard = new();
 
-        Testing.PerftResults(visualBoard, 4, true);
+        Chessboard[] checkMates ={
+            Chessboard.FromFEN("8/8/8/8/8/2k5/1q6/1K6"),
+            Chessboard.FromFEN("1k5R/6R1/8/8/8/8/8/1K6"),
+            Chessboard.FromFEN("1k6/2P5/Q2P4/8/8/8/8/1K6"),
+            Chessboard.FromFEN("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR")
+         };
 
-        // Testing.BenchMarkMINIMAX();
+        //intended usage of perftResults
+        Chessboard def = new();
+        def = def.GenerateBoardWithMove(Utility.ANtoPos("e2"), Utility.ANtoPos("e3"), Piece.wPawn);
+        def = def.GenerateBoardWithMove(Utility.ANtoPos("d7"), Utility.ANtoPos("d6"), Piece.bPawn);
+        def = def.GenerateBoardWithMove(Utility.ANtoPos("f1"), Utility.ANtoPos("b5"), Piece.wBishop);
+
+        MoveGen.GenerateBoards(def, true);
+        MoveGen.GenerateBoards(def, false);
+
+        Testing.PerftResults(def, 1, false);
+
+        DisplayBoard(def);
 
 
+        Chessboard c = Chessboard.FromFEN("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR");//fools mate
     }
 }

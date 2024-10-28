@@ -120,7 +120,6 @@ public class Chessboard {
         }
     }
 
-
     /// <summary>
     /// Hiermit kann durch FENtoPos funktionen ein board gebaut werden
     /// </summary>
@@ -158,7 +157,6 @@ public class Chessboard {
         BitBoard bCtrlBB,
         int BoardIndex,
         int parentIndex
-
     ) {
         this.WKingBB = wKingBB;
         this.BKingBB = bKingBB;
@@ -269,12 +267,9 @@ public class Chessboard {
     //kein unterschied zwischen weißen und schwarzen pins, weil sowieso nach jedem zug das BB aktualisiert werden muss
 
     /// <summary>
-    /// After GeneratePinnedPieceBB(...) is called, this contains BBs to pinLines in alle directions in the following order:
-    /// Top, TopRight, Right, BottomRight, Bottom, BottomLeft, Left, TopLeft (<=> clockwise, starting with Top)
+    /// forWhite = white wird gepinned
     /// </summary>
-
-
-    //forWhite = white is pinned
+    /// <param name="forWhite"></param>
     public void GeneratePinnedPieceBB(bool forWhite) {
         int kingIndex;
 
@@ -309,58 +304,60 @@ public class Chessboard {
         int x = kingIndex & 7;
 
         BitBoard sameColorPieces = forWhite ? WhitePiecesBB : BlackPiecesBB;
+        BitBoard enemyBlockers; //muss in funktion angepasst werden da auch bRook bBishop blocken kann
 
 
         if (intersectionsStraight != 0) {
+            enemyBlockers = forWhite ? BKnightBB | BBishopBB | BPawnBB : WKnightBB | WBishopBB | WPawnBB;
+
             BitBoard intersectionHoriWest = intersectionsStraight & MoveSets.InterpolateHorizontal(kingIndex, kingIndex - x);
             intersectionHoriWest = intersectionHoriWest == 0 ? 0 : MoveSets.InterpolateHorizontal(kingIndex, MoveSets.GetBiggestBit(intersectionHoriWest));
-            intersectionHoriWest = MoveSets.CountSetBits(intersectionHoriWest & sameColorPieces) == 2 ? intersectionHoriWest : 0;//1x king, 1x piece, dh 2 bits
+            intersectionHoriWest = ValidatePin(intersectionHoriWest, sameColorPieces, enemyBlockers, kingIndex);
 
             BitBoard intersectionHoriEast = intersectionsStraight & MoveSets.InterpolateHorizontal(kingIndex + (7 - x), kingIndex);
             intersectionHoriEast = intersectionHoriEast == 0 ? 0 : MoveSets.InterpolateHorizontal(MoveSets.GetSmallestBit(intersectionHoriEast), kingIndex);
-            intersectionHoriEast = MoveSets.CountSetBits(intersectionHoriEast & sameColorPieces) == 2 ? intersectionHoriEast : 0;
+            intersectionHoriEast = ValidatePin(intersectionHoriEast, sameColorPieces, enemyBlockers, kingIndex);
 
             BitBoard intersectionVertiBottom = intersectionsStraight & MoveSets.InterpolateVertical(kingIndex, kingIndex - y * 8);
             intersectionVertiBottom = intersectionVertiBottom == 0 ? 0 : MoveSets.InterpolateVertical(kingIndex, MoveSets.GetBiggestBit(intersectionVertiBottom));
-            intersectionVertiBottom = MoveSets.CountSetBits(intersectionVertiBottom & sameColorPieces) == 2 ? intersectionVertiBottom : 0;
+            intersectionVertiBottom = ValidatePin(intersectionVertiBottom, sameColorPieces, enemyBlockers, kingIndex);
 
             BitBoard intersectionVertiTop = intersectionsStraight & MoveSets.InterpolateVertical(kingIndex + (8 - y) * 8, kingIndex);
             intersectionVertiTop = intersectionVertiTop == 0 ? 0 : MoveSets.InterpolateVertical(MoveSets.GetSmallestBit(intersectionVertiTop), kingIndex);
-            intersectionVertiTop = MoveSets.CountSetBits(intersectionVertiTop & sameColorPieces) == 2 ? intersectionVertiTop : 0;
+            intersectionVertiTop = ValidatePin(intersectionVertiTop, sameColorPieces, enemyBlockers, kingIndex);
 
             //wenn mehr oder weniger als ein piece der eigenen farbe auf der pinLine steht ist es kein pin
 
             friendsInSightlines |= sameColorPieces & (intersectionHoriEast | intersectionHoriWest | intersectionVertiBottom | intersectionVertiTop);
-
         }
 
         if (intersectionDiags != 0) {
+            enemyBlockers = forWhite ? BKnightBB | BRookBB | BPawnBB : WKnightBB | WRookBB | WPawnBB;
+
             BitBoard antiDiag = MoveSets.GetAntiDiagonal(x, y);
             int nw = MoveSets.GetBiggestBit(antiDiag);
             BitBoard intersectionDiagNW = intersectionDiags & MoveSets.InterpolateAntiDiagonal(nw, kingIndex);
             intersectionDiagNW = intersectionDiagNW == 0 ? 0 : MoveSets.InterpolateAntiDiagonal(MoveSets.GetSmallestBit(intersectionDiagNW), kingIndex);
-            intersectionDiagNW = MoveSets.CountSetBits(intersectionDiagNW & sameColorPieces) == 2 ? intersectionDiagNW : 0;
+            intersectionDiagNW = ValidatePin(intersectionDiagNW, sameColorPieces, enemyBlockers, kingIndex);
 
             int se = MoveSets.GetSmallestBit(antiDiag);
             BitBoard intersectionDiagSE = intersectionDiags & MoveSets.InterpolateAntiDiagonal(kingIndex, se);
             intersectionDiagSE = intersectionDiagSE == 0 ? 0 : MoveSets.InterpolateAntiDiagonal(kingIndex, MoveSets.GetBiggestBit(intersectionDiagSE));
-            intersectionDiagSE = MoveSets.CountSetBits(intersectionDiagSE & sameColorPieces) == 2 ? intersectionDiagSE : 0;
+            intersectionDiagSE = ValidatePin(intersectionDiagSE, sameColorPieces, enemyBlockers, kingIndex);
 
             BitBoard diag = MoveSets.GetDiagonal(x, y);
             int ne = MoveSets.GetBiggestBit(diag);
             BitBoard intersectionDiagNE = intersectionDiags & MoveSets.InterpolateDiagonal(ne, kingIndex);
             intersectionDiagNE = intersectionDiagNE == 0 ? 0 : MoveSets.InterpolateDiagonal(MoveSets.GetSmallestBit(intersectionDiagNE), kingIndex);
-            intersectionDiagNE = MoveSets.CountSetBits(intersectionDiagNE & sameColorPieces) == 2 ? intersectionDiagNE : 0;
+            intersectionDiagNE = ValidatePin(intersectionDiagNE, sameColorPieces, enemyBlockers, kingIndex);
 
             int sw = MoveSets.GetSmallestBit(diag);
             BitBoard intersectionDiagSW = intersectionDiags & MoveSets.InterpolateDiagonal(kingIndex, sw);
             intersectionDiagSW = intersectionDiagSW == 0 ? 0 : MoveSets.InterpolateDiagonal(kingIndex, MoveSets.GetBiggestBit(intersectionDiagSW));
-            intersectionDiagSW = MoveSets.CountSetBits(intersectionDiagSW & sameColorPieces) == 2 ? intersectionDiagSW : 0;
+            intersectionDiagSW = ValidatePin(intersectionDiagSW, sameColorPieces, enemyBlockers, kingIndex);
 
             friendsInSightlines |= intersectionDiagNE | intersectionDiagNW | intersectionDiagSE | intersectionDiagSW;
         }
-
-        /* TODO!!! sicherstellen dass nur EIN piece der eigenen farbe auf den linien steht */
 
         pinnedBB = friendsInSightlines & ~WKingBB & ~BKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
     }
@@ -446,6 +443,79 @@ public class Chessboard {
                 break;
         }
     }
+
+
+    private BitBoard ValidatePin(BitBoard sightLine, BitBoard sameColorPieces, BitBoard enemyBlockers, int kingIndex) {
+        sameColorPieces = Utility.SetBBtoNullAt(sameColorPieces, kingIndex);
+
+        if ((sightLine & enemyBlockers) != 0) return 0;//enemy steht auf der pinLine
+
+        return MoveSets.CountSetBits(sightLine & sameColorPieces) == 1 ? sightLine : 0;
+    }
+
+    /// <summary>
+    /// Reihenfolge (nach Wert sortiert, aufsteigend): Pawn, Knight, Bishop, Rook, Queen
+    /// </summary>
+    public BitBoard[] CheckPieceBBs = new BitBoard[5];
+
+    //forWhite = white is in check
+    public bool IsInCheck(bool forWhite) {
+
+        BitBoard knightBB, queenBB, rookBB, bishopBB, pawnBB, sameColorPieces;
+        BitBoard pawnDoub;//einzigen beiden bits wo pawns checken können
+        int kingIndex;
+
+        if (forWhite) {
+            sameColorPieces = WhitePiecesBB;
+            knightBB = BKnightBB;
+            queenBB = BQueenBB;
+            rookBB = BRookBB;
+            bishopBB = BBishopBB;
+            pawnBB = BPawnBB;
+
+            kingIndex = Utility.FindSingleSetBit(WKingBB);
+
+            int x = kingIndex & 7;
+            int y = kingIndex >> 3;
+
+            pawnDoub = MoveSets.HorizontalLineBB(y + 1) & (0b101ul << (kingIndex + 7)) & BPawnBB;
+        } else {
+            sameColorPieces = BlackPiecesBB;
+            knightBB = WKnightBB;
+            queenBB = WQueenBB;
+            rookBB = WRookBB;
+            bishopBB = WBishopBB;
+            pawnBB = WPawnBB;
+
+            kingIndex = Utility.FindSingleSetBit(BKingBB);
+
+            int x = kingIndex & 7;
+            int y = kingIndex >> 3;
+
+            pawnDoub = MoveSets.HorizontalLineBB(y - 1) & (0b101ul << (kingIndex - 9)) & WPawnBB;
+        }
+
+
+        //king perspective 
+        BitBoard kingPersKnight = BB_Lookup.GetBBforPieceAtSqr(Piece.wKnight, kingIndex);
+        /* MoveSets.GetPseudoTargetSqrsRook(BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex), kingIndex) */
+        BitBoard kingPersRook = MoveSets.GetSliderPseudoLegalMoves(this, kingIndex, sameColorPieces, Piece.wRook);
+        BitBoard kingPersBishop = MoveSets.GetSliderPseudoLegalMoves(this, kingIndex, sameColorPieces, Piece.wBishop);
+        BitBoard kingPersQueen = kingPersBishop | kingPersRook;
+
+
+        //hier sind bits gesetzt wo pieces stehen die check geben
+        //wenn leer gibt kein piece check
+        CheckPieceBBs[1] = knightBB & kingPersKnight;
+        CheckPieceBBs[4] = queenBB & kingPersQueen;
+        CheckPieceBBs[3] = rookBB & kingPersRook;
+        CheckPieceBBs[2] = bishopBB & kingPersBishop;
+
+        CheckPieceBBs[0] = pawnBB & pawnDoub;
+
+        return (CheckPieceBBs[0] | CheckPieceBBs[1] | CheckPieceBBs[2] | CheckPieceBBs[3] | CheckPieceBBs[4]) != 0;
+    }
+
 
     /// <summary>
     /// Generiert stumpf ein Board wo das Piece von StartIndex zu EndIndex bewegt wurde
