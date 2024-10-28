@@ -361,9 +361,4 @@ static class Utility
         bb &= bb - 1; // Clear the least significant set bit
         index2 = bb.LowestOne;
     }
-
-    public static int FindSingleSetBit(BitBoard bb)
-    {
-        return bb.LowestOne;
-    }
 }

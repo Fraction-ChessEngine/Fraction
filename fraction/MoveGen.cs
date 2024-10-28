@@ -28,7 +28,7 @@ public static class MoveGen {
         int amount = Eval.NumberOfSetBits(pieceBB);
         switch (amount) {
             case 1:
-                int i1 = Utility.FindSingleSetBit(pieceBB);
+                int i1 = pieceBB.LowestOne;
                 Vision v = GetVisionForPieceAt(b, i1, includeCoverage);
                 if (v.MoveBB == 0ul)
                     break;
@@ -91,7 +91,7 @@ public static class MoveGen {
     private static void GenerateMovesForKing(Chessboard b, BitBoard kingBB, ref Vision[] possibleMoves,
             ref int currIndex, bool includeCoverage = false) {
 
-        int kingIndex = Utility.FindSingleSetBit(kingBB);
+        int kingIndex = kingBB.LowestOne;
 
         Vision vKing = GetVisionForPieceAt(b, kingIndex, includeCoverage);
 
@@ -159,7 +159,7 @@ public static class MoveGen {
         foreach (BitBoard bb in b.CheckPieceBBs) combined |= bb;
         int amount = MoveSets.CountSetBits(combined);
 
-        int posIndex = Utility.FindSingleSetBit(forWhite ? b.WKingBB : b.BKingBB);
+        int posIndex = (forWhite ? b.WKingBB : b.BKingBB).LowestOne;
         BitBoard sameColorPieces = forWhite ? b.WhitePiecesBB : b.BlackPiecesBB;
         BitBoard enemyControlSqrs = forWhite ? b.BControlledSqrBB : b.WControlledSqrBB;
         Piece king = forWhite ? Piece.wKing : Piece.bKing;
@@ -216,7 +216,7 @@ public static class MoveGen {
             return legal[0..(currIndex)];
 
         } else {//es ist ein slider
-            BitBoard checkLine = GetCheckLine(kingIndex, Utility.FindSingleSetBit(combined)) & ~(1ul << kingIndex);
+            BitBoard checkLine = GetCheckLine(kingIndex, combined.LowestOne) & ~(1ul << kingIndex);
 
             for (int i = 0; i < pseudoLegal.Length; i++) {
                 Vision v = pseudoLegal[i];

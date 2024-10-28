@@ -281,7 +281,7 @@ public class Chessboard {
         BitBoard intersectionDiags;
 
         if (forWhite) {
-            kingIndex = Utility.FindSingleSetBit(WKingBB);
+            kingIndex = wKingBB.LowestOne;
 
             rookSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex);
             bishopSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wBishop, kingIndex);
@@ -290,7 +290,7 @@ public class Chessboard {
             intersectionsStraight = rookSightlines & (BRookBB | BQueenBB);
             intersectionDiags = bishopSightlines & (BBishopBB | BQueenBB);
         } else {
-            kingIndex = Utility.FindSingleSetBit(BKingBB);
+            kingIndex = bKingBB.LowestOne;
 
             rookSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex);
             bishopSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wBishop, kingIndex);
@@ -473,7 +473,7 @@ public class Chessboard {
             bishopBB = BBishopBB;
             pawnBB = BPawnBB;
 
-            kingIndex = Utility.FindSingleSetBit(WKingBB);
+            kingIndex = wKingBB.LowestOne;
 
             int x = kingIndex & 7;
             int y = kingIndex >> 3;
@@ -487,7 +487,7 @@ public class Chessboard {
             bishopBB = WBishopBB;
             pawnBB = WPawnBB;
 
-            kingIndex = Utility.FindSingleSetBit(BKingBB);
+            kingIndex = bKingBB.LowestOne;
 
             int x = kingIndex & 7;
             int y = kingIndex >> 3;
