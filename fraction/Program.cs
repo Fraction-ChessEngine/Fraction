@@ -203,7 +203,6 @@ public class Program {
         mehrere verschiedene moves nach a1 (illegal move)  
         -> wahrscheinlich error bei generateLegalMoves für wenn in check
         */
-
         Chessboard[] checkMates ={
             Chessboard.FromFEN("8/8/8/8/8/2k5/1q6/1K6"),
             Chessboard.FromFEN("1k5R/6R1/8/8/8/8/8/1K6"),
