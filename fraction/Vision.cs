@@ -8,10 +8,10 @@ namespace fraction;
 public struct Vision
 {
     public int PosIndex, setBits;
-    public ulong MoveBB;
+    public BitBoard MoveBB;
     public Piece pieceType;
 
-    public Vision(int i, ulong m, Piece piece)
+    public Vision(int i, BitBoard m, Piece piece)
     {
         PosIndex = i;
         MoveBB = m;

@@ -213,7 +213,7 @@ static class Testing {
                     if (currPiece != p)
                         continue; //nur für die richtige pieceArt checken
 
-                    ulong bb = MoveSets.GetPseudoLegalMoves(
+                    BitBoard bb = MoveSets.GetPseudoLegalMoves(
                         new Chessboard(pos),
                         index,
                         out outValue
@@ -252,7 +252,7 @@ static class Testing {
                     if (currPiece != p)
                         continue; //nur für die richtige pieceArt checken
 
-                    ulong bb = MoveSets.GetPseudoLegalMoves(
+                    BitBoard bb = MoveSets.GetPseudoLegalMoves(
                         new Chessboard(pos),
                         i,
                         out outValue
@@ -361,7 +361,7 @@ static class Testing {
     }
 
     public static void BenchMarkMoveSets() {
-        ulong[] bbs =
+        BitBoard[] bbs =
         {
                 0b0101010101001010001001111110101011101010010111100010011000111001,
                 0b1000110001101101101111111110111100010101011101100000010110011110,

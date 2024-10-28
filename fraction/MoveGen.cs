@@ -20,7 +20,7 @@ static class MoveGen {
 
     private static void GenerateMovesForDoublePiece(
         Chessboard b,
-        ulong pieceBB,
+        BitBoard pieceBB,
         ref Vision[] possibleMoves,
         ref int currIndex,
         bool includeCoverage = false
@@ -88,7 +88,7 @@ static class MoveGen {
         return possibleMoves[0..currIndex];
     }
 
-    private static void GenerateMovesForKing(Chessboard b, ulong kingBB, ref Vision[] possibleMoves,
+    private static void GenerateMovesForKing(Chessboard b, BitBoard kingBB, ref Vision[] possibleMoves,
             ref int currIndex, bool includeCoverage = false) {
 
         int kingIndex = Utility.FindSingleSetBit(kingBB);
@@ -102,7 +102,7 @@ static class MoveGen {
     }
 
     private static void GenerateMovesForPawns(
-            Chessboard b, ulong pawnBB, ref Vision[] possibleMoves,
+            Chessboard b, BitBoard pawnBB, ref Vision[] possibleMoves,
             ref int currIndex, bool includeCoverage = false) {
 
 
@@ -120,7 +120,7 @@ static class MoveGen {
     }
 
     //das einzige piece zu dem man promoten kann, dh es kann 8 geben
-    private static void GenerateMovesForQueens(Chessboard b, ulong queenBB,
+    private static void GenerateMovesForQueens(Chessboard b, BitBoard queenBB,
             ref Vision[] possibleMoves, ref int currIndex, bool includeCoverage = false) {
 
         int queens = Eval.NumberOfSetBits(queenBB);
@@ -155,13 +155,13 @@ static class MoveGen {
                 king bewegen, piece nehmen, blocken
 
         */
-        ulong combined = 0;
-        foreach (ulong bb in b.CheckPieceBBs) combined |= bb;
+        BitBoard combined = 0;
+        foreach (BitBoard bb in b.CheckPieceBBs) combined |= bb;
         int amount = MoveSets.CountSetBits(combined);
 
         int posIndex = Utility.FindSingleSetBit(forWhite ? b.WKingBB : b.BKingBB);
-        ulong sameColorPieces = forWhite ? b.WhitePiecesBB : b.BlackPiecesBB;
-        ulong enemyControlSqrs = forWhite ? b.BControlledSqrBB : b.WControlledSqrBB;
+        BitBoard sameColorPieces = forWhite ? b.WhitePiecesBB : b.BlackPiecesBB;
+        BitBoard enemyControlSqrs = forWhite ? b.BControlledSqrBB : b.WControlledSqrBB;
         Piece king = forWhite ? Piece.wKing : Piece.bKing;
 
         //weil ein kingmove immer ein valider ausweg ist
@@ -191,7 +191,7 @@ static class MoveGen {
     /// Wird in GenerateMovesForCheck gecalled wenn es nur ein Piece check gibt
     /// </summary>
     /// <returns></returns>
-    private static Span<Vision> GenerateMovesForSingleCheck(Chessboard b, bool forWhite, ulong combined, int kingIndex) {
+    private static Span<Vision> GenerateMovesForSingleCheck(Chessboard b, bool forWhite, BitBoard combined, int kingIndex) {
         Span<Vision> pseudoLegal = GenerateMoves(b, forWhite);
         Vision[] legal = new Vision[16];
         int currIndex = 0;
@@ -216,7 +216,7 @@ static class MoveGen {
             return legal[0..(currIndex)];
 
         } else {//es ist ein slider
-            ulong checkLine = GetCheckLine(kingIndex, Utility.FindSingleSetBit(combined)) & ~(1ul << kingIndex);
+            BitBoard checkLine = GetCheckLine(kingIndex, Utility.FindSingleSetBit(combined)) & ~(1ul << kingIndex);
 
             for (int i = 0; i < pseudoLegal.Length; i++) {
                 Vision v = pseudoLegal[i];
@@ -244,7 +244,7 @@ static class MoveGen {
     /// <param name="c"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public static ulong GetCheckLine(int k, int c) {
+    public static BitBoard GetCheckLine(int k, int c) {
         int yKing = k >> 3;
         int xKing = k & 7;
 
@@ -321,7 +321,7 @@ static class MoveGen {
 
     public static Vision GetVisionForPieceAt(Chessboard b, int i, bool includeCoverage = false) {
         Piece pieceType;
-        ulong bb = MoveSets.GetPseudoLegalMoves(b, i, out pieceType, includeCoverage);
+        BitBoard bb = MoveSets.GetPseudoLegalMoves(b, i, out pieceType, includeCoverage);
 
 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
