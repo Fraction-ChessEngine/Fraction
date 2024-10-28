@@ -191,7 +191,7 @@ public class Chessboard {
             BitBoard bb = v.MoveBB;
 
             //pawns müssen gesondert berechnet werden wegen des unterschieds zwischen bewegung und schlagzug
-            if (v.pieceType == Piece.wPawn || v.pieceType == Piece.bPawn) {
+            if (v.PieceType == Piece.wPawn || v.PieceType == Piece.bPawn) {
                 bb &= ~MoveSets.VerticalLineBB(v.PosIndex % 8);
 
                 int y = v.PosIndex >> 3;

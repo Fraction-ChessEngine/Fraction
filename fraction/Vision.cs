@@ -5,29 +5,23 @@ namespace fraction;
 /// <summary>
 /// kann für jedes Piece generiert werden, enthält alle pseudolegalen Moves die dieses Piece machen kann als BB
 /// </summary>
-public struct Vision
-{
-    public int PosIndex, setBits;
-    public BitBoard MoveBB;
-    public Piece pieceType;
+public struct Vision {
+    public int PosIndex { get; init; }
+    public BitBoard MoveBB { get; set; }
+    public Piece PieceType { get; init; }
 
-    public Vision(int i, BitBoard m, Piece piece)
-    {
+    public Vision(int i, BitBoard m, Piece piece) {
         PosIndex = i;
         MoveBB = m;
-        pieceType = piece;
-        setBits = Eval.NumberOfSetBits(MoveBB);
+        PieceType = piece;
     }
 
-    public void PrintBB()
-    {
+    public void PrintBB() {
         Utility.PrintBitBoard(MoveBB, PosIndex);
     }
 
-    public static void PrintMovesArr(Span<Vision> moves)
-    {
-        foreach (Vision m in moves)
-        {
+    public static void PrintMovesArr(Span<Vision> moves) {
+        foreach (Vision m in moves) {
             m.PrintBB();
         }
     }

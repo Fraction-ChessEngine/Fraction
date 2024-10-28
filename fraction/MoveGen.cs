@@ -292,7 +292,7 @@ public static class MoveGen {
         int endLength = 0;
         for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
-            endLength += v.setBits;
+            endLength += v.MoveBB.Count;
         }
 
         Chessboard[] boards = new Chessboard[endLength];
@@ -302,9 +302,9 @@ public static class MoveGen {
         for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
 
-            int[] moveArr = Utility.FindSetBitsMax(v.MoveBB, v.setBits);
-            for (int j = 0; j < v.setBits; j++) {
-                Chessboard cb = b.GenerateBoardWithMove(v.PosIndex, moveArr[j], v.pieceType);
+            int[] moveArr = Utility.FindSetBitsMax(v.MoveBB, v.MoveBB.Count);
+            for (int j = 0; j < v.MoveBB.Count; j++) {
+                Chessboard cb = b.GenerateBoardWithMove(v.PosIndex, moveArr[j], v.PieceType);
                 boards[index] = cb;
                 index++;
 
