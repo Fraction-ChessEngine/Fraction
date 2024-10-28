@@ -32,11 +32,11 @@ public static class MoveSets {
         from controlling the sqrs behind him
         */
 
-        bool isWhite = IsBitSet(board.WhitePiecesBB, posIndex);
+        bool isWhite = board.WhitePiecesBB[posIndex];
         BitBoard sameColorPieces = includeCoverage ? 0 : isWhite ? board.WhitePiecesBB : board.BlackPiecesBB;
         BitBoard enemyControlSqrs = isWhite ? board.BControlledSqrBB : board.WControlledSqrBB;
 
-        if (IsBitSet(board.WPawnBB, posIndex)) {
+        if (board.WPawnBB[posIndex]) {
             pieceType = Piece.wPawn;
             int y = posIndex >> 3;
             int x = posIndex & 7;
@@ -51,10 +51,10 @@ public static class MoveSets {
             BitBoard moveSqrs = ~allPiecesBB & (1ul << posIndex + 8);
 
             int sqrTwoAbove = posIndex + 16;
-            moveSqrs |= (moveSqrs != 0 && !IsBitSet(allPiecesBB, sqrTwoAbove)) ? (y == 1 ? 1ul << sqrTwoAbove : 0) : 0;
+            moveSqrs |= (moveSqrs != 0 && !allPiecesBB[sqrTwoAbove]) ? (y == 1 ? 1ul << sqrTwoAbove : 0) : 0;
 
             return targetSqrs | moveSqrs;
-        } else if (IsBitSet(board.BPawnBB, posIndex)) {
+        } else if (board.BPawnBB[posIndex]) {
             pieceType = Piece.bPawn;
 
             int y = posIndex >> 3;
@@ -70,31 +70,31 @@ public static class MoveSets {
             BitBoard moveSqrs = ~allPiecesBB & (1ul << posIndex - 8);
 
             int sqrTwoAbove = posIndex - 16;
-            moveSqrs |= (moveSqrs != 0 && !IsBitSet(allPiecesBB, sqrTwoAbove)) ? (y == 6 ? 1ul << (sqrTwoAbove) : 0) : 0;
+            moveSqrs |= (moveSqrs != 0 && !allPiecesBB[sqrTwoAbove]) ? (y == 6 ? 1ul << (sqrTwoAbove) : 0) : 0;
 
             return targetSqrs | moveSqrs;
-        } else if (IsBitSet(board.BRookBB | board.WRookBB, posIndex)) {
+        } else if ((board.BRookBB | board.WRookBB)[posIndex]) {
             pieceType = isWhite ? Piece.wRook : Piece.bRook;
             return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wRook, includeCoverage, isWhite);
 
 
         }//es ist ein bishop, beinahe selber code wie rook wegen ähnlichem attackpattern
-          else if (IsBitSet(board.WBishopBB | board.BBishopBB, posIndex)) {
+          else if ((board.WBishopBB | board.BBishopBB)[posIndex]) {
             pieceType = isWhite ? Piece.wBishop : Piece.bBishop;
             return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wBishop, includeCoverage, isWhite);
 
-        } else if (IsBitSet(board.WKnightBB | board.BKnightBB, posIndex)) {
+        } else if ((board.WKnightBB | board.BKnightBB)[posIndex]) {
             pieceType = isWhite ? Piece.wKnight : Piece.bKnight;
             return GetKnightPseudoLegalMoves(posIndex, sameColorPieces);
 
         } //es ist ein king, beinah selber code wie beim knight wegen der konstanten anzahl an mgl feldern
-          else if (IsBitSet(board.WKingBB | board.BKingBB, posIndex)) {
+          else if ((board.WKingBB | board.BKingBB)[posIndex]) {
             pieceType = isWhite ? Piece.wKing : Piece.bKing;
 
             return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs);
 
         }  //es ist eine queen
-          else if (IsBitSet(board.WQueenBB | board.BQueenBB, posIndex)) {
+          else if ((board.WQueenBB | board.BQueenBB)[posIndex]) {
             pieceType = isWhite ? Piece.wQueen : Piece.bQueen;
 
             return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wRook, includeCoverage, isWhite)
@@ -472,12 +472,5 @@ public static class MoveSets {
     /// <returns></returns>
     public static BitBoard VerticalLineBB(int x) {
         return 0b0000000100000001000000010000000100000001000000010000000100000001ul << x;
-    }
-
-    //eigentlich sehr obvious
-    //https://stackoverflow.com/questions/43724490/how-to-reset-single-bit-in-BitBoard
-    //https://stackoverflow.com/questions/2431732/checking-if-a-bit-is-set-or-not
-    public static bool IsBitSet(BitBoard b, int pos) {
-        return (b & (1ul << pos)) != 0;
     }
 }

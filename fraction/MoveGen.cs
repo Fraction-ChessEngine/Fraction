@@ -325,7 +325,7 @@ public static class MoveGen {
         BitBoard bb = MoveSets.GetPseudoLegalMoves(b, i, out pieceType, includeCoverage);
 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
-        if (MoveSets.IsBitSet(b.pinnedBB, i)) {
+        if (b.pinnedBB[i]) {
             bb &= b.pinnedBB;
         }
 

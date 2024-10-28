@@ -218,7 +218,7 @@ static class Testing {
                         index,
                         out outValue
                     );
-                    if (MoveSets.IsBitSet(bb, endPos))
+                    if (bb[endPos])
                         return index;
                 }
             }
@@ -231,14 +231,11 @@ static class Testing {
                     if (currPiece != p)
                         continue; //nur für die richtige pieceArt checken
                     if (
-                        MoveSets.IsBitSet(
-                            MoveSets.GetPseudoLegalMoves(
-                                new Chessboard(pos),
-                                index,
-                                out outValue
-                            ),
-                            endPos
-                        )
+                        MoveSets.GetPseudoLegalMoves(
+                            new Chessboard(pos),
+                            index,
+                            out outValue
+                        )[endPos]
                     )
                         return index;
                 }
@@ -258,7 +255,7 @@ static class Testing {
                         out outValue
                     );
 
-                    if (MoveSets.IsBitSet(bb, endPos))
+                    if (bb[endPos])
                         return i;
                 }
             }
