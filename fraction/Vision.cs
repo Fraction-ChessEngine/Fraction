@@ -17,7 +17,7 @@ public struct Vision {
     }
 
     public void PrintBB() {
-        Utility.PrintBitBoard(MoveBB, PosIndex);
+        Console.WriteLine(MoveBB.ToString());
     }
 
     public static void PrintMovesArr(Span<Vision> moves) {
