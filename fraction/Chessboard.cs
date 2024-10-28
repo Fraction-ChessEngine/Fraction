@@ -334,7 +334,7 @@ public class Chessboard {
         if (intersectionDiags != 0) {
             enemyBlockers = forWhite ? BKnightBB | BRookBB | BPawnBB : WKnightBB | WRookBB | WPawnBB;
 
-            BitBoard antiDiag = MoveSets.GetAntiDiagonal(x, y);
+            BitBoard antiDiag = BitBoard.AntiDiagonal(x, y);
             int nw = MoveSets.GetBiggestBit(antiDiag);
             BitBoard intersectionDiagNW = intersectionDiags & MoveSets.InterpolateAntiDiagonal(nw, kingIndex);
             intersectionDiagNW = intersectionDiagNW == 0 ? 0 : MoveSets.InterpolateAntiDiagonal(MoveSets.GetSmallestBit(intersectionDiagNW), kingIndex);
@@ -345,7 +345,7 @@ public class Chessboard {
             intersectionDiagSE = intersectionDiagSE == 0 ? 0 : MoveSets.InterpolateAntiDiagonal(kingIndex, MoveSets.GetBiggestBit(intersectionDiagSE));
             intersectionDiagSE = ValidatePin(intersectionDiagSE, sameColorPieces, enemyBlockers, kingIndex);
 
-            BitBoard diag = MoveSets.GetDiagonal(x, y);
+            BitBoard diag = BitBoard.Diagonal(x, y);
             int ne = MoveSets.GetBiggestBit(diag);
             BitBoard intersectionDiagNE = intersectionDiags & MoveSets.InterpolateDiagonal(ne, kingIndex);
             intersectionDiagNE = intersectionDiagNE == 0 ? 0 : MoveSets.InterpolateDiagonal(MoveSets.GetSmallestBit(intersectionDiagNE), kingIndex);

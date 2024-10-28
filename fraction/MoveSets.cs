@@ -176,8 +176,8 @@ public static class MoveSets {
         BitBoard nullifier = posIndex == 0 ? 0 : 1ul;
         int reverseIndex = 64 - posIndex;
 
-        BitBoard diagBB = GetDiagonal(posIndex) & pieceBB;
-        BitBoard antiDiagBB = GetAntiDiagonal(posIndex) & pieceBB;
+        BitBoard diagBB = BitBoard.Diagonal(posIndex) & pieceBB;
+        BitBoard antiDiagBB = BitBoard.AntiDiagonal(posIndex) & pieceBB;
 
         BitBoard diagSW = ((diagBB << reverseIndex) >> reverseIndex) * nullifier;
         BitBoard diagNE = ((diagBB >> posIndex) << posIndex);
@@ -239,7 +239,7 @@ public static class MoveSets {
     //NW>SE
     public static BitBoard InterpolateAntiDiagonal(int indexNW, int indexSE) {
         BitBoard filler = InterpolateHorizontal(indexNW, indexSE);
-        BitBoard diag = GetAntiDiagonal(indexNW);
+        BitBoard diag = BitBoard.AntiDiagonal(indexNW);
 
         return filler & diag;
     }
@@ -247,12 +247,13 @@ public static class MoveSets {
     //NE>SW
     public static BitBoard InterpolateDiagonal(int indexNE, int indexSW) {
         BitBoard filler = InterpolateHorizontal(indexNE, indexSW);
-        BitBoard diag = GetDiagonal(indexNE);
+        BitBoard diag = BitBoard.Diagonal(indexNE);
 
         return filler & diag;
     }
 
-    private static readonly BitBoard[] diagonals =
+    // this has historic value
+    private static readonly BitBoard[] TieFighter =
     {
             (1ul << 7),
             (1ul << 6) | (1ul << 15),
@@ -291,23 +292,8 @@ public static class MoveSets {
             (1ul << 7) //um nicht %15 machen zu müssen
         };
 
-    //returnt die diagonale in der sich ein sqr befindet
-    public static BitBoard GetDiagonal(int posIndex) {
-        int y = posIndex >> 3;
-        int x = posIndex & 7;
-
-        int diagonalIndex = y - x + 7;
-
-        return diagonals[diagonalIndex];
-    }
-
-    public static BitBoard GetDiagonal(int x, int y) {
-        int diagonalIndex = y - x + 7;
-
-        return diagonals[diagonalIndex];
-    }
-
-    private static readonly BitBoard[] antiDiagonals =
+    // this has historic value
+    private static readonly BitBoard[] antiTieFighter =
     {
             (1ul << 0),
             (1ul << 1) | (1ul << 8),
@@ -344,21 +330,6 @@ public static class MoveSets {
             (1ul << 55) | (1ul << 62),
             (1ul << 63),
         };
-
-    //returnt die antidiagonale in der sich ein sqr befindet
-    public static BitBoard GetAntiDiagonal(int posIndex) {
-        int y = posIndex >> 3;
-        int x = posIndex & 7;
-
-        int antiDiagonalIndex = x + y;
-
-        return antiDiagonals[antiDiagonalIndex];
-    }
-
-    public static BitBoard GetAntiDiagonal(int x, int y) {
-        int antiDiagonalIndex = x + y;
-        return antiDiagonals[antiDiagonalIndex];
-    }
 
     /// <summary>
     /// Nimmt BB mit sqrs die im sichtfeld eines pieces liegen, entfernt sqrs die das
