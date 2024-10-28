@@ -343,12 +343,12 @@ static class Testing {
     public static void BenchMarkMINIMAX() {
         Stopwatch sw = new Stopwatch();
 
-        int depth = 7;
+        int depth = 6;
 
         sw.Start();
 
         Chessboard b = new Chessboard();
-        Minimax minimax = new(); //{ MaxQuiescenceSearchPlies = 3 };
+        Minimax minimax = new() { MaxQuiescenceSearchPlies = 3, AlphaBetaPruning = true };
         float eval = minimax.Run(b, depth, true);
         Console.WriteLine("Eval = " + (float)eval);
         Console.WriteLine("Depth = " + (float)depth);

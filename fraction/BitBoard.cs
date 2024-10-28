@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 
 using static System.Numerics.BitOperations;
@@ -56,6 +57,16 @@ public struct BitBoard {
         _value += Reverse(b);
         _value <<= 8;
         _value += Reverse(a);
+    }
+
+    public Span<int> FindOnes(Span<int> posBuf) {
+        int i = 0;
+        for (BitBoard bb = this; i < int.Min(posBuf.Length, PopCount); i++) {
+            posBuf[i] = bb.LowestOne;
+            bb[posBuf[i]] = false;
+        }
+
+        return posBuf[0..i];
     }
 
     //https://stackoverflow.com/questions/3587826/is-there-a-built-in-function-to-reverse-bit-order

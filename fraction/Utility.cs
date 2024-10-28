@@ -330,35 +330,4 @@ static class Utility
 
         return setBits;
     }
-
-    /// <summary>
-    /// wenn bekannt ist dass maximal n bits gesetzt sind
-    /// |Doppelt so schnell wie die Methode von ChatGPT
-    /// </summary>
-    /// <param name="bb"></param>
-    /// <returns></returns>
-    public static int[] FindSetBitsMax(BitBoard bb, int max)
-    {
-        int[] setBits = new int[max];
-        int i = 0;
-
-        while (bb != 0)
-        {
-            int index = bb.LowestOne;
-            setBits[i] = index;
-            i++;
-
-            // Clear the least significant set bit
-            bb &= bb - 1;
-        }
-
-        return setBits;
-    }
-
-    public static void FindTwoSetBits(BitBoard bb, out int index1, out int index2)
-    {
-        index1 = bb.LowestOne;
-        bb &= bb - 1; // Clear the least significant set bit
-        index2 = bb.LowestOne;
-    }
 }

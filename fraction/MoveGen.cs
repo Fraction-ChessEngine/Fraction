@@ -36,11 +36,10 @@ public static class MoveGen {
                 currIndex++;
                 break;
             case 2:
-                int j1,
-                    j2;
-                Utility.FindTwoSetBits(pieceBB, out j1, out j2);
-                Vision v1 = GetVisionForPieceAt(b, j1, includeCoverage);
-                Vision v2 = GetVisionForPieceAt(b, j2, includeCoverage);
+                Span<int> j = stackalloc int[2];
+                _ = pieceBB.FindOnes(j);
+                Vision v1 = GetVisionForPieceAt(b, j[0], includeCoverage);
+                Vision v2 = GetVisionForPieceAt(b, j[1], includeCoverage);
 
                 if (v1.MoveBB != 0ul) {
                     possibleMoves[currIndex] = v1;
@@ -106,12 +105,12 @@ public static class MoveGen {
             ref int currIndex, bool includeCoverage = false) {
 
 
-        int pawns = Eval.NumberOfSetBits(pawnBB);
 
-        int[] pawnArr = Utility.FindSetBitsMax(pawnBB, pawns);
+        Span<int> pawns = stackalloc int[pawnBB.PopCount];
+        _ = pawnBB.FindOnes(pawns);
 
-        for (int i = 0; i < pawns; i++) {
-            Vision v = GetVisionForPieceAt(b, pawnArr[i], includeCoverage);
+        for (int i = 0; i < pawns.Length; i++) {
+            Vision v = GetVisionForPieceAt(b, pawns[i], includeCoverage);
             if (v.MoveBB == 0)
                 continue;
             possibleMoves[currIndex] = v;
@@ -123,11 +122,11 @@ public static class MoveGen {
     private static void GenerateMovesForQueens(Chessboard b, BitBoard queenBB,
             ref Vision[] possibleMoves, ref int currIndex, bool includeCoverage = false) {
 
-        int queens = Eval.NumberOfSetBits(queenBB);
-        int[] queenArr = Utility.FindSetBitsMax(queenBB, queens);
+        Span<int> queens = stackalloc int[queenBB.PopCount];
+        _ = queenBB.FindOnes(queens);
 
-        for (int i = 0; i < queens; i++) {
-            Vision v = GetVisionForPieceAt(b, queenArr[i], includeCoverage);
+        for (int i = 0; i < queens.Length; i++) {
+            Vision v = GetVisionForPieceAt(b, queens[i], includeCoverage);
             if (v.MoveBB == 0)
                 continue;
             possibleMoves[currIndex] = v;
@@ -301,17 +300,19 @@ public static class MoveGen {
 
         for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
-
-            int[] moveArr = Utility.FindSetBitsMax(v.MoveBB, v.MoveBB.PopCount);
+#pragma warning disable CA2014
+            Span<int> moves = stackalloc int[v.MoveBB.PopCount];
+#pragma warning restore CA2014
+            _ = v.MoveBB.FindOnes(moves);
             for (int j = 0; j < v.MoveBB.PopCount; j++) {
-                Chessboard cb = b.GenerateBoardWithMove(v.PosIndex, moveArr[j], v.PieceType);
+                Chessboard cb = b.GenerateBoardWithMove(v.PosIndex, moves[j], v.PieceType);
                 boards[index] = cb;
                 index++;
 
                 //frisst hoffentlich nicht zu viel performance
                 if (perft) {
-                    Testing.perftmoves[index - 1] = Utility.PosToAN((v.PosIndex)) +
-                        Utility.PosToAN((moveArr[j]));
+                    Testing.perftmoves[index - 1] = Utility.PosToAN(v.PosIndex) +
+                        Utility.PosToAN(moves[j]);
                 }
             }
         }
