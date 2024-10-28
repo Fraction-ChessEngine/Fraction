@@ -380,12 +380,12 @@ public static class MoveSets {
 
         //die x-Koordinate von posIndex ist die position in der
         //hori line, y ist die position in der verti line
-        BitBoard hori = HorizontalLineBB(y) & pieceBB;
+        BitBoard hori = BitBoard.HorizontalLine(y) & pieceBB;
         BitBoard horiEast = (hori >> posIndex) << posIndex;
         BitBoard horiWest = ((hori << reverseIndex) >> reverseIndex) * nullifier;
 
         //vertikale lines
-        BitBoard verti = VerticalLineBB(x) & pieceBB;
+        BitBoard verti = BitBoard.VerticalLine(x) & pieceBB;
         BitBoard vertiTop = (verti >> posIndex) << posIndex;
         BitBoard vertiBottom = ((verti << reverseIndex) >> reverseIndex) * nullifier;
 
@@ -427,7 +427,7 @@ public static class MoveSets {
         int x = i1 & 7; //basically modulo 8
 
         BitBoard filler = InterpolateHorizontal(i1, i2);
-        BitBoard verticalMask = VerticalLineBB(x);
+        BitBoard verticalMask = BitBoard.VerticalLine(x);
 
         return filler & verticalMask;
     }
@@ -452,25 +452,5 @@ public static class MoveSets {
     /// <returns></returns>
     public static int GetBiggestBit(BitBoard n) {
         return n.BitScanReverese;
-        //return BitOperations.LeadingZeroCount(n);
-    }
-
-    /// <summary>
-    /// Returnt eine horizontale Linie mit einer gegebenen y-Koordinate als Bitboard
-    /// </summary>
-    /// <param name="y"></param>
-    /// <returns></returns>
-    public static BitBoard HorizontalLineBB(int y) {
-        //y Element von [0 , 7]
-        return 0b11111111ul << (y * 8);
-    }
-
-    /// <summary>
-    /// Returnt eine vertikale Linie mit einer gegebenen x-Koordinate als Bitboard
-    /// </summary>
-    /// <param name="x"></param>
-    /// <returns></returns>
-    public static BitBoard VerticalLineBB(int x) {
-        return 0b0000000100000001000000010000000100000001000000010000000100000001ul << x;
     }
 }

@@ -192,7 +192,7 @@ public class Chessboard {
 
             //pawns müssen gesondert berechnet werden wegen des unterschieds zwischen bewegung und schlagzug
             if (v.PieceType == Piece.wPawn || v.PieceType == Piece.bPawn) {
-                bb &= ~MoveSets.VerticalLineBB(v.PosIndex % 8);
+                bb &= ~BitBoard.VerticalLine(v.PosIndex % 8);
 
                 int y = v.PosIndex >> 3;
                 int x = v.PosIndex & 7;
@@ -478,7 +478,7 @@ public class Chessboard {
             int x = kingIndex & 7;
             int y = kingIndex >> 3;
 
-            pawnDoub = MoveSets.HorizontalLineBB(y + 1) & (0b101ul << (kingIndex + 7)) & BPawnBB;
+            pawnDoub = BitBoard.HorizontalLine(y + 1) & (0b101ul << (kingIndex + 7)) & BPawnBB;
         } else {
             sameColorPieces = BlackPiecesBB;
             knightBB = WKnightBB;
@@ -492,7 +492,7 @@ public class Chessboard {
             int x = kingIndex & 7;
             int y = kingIndex >> 3;
 
-            pawnDoub = MoveSets.HorizontalLineBB(y - 1) & (0b101ul << (kingIndex - 9)) & WPawnBB;
+            pawnDoub = BitBoard.HorizontalLine(y - 1) & (0b101ul << (kingIndex - 9)) & WPawnBB;
         }
 
 
