@@ -1,9 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Numerics;
 
 namespace fraction;
 public static class MoveGen {
@@ -84,7 +79,7 @@ public static class MoveGen {
             GenerateMovesForQueens(b, b.BQueenBB, ref possibleMoves, ref currIndex, includeCoverage);
         }
 
-        return possibleMoves[0..currIndex];
+        return possibleMoves.AsSpan(0..currIndex);
     }
 
     private static void GenerateMovesForKing(Chessboard b, BitBoard kingBB, ref Vision[] possibleMoves,
@@ -212,7 +207,7 @@ public static class MoveGen {
                 }
 
             }
-            return legal[0..(currIndex)];
+            return legal.AsSpan(0..currIndex);
 
         } else {//es ist ein slider
             BitBoard checkLine = GetCheckLine(kingIndex, combined.LowestOne) & ~(1ul << kingIndex);
@@ -230,7 +225,7 @@ public static class MoveGen {
                     currIndex++;
                 }
             }
-            return legal[0..(currIndex)];
+            return legal.AsSpan(0..currIndex);
         }
     }
 
@@ -298,11 +293,10 @@ public static class MoveGen {
         int index = 0;
 
 
+#pragma warning disable CA2014
         for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
-#pragma warning disable CA2014
             Span<int> moves = stackalloc int[v.MoveBB.PopCount];
-#pragma warning restore CA2014
             _ = v.MoveBB.FindOnes(moves);
             for (int j = 0; j < v.MoveBB.PopCount; j++) {
                 Chessboard cb = b.GenerateBoardWithMove(v.PosIndex, moves[j], v.PieceType);
@@ -316,6 +310,7 @@ public static class MoveGen {
                 }
             }
         }
+#pragma warning restore CA2014
 
         return boards;
     }
