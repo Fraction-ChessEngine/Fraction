@@ -25,7 +25,7 @@ public static class MoveGen {
         ref int currIndex,
         bool includeCoverage = false
     ) {
-        int amount = Eval.NumberOfSetBits(pieceBB);
+        int amount = pieceBB.PopCount;
         switch (amount) {
             case 1:
                 int i1 = pieceBB.LowestOne;

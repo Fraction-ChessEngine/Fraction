@@ -11,12 +11,12 @@ static class Eval
     public static float BasicStaticEval(Chessboard b)
     {
         float white = 0;
-        white += NumberOfSetBits(b.WKingBB) * 10000f;
-        white += NumberOfSetBits(b.WRookBB) * 5f;
-        white += NumberOfSetBits(b.WBishopBB) * 3f;
-        white += NumberOfSetBits(b.WKnightBB) * 2.8f;
-        white += NumberOfSetBits(b.WQueenBB) * 9f;
-        white += NumberOfSetBits(b.WPawnBB);
+        white += b.WKingBB.PopCount * 10000f;
+        white += b.WRookBB.PopCount * 5f;
+        white += b.WBishopBB.PopCount * 3f;
+        white += b.WKnightBB.PopCount * 2.8f;
+        white += b.WQueenBB.PopCount * 9f;
+        white += b.WPawnBB.PopCount;
         white += RelativeValue(b.WPawnBB, Piece.wPawn);
         white += RelativeValue(b.WRookBB, Piece.wRook);
         white += RelativeValue(b.WBishopBB, Piece.wBishop);
@@ -25,12 +25,12 @@ static class Eval
         white += RelativeValue(b.WQueenBB, Piece.wQueen);
 
         float black = 0;
-        black += NumberOfSetBits(b.BKingBB) * 10000f;
-        black += NumberOfSetBits(b.BRookBB) * 5f;
-        black += NumberOfSetBits(b.BBishopBB) * 3f;
-        black += NumberOfSetBits(b.BKnightBB) * 2.8f;
-        black += NumberOfSetBits(b.BQueenBB) * 9f;
-        black += NumberOfSetBits(b.BPawnBB);
+        black += b.BKingBB.PopCount * 10000f;
+        black += b.BRookBB.PopCount * 5f;
+        black += b.BBishopBB.PopCount * 3f;
+        black += b.BKnightBB.PopCount * 2.8f;
+        black += b.BQueenBB.PopCount * 9f;
+        black +=b.BPawnBB.PopCount;
         black += RelativeValue(b.BPawnBB, Piece.bPawn);
         black += RelativeValue(b.BRookBB, Piece.bRook);
         black += RelativeValue(b.BBishopBB, Piece.bBishop);
@@ -39,12 +39,6 @@ static class Eval
         black += RelativeValue(b.BQueenBB, Piece.bQueen);
 
         return white - black;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int NumberOfSetBits(BitBoard i)
-    {
-        return (int)System.Runtime.Intrinsics.X86.Popcnt.X64.PopCount(i);
     }
 
     /*private static Dictionary<Piece, BitBoard> pieceMasks1 = new Dictionary<Piece, BitBoard>{
@@ -111,10 +105,10 @@ static class Eval
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static float RelativeValue(BitBoard bb, Piece type)
     {
-        float value = NumberOfSetBits(bb & pieceMasks1[(int)type]) * pieceFightValue[(int)type] * 0.1f;
+        float value = (bb & pieceMasks1[(int)type]).PopCount * pieceFightValue[(int)type] * 0.1f;
 
         // branchless durch lut
-        value += NumberOfSetBits(bb & pieceMasks2[(int)type]) * pieceFightValue[(int)type] * 0.1f;
+        value += (bb & pieceMasks2[(int)type]).PopCount * pieceFightValue[(int)type] * 0.1f;
 
         return value;
     }
