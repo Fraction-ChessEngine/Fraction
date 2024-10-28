@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Numerics;
 
 namespace fraction;
 public static class MoveSets {
@@ -182,9 +178,9 @@ public static class MoveSets {
         BitBoard diagSW = ((diagBB << reverseIndex) >> reverseIndex) * nullifier;
         BitBoard diagNE = ((diagBB >> posIndex) << posIndex);
         int indexSW =
-            diagSW == 0 ? projectdiagSWLookupTable[posIndex] : GetBiggestBit(diagSW) % 64;
+            diagSW == 0 ? projectdiagSWLookupTable[posIndex] : diagSW.BitScanReverse % 64;
         int indexNE =
-            diagNE == 0 ? projectdiagNELookupTable[posIndex] : GetSmallestBit(diagNE) % 64;
+            diagNE == 0 ? projectdiagNELookupTable[posIndex] : diagNE.LowestOne % 64;
 
         BitBoard diag = InterpolateDiagonal(indexNE, indexSW);
 
@@ -193,11 +189,11 @@ public static class MoveSets {
         int indexSE =
             antiDiagSe == 0
                 ? projectAntiDiagSELookupTable[posIndex]
-                : GetBiggestBit(antiDiagSe) % 64;
+                : antiDiagSe.BitScanReverse % 64;
         int indexNW =
             antiDiagNW == 0
                 ? projectAntiDiagNWLookupTable[posIndex]
-                : GetSmallestBit(antiDiagNW) % 64;
+                : antiDiagNW.LowestOne % 64;
 
         BitBoard antiDiag = InterpolateAntiDiagonal(indexNW, indexSE);
 
@@ -361,10 +357,10 @@ public static class MoveSets {
         BitBoard vertiBottom = ((verti << reverseIndex) >> reverseIndex) * nullifier;
 
         //die bits werden isoliert
-        int indexWest = horiWest == 0 ? 8 * y : GetBiggestBit(horiWest); //wird null wenn horiWest=0
-        int indexEast = horiEast == 0 ? 8 * y + 7 : GetSmallestBit(horiEast) % 64;
-        int indexTop = vertiTop == 0 ? 56 + x : GetSmallestBit(vertiTop) % 64;
-        int indexBottom = GetBiggestBit(vertiBottom);
+        int indexWest = horiWest == 0 ? 8 * y : horiWest.BitScanReverse; //wird null wenn horiWest=0
+        int indexEast = horiEast == 0 ? 8 * y + 7 : horiEast.LowestOne % 64;
+        int indexTop = vertiTop == 0 ? 56 + x : vertiTop.LowestOne % 64;
+        int indexBottom = vertiBottom.BitScanReverse;
 
         //indexBottom wird ignoriert weil es zwar 0 wird, die xKoordinate aber von i1, dh indexTop festgelegt wird
         //indexBottom produziert auch wenn es 0 wird richtige ergebnisse weil es nicht mehr verwendet wird
@@ -401,27 +397,5 @@ public static class MoveSets {
         BitBoard verticalMask = BitBoard.VerticalLine(x);
 
         return filler & verticalMask;
-    }
-
-    /// <summary>
-    /// Returnt den Index (!) des kleinsten "1" bits
-    /// </summary>
-    /// <param name="n"></param>
-    /// <returns></returns>
-    public static int GetSmallestBit(BitBoard n) {
-        return (int)System.Runtime.Intrinsics.X86.Bmi1.X64.TrailingZeroCount(n);
-    }
-
-    public static int CountSetBits(BitBoard n) {
-        return System.Numerics.BitOperations.PopCount(n);
-    }
-
-    /// <summary>
-    /// Returnt den Index (!) des größten "1" bits
-    /// </summary>
-    /// <param name="n"></param>
-    /// <returns></returns>
-    public static int GetBiggestBit(BitBoard n) {
-        return n.BitScanReverse;
     }
 }

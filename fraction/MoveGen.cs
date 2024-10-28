@@ -156,7 +156,7 @@ public static class MoveGen {
         */
         BitBoard combined = 0;
         foreach (BitBoard bb in b.CheckPieceBBs) combined |= bb;
-        int amount = MoveSets.CountSetBits(combined);
+        int amount = combined.PopCount;
 
         int posIndex = (forWhite ? b.WKingBB : b.BKingBB).LowestOne;
         BitBoard sameColorPieces = forWhite ? b.WhitePiecesBB : b.BlackPiecesBB;
