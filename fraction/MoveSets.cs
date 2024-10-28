@@ -422,6 +422,6 @@ public static class MoveSets {
     /// <param name="n"></param>
     /// <returns></returns>
     public static int GetBiggestBit(BitBoard n) {
-        return n.BitScanReverese;
+        return n.BitScanReverse;
     }
 }

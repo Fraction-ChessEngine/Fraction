@@ -16,7 +16,7 @@ public struct BitBoard {
     public int HighestOne => 63 - LeadingZeroCount;
     public int BitScanForward => LowestOne;
     /// Deprecated, use HighestOne, which returns -1 on POPCount == 0
-    public int BitScanReverese => int.Max(0, HighestOne);
+    public int BitScanReverse => int.Max(0, HighestOne);
 
     public bool this[int bit] {
         get => (_value & (1ul << bit)) != 0;
