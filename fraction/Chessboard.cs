@@ -446,7 +446,7 @@ public class Chessboard {
 
 
     private BitBoard ValidatePin(BitBoard sightLine, BitBoard sameColorPieces, BitBoard enemyBlockers, int kingIndex) {
-        sameColorPieces = Utility.SetBBtoNullAt(sameColorPieces, kingIndex);
+        sameColorPieces[kingIndex] = false;
 
         if ((sightLine & enemyBlockers) != 0) return 0;//enemy steht auf der pinLine
 

@@ -6,22 +6,18 @@ using System.Runtime;
 using System.Security.Cryptography;
 
 namespace fraction;
-static class Utility
-{
+static class Utility {
     /// <summary>
     /// Konvertiert einen FEN-String zu einer Position die einem Board gegeben werden kann
     /// </summary>
     /// <param name="fen"></param>
     /// <returns></returns>
-    public static Dictionary<int, Piece> FENtoPosition(string fen)
-    {
+    public static Dictionary<int, Piece> FENtoPosition(string fen) {
         Dictionary<int, Piece> pos = new Dictionary<int, Piece> { };
         int currPos = 0;
 
-        foreach (char c in fen)
-        {
-            switch (c)
-            {
+        foreach (char c in fen) {
+            switch (c) {
                 case 'r':
                     pos[Convert(currPos)] = Piece.bRook;
                     break;
@@ -77,8 +73,7 @@ static class Utility
     /// Konvertiert einen index auf dem board zu einem weirden FEN-Index (0=a8, 63=h1)
     /// </summary>
     /// <returns></returns>
-    private static int Convert(int i)
-    {
+    private static int Convert(int i) {
         return (i % 8) * 2 + 56 - i;
     }
 
@@ -87,19 +82,16 @@ static class Utility
     /// </summary>
     /// <param name="pos"></param>
     /// <returns></returns>
-    public static string BoardToFEN(Dictionary<int, Piece> pos)
-    {
+    public static string BoardToFEN(Dictionary<int, Piece> pos) {
         string fen = "";
         int currNum = 0;
 
-        for (int i = 0; i < 64; i++)
-        {
+        for (int i = 0; i < 64; i++) {
             //das sqr mit dem FEN-Index das wir abrufen wollen, muss konvertiert wegen der komischen FEN-Konvention
             int sqr = Convert(i);
 
             //wenn ein linebreak gehittet wurde
-            if (i % 8 == 0 && i > 0)
-            {
+            if (i % 8 == 0 && i > 0) {
                 if (currNum > 0)
                     fen += currNum;
                 fen += "/";
@@ -107,16 +99,13 @@ static class Utility
             }
 
             Piece piece;
-            if (pos.TryGetValue(sqr, out piece))
-            {
+            if (pos.TryGetValue(sqr, out piece)) {
                 //das piece an den fen-string appenden
                 if (currNum > 0)
                     fen += currNum;
                 fen += piece.GetSymbol();
                 currNum = 0;
-            }
-            else
-            {
+            } else {
                 currNum++;
             }
         }
@@ -131,8 +120,7 @@ static class Utility
     /// </summary>
     /// <param name="index">Der index des Pieces in einem 64er array</param>
     /// <returns></returns>
-    public static int[] IndexToPos(int index)
-    {
+    public static int[] IndexToPos(int index) {
         //y * 8 + x = index
 
         int y = index >> 3;
@@ -145,21 +133,17 @@ static class Utility
     /// </summary>
     /// <param name="pos"></param>
     /// <returns></returns>
-    public static int PosToIndex(int[] pos)
-    {
+    public static int PosToIndex(int[] pos) {
         return pos[1] * 8 + pos[0];
     }
 
-    public static int PosToIndex(int i1, int i2)
-    {
+    public static int PosToIndex(int i1, int i2) {
         return 8 * i2 + i1;
     }
 
 
-    public static Piece SymbolToPiece(string symbol)
-    {
-        switch (symbol)
-        {
+    public static Piece SymbolToPiece(string symbol) {
+        switch (symbol) {
             case "r":
                 return Piece.bRook;
             case "n":
@@ -198,13 +182,11 @@ static class Utility
     /// position zu Algebraic Notation; hat bis jetzt nur den zweck einer leichteren visualisierung
     /// </summary>
     /// <returns></returns>
-    public static string PosToAN(int[] pos)
-    {
+    public static string PosToAN(int[] pos) {
         return "abcdefgh"[pos[0]].ToString() + pos[1]; //funktionert, frag nicht wieso
     }
 
-    public static string PosToAN(int pos)
-    {
+    public static string PosToAN(int pos) {
         return "abcdefgh"[pos & 7].ToString() + ((pos >> 3) + 1);
         //das sieht echt bodenlos aus, aber es klappt
     }
@@ -214,45 +196,16 @@ static class Utility
     /// </summary>
     /// <param name="AN"></param>
     /// <returns></returns>
-    public static int ANtoPos(string AN)
-    {
+    public static int ANtoPos(string AN) {
         int x = "abcdefgh".IndexOf(AN[0]);
         int y = "12345678".IndexOf(AN[1]);
 
         return 8 * y + x;
     }
 
-    /// <summary>
-    /// Addiert 2 Positionen in Koordinatenform
-    /// </summary>
-    /// <returns></returns>
-    public static int[] Sum(int[] a, int[] b)
-    {
-        return new int[2] { a[0] + b[0], a[1] + b[1] };
-    }
-
-    /// <summary>
-    /// Generiert aus einem array mit positionsIndizes ein bitboard
-    /// </summary>
-    /// <param name="sqrs"></param>
-    /// <returns></returns>
-    public static BitBoard SqrArrToBB(int[] sqrs)
-    {
-        BitBoard bb = 0ul;
-        foreach (int sqr in sqrs)
-        {
-            if (sqr >= 0)
-                bb += 1ul << sqr; //ul ist notwendig da die 1 ansonsten zu einer int konvertiert wird
-        }
-
-        return bb;
-    }
-
-    public static void printIntArr(int[] sqrs)
-    {
+    public static void printIntArr(int[] sqrs) {
         string str = "";
-        for (int i = 0; i < sqrs.Length; i++)
-        {
+        for (int i = 0; i < sqrs.Length; i++) {
             str += sqrs[i] + ", ";
         }
 
@@ -265,16 +218,12 @@ static class Utility
     /// <param name="pieces"></param>
     /// <param name="p"></param>
     /// <returns></returns>
-    public static BitBoard GetBBofPosition(Dictionary<int, Piece> pieces, Piece p)
-    {
+    public static BitBoard GetBBofPosition(Dictionary<int, Piece> pieces, Piece p) {
         BitBoard retBB = 0;
-        for (int i = 0; i < 64; i++)
-        {
+        for (int i = 0; i < 64; i++) {
             Piece currPiece;
-            if (pieces.TryGetValue(i, out currPiece))
-            {
-                if (currPiece == p)
-                {
+            if (pieces.TryGetValue(i, out currPiece)) {
+                if (currPiece == p) {
                     retBB |= 1ul << i;
                 }
             }
@@ -283,51 +232,15 @@ static class Utility
         return retBB;
     }
 
-    public static BitBoard SetBBtoNullAt(BitBoard bb, int index)
-    {
-        return bb & ~(1ul << index);
-    }
-
-    //noch nicht getestet, könnte fehlerquelle sein
-    //index 1 wird auf null gesetzt, index 2 auf 1
-    public static BitBoard UpdateBB(BitBoard bb, int i1, int i2)
-    {
-        return SetBBtoNullAt(bb, i1) + (1ul << i2);
-    }
-
-    public static BitBoard UpdateBBFast(BitBoard bb, int i1, int i2)
-    {
-        return bb ^ (ulong)(i1 | i2);
-    }
-
-    public static void DisplayAllBoards(Chessboard[][] b)
-    {
-        foreach (var b1 in b)
-        {
-            if (b1 == null)
-            {
+    public static void DisplayAllBoards(Chessboard[][] b) {
+        foreach (var b1 in b) {
+            if (b1 == null) {
                 continue;
             }
-            foreach (var b2 in b1)
-            {
+
+            foreach (var b2 in b1) {
                 Program.DisplayBoard(b2);
             }
         }
-    }
-
-    public static List<int> FindSetBits(BitBoard bb)
-    {
-        List<int> setBits = new List<int>();
-
-        while (bb != 0)
-        {
-            int index = bb.LowestOne;
-            setBits.Add(index);
-
-            // Clear the least significant set bit
-            bb &= bb - 1;
-        }
-
-        return setBits;
     }
 }
