@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace fraction;
+
+
+
 public class Chessboard {
+    public static int WKingSide = 0, WQueenSide = 1, BKingSide = 2, BQueenSide = 3;
     public static int BoardCount = 0;
     //dient dem tracken einzelner boards im perft tree beim debuggen
     public int boardIndex;
@@ -33,6 +37,10 @@ public class Chessboard {
     private BitBoard wKingBB = 0b00010000ul;
     private BitBoard bPawnBB = 0b11111111ul << 48;
     private BitBoard wPawnBB = 0b11111111ul << 8;
+
+    public ulong[] CastlingRights ={
+        0b00000010ul,0b100ul,0b00000010ul << 56, 0b100ul << 56
+    };
     //private BitBoard whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
     //private BitBoard blackPiecesBB = 0b1111111111111111000000000000000000000000000000000000000000000000;
     private BitBoard wControlledSqrBB = 0;// 0b11111111ul << 16;

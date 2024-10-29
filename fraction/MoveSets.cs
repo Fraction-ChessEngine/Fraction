@@ -87,7 +87,11 @@ public static class MoveSets {
           else if ((board.WKingBB | board.BKingBB)[posIndex]) {
             pieceType = isWhite ? Piece.wKing : Piece.bKing;
 
-            return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs);
+            ulong castleSqrs = isWhite ?
+                board.CastlingRights[Chessboard.WKingSide] | board.CastlingRights[Chessboard.WQueenSide]
+                : board.CastlingRights[Chessboard.BKingSide] | board.CastlingRights[Chessboard.BQueenSide];
+
+            return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, castleSqrs);
 
         }  //es ist eine queen
           else if ((board.WQueenBB | board.BQueenBB)[posIndex]) {
@@ -106,10 +110,12 @@ public static class MoveSets {
         throw new Exception("Ich halte mal an damit du dir die Fehlermeldung angucken kannst, Potz Blitz!");
     }
 
-    public static BitBoard GetKingPseudoLegalMoves(int posIndex, BitBoard sameColorPieces, BitBoard enemyControlSqrs) {
+    public static BitBoard GetKingPseudoLegalMoves(int posIndex, BitBoard sameColorPieces, BitBoard enemyControlSqrs, BitBoard castleSqrs) {
         BitBoard patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bKing, posIndex);
 
         BitBoard targetSqrs = patternBB & ~sameColorPieces;
+
+        targetSqrs |= castleSqrs;
 
         targetSqrs &= ~enemyControlSqrs; //hat bei perft 5 keinen effekt auf die zahlen, erst bei perft 6 gibt es unterschied
 

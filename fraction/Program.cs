@@ -198,10 +198,13 @@ public class Program {
             Chessboard.FromFEN("rnbqkb1r/pp3ppp/4pn2/2ppN3/3P1B2/8/PPP1PPPP/RN1QKB1R")
          }; */
 
-        /* Perft: e2e3 d7d6 f1b5
-        error in der position: bishop der das check blocken könnte bekommt 
-        mehrere verschiedene moves nach a1 (illegal move)  
-        -> wahrscheinlich error bei generateLegalMoves für wenn in check
+        /*
+        castling todo:
+        -board müssen entsprechende rights entzogen werden sobald rook oder king bewegt wird
+        -bevor castlingMove gemacht wird muss gecheckt werden ob gerade check ist, 
+        oder ob eines der sqrs wo der king drüber muss in enemyCtrlSqrs liegt (kann
+         mit LUT gelöst werden)
+        -generateBoard with move muss im falle eines castling moves auch den entsprechenden rook bewegen
         */
         Chessboard[] checkMates ={
             Chessboard.FromFEN("8/8/8/8/8/2k5/1q6/1K6"),
@@ -210,7 +213,9 @@ public class Program {
             Chessboard.FromFEN("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR")
          };
 
+         /* GenerateMoves -> getVisionForPieceAt -> GetPseudoLegalMoves */
+
         //perft(3);
-         Testing.BenchMarkMINIMAX();
+        Testing.PerftResults(new(), 1, true);
     }
 }
