@@ -224,7 +224,8 @@ public class Program {
                     Console.WriteLine();
                 }
          */
-        Testing.PerftResults(new(), 6, true);
+        //Testing.PerftResults(new(), 4, true);
+        Testing.BenchMarkMINIMAX();
 
         /* GenerateMoves -> getVisionForPieceAt -> GetPseudoLegalMoves */
 

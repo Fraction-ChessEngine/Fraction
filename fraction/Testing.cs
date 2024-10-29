@@ -201,7 +201,6 @@ static class Testing {
         int givenX = -1,
         int givenY = -1
     ) {
-        Piece outValue;
         //für moves wie Nge2
         if (givenX > -1) {
             for (int y = 0; y < 8; y++) {
@@ -215,8 +214,7 @@ static class Testing {
 
                     BitBoard bb = MoveSets.GetPseudoLegalMoves(
                         new Chessboard(pos),
-                        index,
-                        out outValue
+                        index, currPiece
                     );
                     if (bb[endPos])
                         return index;
@@ -233,8 +231,7 @@ static class Testing {
                     if (
                         MoveSets.GetPseudoLegalMoves(
                             new Chessboard(pos),
-                            index,
-                            out outValue
+                            index, currPiece
                         )[endPos]
                     )
                         return index;
@@ -251,8 +248,7 @@ static class Testing {
 
                     BitBoard bb = MoveSets.GetPseudoLegalMoves(
                         new Chessboard(pos),
-                        i,
-                        out outValue
+                        i, currPiece
                     );
 
                     if (bb[endPos])

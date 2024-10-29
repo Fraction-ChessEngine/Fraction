@@ -14,7 +14,7 @@ public static class MoveSets {
     public static BitBoard GetPseudoLegalMoves(
         Chessboard board,
         int posIndex,
-        out Piece pieceType,
+        Piece pieceType,
         bool includeCoverage = false
     ) {
         /*
@@ -32,112 +32,107 @@ public static class MoveSets {
         BitBoard sameColorPieces = includeCoverage ? 0 : isWhite ? board.WhitePiecesBB : board.BlackPiecesBB;
         BitBoard enemyControlSqrs = isWhite ? board.BControlledSqrBB : board.WControlledSqrBB;
 
-        if (board.WPawnBB[posIndex]) {
-            pieceType = Piece.wPawn;
-            int y = posIndex >> 3;
-            int x = posIndex & 7;
+        switch (pieceType) {
+            case Piece.wPawn: {
+                    int y = posIndex >> 3;
+                    int x = posIndex & 7;
 
-            //BitBoard attackSqrs = 0b101ul << (posIndex + 7);//covered die 2 sqrs die diagonal vor dem pawn liegen
-            BitBoard attackSqrs = BB_Lookup.GetPawnAttackSqrs(x, y, true);
-            BitBoard allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
+                    //BitBoard attackSqrs = 0b101ul << (posIndex + 7);//covered die 2 sqrs die diagonal vor dem pawn liegen
+                    BitBoard attackSqrs = BB_Lookup.GetPawnAttackSqrs(x, y, true);
+                    BitBoard allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
 
-            BitBoard enemyPiecesBB = allPiecesBB & ~sameColorPieces;
+                    BitBoard enemyPiecesBB = allPiecesBB & ~sameColorPieces;
 
-            BitBoard targetSqrs = attackSqrs & enemyPiecesBB;
-            BitBoard moveSqrs = ~allPiecesBB & (1ul << posIndex + 8);
+                    BitBoard targetSqrs = attackSqrs & enemyPiecesBB;
+                    BitBoard moveSqrs = ~allPiecesBB & (1ul << posIndex + 8);
 
-            int sqrTwoAbove = posIndex + 16;
-            moveSqrs |= (moveSqrs != 0 && !allPiecesBB[sqrTwoAbove]) ? (y == 1 ? 1ul << sqrTwoAbove : 0) : 0;
+                    int sqrTwoAbove = posIndex + 16;
+                    moveSqrs |= (moveSqrs != 0 && !allPiecesBB[sqrTwoAbove]) ? (y == 1 ? 1ul << sqrTwoAbove : 0) : 0;
 
-            return targetSqrs | moveSqrs;
-        } else if (board.BPawnBB[posIndex]) {
-            pieceType = Piece.bPawn;
-
-            int y = posIndex >> 3;
-            int x = posIndex & 7;
-
-            //BitBoard attackSqrs = 0b101ul << (posIndex - 9);//covered die 2 sqrs die diagonal vor dem pawn liegen
-            BitBoard attackSqrs = BB_Lookup.GetPawnAttackSqrs(x, y, false);
-            BitBoard allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
-
-            BitBoard enemyPiecesBB = allPiecesBB & ~sameColorPieces;
-
-            BitBoard targetSqrs = attackSqrs & enemyPiecesBB;
-            BitBoard moveSqrs = ~allPiecesBB & (1ul << posIndex - 8);
-
-            int sqrTwoAbove = posIndex - 16;
-            moveSqrs |= (moveSqrs != 0 && !allPiecesBB[sqrTwoAbove]) ? (y == 6 ? 1ul << (sqrTwoAbove) : 0) : 0;
-
-            return targetSqrs | moveSqrs;
-        } else if ((board.BRookBB | board.WRookBB)[posIndex]) {
-            pieceType = isWhite ? Piece.wRook : Piece.bRook;
-            return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wRook, includeCoverage, isWhite);
-
-
-        }//es ist ein bishop, beinahe selber code wie rook wegen ähnlichem attackpattern
-          else if ((board.WBishopBB | board.BBishopBB)[posIndex]) {
-            pieceType = isWhite ? Piece.wBishop : Piece.bBishop;
-            return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wBishop, includeCoverage, isWhite);
-
-        } else if ((board.WKnightBB | board.BKnightBB)[posIndex]) {
-            pieceType = isWhite ? Piece.wKnight : Piece.bKnight;
-            return GetKnightPseudoLegalMoves(posIndex, sameColorPieces);
-
-        } //it is a king
-          else if ((board.WKingBB | board.BKingBB)[posIndex]) {
-            pieceType = isWhite ? Piece.wKing : Piece.bKing;
-
-            //logic to determine if there are pieces in the way of castling, or if 
-            //enemy pieces prevent the king from castling through controlled sqrs
-
-            //king cant castle through check, or through pieces
-            ulong castleBlockers = enemyControlSqrs | board.WhitePiecesBB | board.BlackPiecesBB;
-            ulong castleSqrs;
-
-            if (isWhite) {
-                ulong kingSide = board.CastlingRights[Chessboard.WKingSide];
-                ulong queenSide = board.CastlingRights[Chessboard.WQueenSide];
-
-                if ((CastlePath[Chessboard.WKingSide] & castleBlockers) != 0) {
-                    kingSide = 0;
-                }
-                if ((CastlePath[Chessboard.WQueenSide] & castleBlockers) != 0) {
-                    queenSide = 0;
+                    return targetSqrs | moveSqrs;
                 }
 
-                castleSqrs = kingSide | queenSide;
 
-            } else {
-                ulong kingSide = board.CastlingRights[Chessboard.BKingSide];
-                ulong queenSide = board.CastlingRights[Chessboard.BQueenSide];
+            case Piece.bPawn: {
+                    int y = posIndex >> 3;
+                    int x = posIndex & 7;
 
-                if ((CastlePath[Chessboard.BKingSide] & castleBlockers) != 0) {
-                    kingSide = 0;
+                    //BitBoard attackSqrs = 0b101ul << (posIndex - 9);//covered die 2 sqrs die diagonal vor dem pawn liegen
+                    BitBoard attackSqrs = BB_Lookup.GetPawnAttackSqrs(x, y, false);
+                    BitBoard allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
+
+                    BitBoard enemyPiecesBB = allPiecesBB & ~sameColorPieces;
+
+                    BitBoard targetSqrs = attackSqrs & enemyPiecesBB;
+                    BitBoard moveSqrs = ~allPiecesBB & (1ul << posIndex - 8);
+
+                    int sqrTwoAbove = posIndex - 16;
+                    moveSqrs |= (moveSqrs != 0 && !allPiecesBB[sqrTwoAbove]) ? (y == 6 ? 1ul << (sqrTwoAbove) : 0) : 0;
+
+                    return targetSqrs | moveSqrs;
                 }
-                if ((CastlePath[Chessboard.BQueenSide] & castleBlockers) != 0) {
-                    queenSide = 0;
+
+
+            case Piece.wRook:
+            case Piece.bRook:
+            case Piece.wBishop:
+            case Piece.bBishop:
+                return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, pieceType, includeCoverage, isWhite);
+
+            case Piece.wKnight:
+            case Piece.bKnight:
+                return GetKnightPseudoLegalMoves(posIndex, sameColorPieces);
+
+            case Piece.wKing:
+            case Piece.bKing:
+                //logic to determine if there are pieces in the way of castling, or if 
+                //enemy pieces prevent the king from castling through controlled sqrs
+
+                //king cant castle through check, or through pieces
+                ulong castleBlockers = enemyControlSqrs | board.WhitePiecesBB | board.BlackPiecesBB;
+                ulong castleSqrs;
+
+                if (isWhite) {
+                    ulong kingSide = board.CastlingRights[Chessboard.WKingSide];
+                    ulong queenSide = board.CastlingRights[Chessboard.WQueenSide];
+
+                    if ((CastlePath[Chessboard.WKingSide] & castleBlockers) != 0) {
+                        kingSide = 0;
+                    }
+                    if ((CastlePath[Chessboard.WQueenSide] & castleBlockers) != 0) {
+                        queenSide = 0;
+                    }
+
+                    castleSqrs = kingSide | queenSide;
+
+                } else {
+                    ulong kingSide = board.CastlingRights[Chessboard.BKingSide];
+                    ulong queenSide = board.CastlingRights[Chessboard.BQueenSide];
+
+                    if ((CastlePath[Chessboard.BKingSide] & castleBlockers) != 0) {
+                        kingSide = 0;
+                    }
+                    if ((CastlePath[Chessboard.BQueenSide] & castleBlockers) != 0) {
+                        queenSide = 0;
+                    }
+
+                    castleSqrs = kingSide | queenSide;
                 }
 
-                castleSqrs = kingSide | queenSide;
-            }
+                return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, castleSqrs);
 
-            return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, castleSqrs);
+            case Piece.wQueen:
+            case Piece.bQueen:
+                return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wRook, includeCoverage, isWhite)
+                | GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wBishop, includeCoverage, isWhite);
+            default:
+                Console.WriteLine("-- Something went wrong in getPseudoLegalMovesBB --");
+                Program.DisplayBoard(board);
+                Console.WriteLine("posIndex: " + posIndex);
+                Console.WriteLine("includeCoverage: " + includeCoverage);
 
-        }  //it is a queen
-          else if ((board.WQueenBB | board.BQueenBB)[posIndex]) {
-            pieceType = isWhite ? Piece.wQueen : Piece.bQueen;
-
-            return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wRook, includeCoverage, isWhite)
-            | GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wBishop, includeCoverage, isWhite);
-        } //pawns moveset depends on color
-
-        pieceType = Piece.wKing; //default value
-        Console.WriteLine("-- Something went wrong in getPseudoLegalMovesBB --");
-        Program.DisplayBoard(board);
-        Console.WriteLine("posIndex: " + posIndex);
-        Console.WriteLine("includeCoverage: " + includeCoverage);
-
-        throw new Exception("Ich halte mal an damit du dir die Fehlermeldung angucken kannst, Potz Blitz!");
+                throw new Exception("Ich halte mal an damit du dir die Fehlermeldung angucken kannst, Potz Blitz!");
+        }
     }
 
     public static BitBoard GetKingPseudoLegalMoves(int posIndex, BitBoard sameColorPieces, BitBoard enemyControlSqrs, BitBoard castleSqrs) {
