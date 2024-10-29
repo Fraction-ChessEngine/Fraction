@@ -39,7 +39,7 @@ public class Chessboard {
     private BitBoard wPawnBB = 0b11111111ul << 8;
 
     public ulong[] CastlingRights ={
-        0b00000010ul,0b100ul,0b00000010ul << 56, 0b100ul << 56
+        0b01000000ul,0b100ul,0b01000000ul << 56, 0b100ul << 56, 0//null wert für optimisation
     };
     //private BitBoard whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
     //private BitBoard blackPiecesBB = 0b1111111111111111000000000000000000000000000000000000000000000000;
@@ -545,6 +545,72 @@ public class Chessboard {
     public Chessboard GenerateBoardWithMove(int startIndex, int endIndex, Piece type) {
         Chessboard board = Clone();
         board.Move(startIndex, endIndex, type);
+
+        //todo: checken ob castleMove gemacht wird, dh ob rook bewegt werden muss
+        switch (type) {
+
+
+            case Piece.wKing:
+            case Piece.bKing:
+
+                if (type.IsWhite()) {
+                    board.CastlingRights[WKingSide] = 0;
+                    board.CastlingRights[WQueenSide] = 0;
+                } else {
+                    board.CastlingRights[BKingSide] = 0;
+                    board.CastlingRights[BQueenSide] = 0;
+                }
+
+                bool isCastling; int rookStartIndex; int rookEndIndex; Piece rook;
+                (isCastling, rookStartIndex, rookEndIndex, rook) = GetCastleRookData(startIndex, endIndex);
+
+                if (!isCastling) return board;
+
+                board.Move(rookStartIndex, rookEndIndex, rook);
+                break;
+
+            case Piece.wRook:
+            case Piece.bRook:
+
+                int side = GetSideOfRook(startIndex);
+                board.CastlingRights[side] = 0;
+                break;
+        }
+
         return board;
+    }
+
+    //if the move is castling, if yes where the rooks supposed be go
+    private (bool, int, int, Piece rookType) GetCastleRookData(int startIndex, int endIndex) {
+        switch (startIndex, endIndex) {
+            case (4, 6)://white kingSide
+                return (true, 7, 5, Piece.wRook);
+            case (4, 2)://white queenside
+                return (true, 0, 3, Piece.wRook);
+            case (60, 62):
+                return (true, 63, 61, Piece.bRook);
+            case (60, 58):
+                return (true, 56, 59, Piece.bRook);
+
+            default:
+                return (false, -1, -1, Piece.bKing);
+        }
+    }
+    //to deny castlingRights on this side
+    private int GetSideOfRook(int posIndex) {
+        switch (posIndex) {
+            case 0:
+                return WQueenSide;
+            case 7:
+                return WKingSide;
+            case 56:
+                return BQueenSide;
+            case 63:
+                return BKingSide;
+            default:
+                return 4;
+        }
+
+        throw new ArgumentOutOfRangeException("Kein valider posIndex für CastlingRights bei rook änderung");
     }
 }

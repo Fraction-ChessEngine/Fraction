@@ -201,7 +201,8 @@ public class Program {
         /*
         castling todo:
         -board müssen entsprechende rights entzogen werden sobald rook oder king bewegt wird
-        -bevor castlingMove gemacht wird muss gecheckt werden ob gerade check ist, 
+        -bevor castlingMove gemacht wird muss gecheckt werden ob gerade check ist (redundant, 
+        kann eleganter gelöst werden indem man in generateMovesForCheck einfach 0 als castleSqrs einsetzt), 
         oder ob eines der sqrs wo der king drüber muss in enemyCtrlSqrs liegt (kann
          mit LUT gelöst werden)
         -generateBoard with move muss im falle eines castling moves auch den entsprechenden rook bewegen
@@ -212,10 +213,20 @@ public class Program {
             Chessboard.FromFEN("1k6/2P5/Q2P4/8/8/8/8/1K6"),
             Chessboard.FromFEN("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR")
          };
+        /*
+                Chessboard castleTest = Chessboard.FromFEN("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R");
+                DisplayBoard(castleTest);
+                var mv = MoveGen.GenerateBoards(castleTest, true);
+                Console.WriteLine("" + mv.Length);
 
-         /* GenerateMoves -> getVisionForPieceAt -> GetPseudoLegalMoves */
+                 foreach (var item in mv) {
+                    DisplayBoard(item);
+                    Console.WriteLine();
+                }
+         */
+        Testing.PerftResults(new(), 6, true);
 
-        //perft(3);
-        Testing.PerftResults(new(), 1, true);
+        /* GenerateMoves -> getVisionForPieceAt -> GetPseudoLegalMoves */
+
     }
 }

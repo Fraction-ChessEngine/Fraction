@@ -83,23 +83,53 @@ public static class MoveSets {
             pieceType = isWhite ? Piece.wKnight : Piece.bKnight;
             return GetKnightPseudoLegalMoves(posIndex, sameColorPieces);
 
-        } //es ist ein king, beinah selber code wie beim knight wegen der konstanten anzahl an mgl feldern
+        } //it is a king
           else if ((board.WKingBB | board.BKingBB)[posIndex]) {
             pieceType = isWhite ? Piece.wKing : Piece.bKing;
 
-            ulong castleSqrs = isWhite ?
-                board.CastlingRights[Chessboard.WKingSide] | board.CastlingRights[Chessboard.WQueenSide]
-                : board.CastlingRights[Chessboard.BKingSide] | board.CastlingRights[Chessboard.BQueenSide];
+            //logic to determine if there are pieces in the way of castling, or if 
+            //enemy pieces prevent the king from castling through controlled sqrs
+
+            //king cant castle through check, or through pieces
+            ulong castleBlockers = enemyControlSqrs | board.WhitePiecesBB | board.BlackPiecesBB;
+            ulong castleSqrs;
+
+            if (isWhite) {
+                ulong kingSide = board.CastlingRights[Chessboard.WKingSide];
+                ulong queenSide = board.CastlingRights[Chessboard.WQueenSide];
+
+                if ((CastlePath[Chessboard.WKingSide] & castleBlockers) != 0) {
+                    kingSide = 0;
+                }
+                if ((CastlePath[Chessboard.WQueenSide] & castleBlockers) != 0) {
+                    queenSide = 0;
+                }
+
+                castleSqrs = kingSide | queenSide;
+
+            } else {
+                ulong kingSide = board.CastlingRights[Chessboard.BKingSide];
+                ulong queenSide = board.CastlingRights[Chessboard.BQueenSide];
+
+                if ((CastlePath[Chessboard.BKingSide] & castleBlockers) != 0) {
+                    kingSide = 0;
+                }
+                if ((CastlePath[Chessboard.BQueenSide] & castleBlockers) != 0) {
+                    queenSide = 0;
+                }
+
+                castleSqrs = kingSide | queenSide;
+            }
 
             return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, castleSqrs);
 
-        }  //es ist eine queen
+        }  //it is a queen
           else if ((board.WQueenBB | board.BQueenBB)[posIndex]) {
             pieceType = isWhite ? Piece.wQueen : Piece.bQueen;
 
             return GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wRook, includeCoverage, isWhite)
             | GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wBishop, includeCoverage, isWhite);
-        } //das moveset der pawns ist abhängig von der farbe
+        } //pawns moveset depends on color
 
         pieceType = Piece.wKing; //default value
         Console.WriteLine("-- Something went wrong in getPseudoLegalMovesBB --");
@@ -205,6 +235,8 @@ public static class MoveSets {
 
         return antiDiag | diag;
     }
+
+    private static ulong[] CastlePath = { 0b1100000ul, 0b1100ul, 0b1100000ul << 56, 0b1100ul << 56 };
 
     private static int[] projectAntiDiagSELookupTable =
     {

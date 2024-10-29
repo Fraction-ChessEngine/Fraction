@@ -158,10 +158,10 @@ public static class MoveGen {
         BitBoard enemyControlSqrs = forWhite ? b.BControlledSqrBB : b.WControlledSqrBB;
         Piece king = forWhite ? Piece.wKing : Piece.bKing;
 
-        //weil ein kingmove immer ein valider ausweg ist
+        //weil ein kingmove immer ein valider ausweg ist, castleSqrs=0 weil eh nicht gecastled werden darf
         Vision kingVision = new(
             posIndex,
-            MoveSets.GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs),
+            MoveSets.GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, 0),
             king
             );
 
