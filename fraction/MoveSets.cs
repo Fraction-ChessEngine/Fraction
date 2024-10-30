@@ -47,7 +47,13 @@ public static class MoveSets {
                     BitBoard moveSqrs = ~allPiecesBB & (1ul << posIndex + 8);
 
                     int sqrTwoAbove = posIndex + 16;
-                    moveSqrs |= (moveSqrs != 0 && !allPiecesBB[sqrTwoAbove]) ? (y == 1 ? 1ul << sqrTwoAbove : 0) : 0;
+
+                    //double move 
+                    if ((moveSqrs != 0 && !allPiecesBB[sqrTwoAbove])) {
+                        moveSqrs |= (y == 1 ? 1ul << sqrTwoAbove : 0);
+
+                        //todo: logic to set en passant sqr of chessboard
+                    }
 
                     return targetSqrs | moveSqrs;
                 }
@@ -67,6 +73,8 @@ public static class MoveSets {
                     BitBoard moveSqrs = ~allPiecesBB & (1ul << posIndex - 8);
 
                     int sqrTwoAbove = posIndex - 16;
+
+
                     moveSqrs |= (moveSqrs != 0 && !allPiecesBB[sqrTwoAbove]) ? (y == 6 ? 1ul << (sqrTwoAbove) : 0) : 0;
 
                     return targetSqrs | moveSqrs;

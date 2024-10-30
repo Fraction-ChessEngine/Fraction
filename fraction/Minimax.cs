@@ -28,8 +28,7 @@ public sealed class Minimax {
         }
 
         //quiescence search, 3 als hard limit für depth increase
-        if (pos.AfterCapturePly && quiescenceSearchPlies < MaxQuiescenceSearchPlies)
-        {
+        if (pos.AfterCapturePly && quiescenceSearchPlies < MaxQuiescenceSearchPlies) {
             NonQuietEndNodes++;
             quiescenceSearchPlies++;
             depth++;

@@ -333,18 +333,18 @@ static class Testing {
         Console.WriteLine((float)n * 2 / t + " Iterations per second");
     }
 
-/* 
-    Recent Runs on Valles Machine - 30.10.24 with depth=7, qsp=3, pruning=true
-    - 17.7s
-    - 17.8s 
-    - 18.0s
+    /* 
+        Recent Runs on Valles Machine - 30.10.24 with depth=7, qsp=3, pruning=true
+        - 17.7s
+        - 17.8s 
+        - 18.0s
 
-    with depth=6
-    -1.63s
-    -1.53s
-    -1.45s
-    -1.43s
-*/
+        with depth=6
+        -1.63s
+        -1.53s
+        -1.45s
+        -1.43s
+    */
 
     public static void BenchMarkMINIMAX() {
         Stopwatch sw = new Stopwatch();

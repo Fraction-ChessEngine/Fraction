@@ -38,7 +38,7 @@ public class Chessboard {
     private BitBoard bPawnBB = 0b11111111ul << 48;
     private BitBoard wPawnBB = 0b11111111ul << 8;
 
-    public ulong[] CastlingRights ={
+    readonly public ulong[] CastlingRights ={
         0b01000000ul,0b100ul,0b01000000ul << 56, 0b100ul << 56, 0//null wert für optimisation
     };
     //private BitBoard whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
@@ -476,7 +476,7 @@ public class Chessboard {
     /// <summary>
     /// Reihenfolge (nach Wert sortiert, aufsteigend): Pawn, Knight, Bishop, Rook, Queen
     /// </summary>
-    public BitBoard[] CheckPieceBBs = new BitBoard[5];
+    readonly public BitBoard[] CheckPieceBBs = new BitBoard[5];
 
     //forWhite = white is in check
     public bool IsInCheck(bool forWhite) {

@@ -59,6 +59,7 @@ public struct BitBoard {
         _value += Reverse(a);
     }
 
+
     public Span<int> FindOnes(Span<int> posBuf) {
         int i = 0;
         for (BitBoard bb = this; i < int.Min(posBuf.Length, PopCount); i++) {

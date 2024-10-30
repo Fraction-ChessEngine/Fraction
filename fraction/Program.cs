@@ -199,13 +199,11 @@ public class Program {
          }; */
 
         /*
-        castling todo:
-        -board müssen entsprechende rights entzogen werden sobald rook oder king bewegt wird
-        -bevor castlingMove gemacht wird muss gecheckt werden ob gerade check ist (redundant, 
-        kann eleganter gelöst werden indem man in generateMovesForCheck einfach 0 als castleSqrs einsetzt), 
-        oder ob eines der sqrs wo der king drüber muss in enemyCtrlSqrs liegt (kann
-         mit LUT gelöst werden)
-        -generateBoard with move muss im falle eines castling moves auch den entsprechenden rook bewegen
+        en passant todo
+
+        -wenn pawn doubleMove macht wird das en passant sqr des chessboards auf korrektes sqr gesetzt
+        -pawn capture sqrs schauen nach enemyPieces und nach dem en passant sqr
+        -wenn pawnmove auf das en passant sqr gemacht wird, wird der entsprechende pawn gekilled
         */
         Chessboard[] checkMates ={
             Chessboard.FromFEN("8/8/8/8/8/2k5/1q6/1K6"),
@@ -224,8 +222,8 @@ public class Program {
                     Console.WriteLine();
                 }
          */
-        //Testing.PerftResults(new(), 4, true);
-        Testing.BenchMarkMINIMAX();
+        Testing.PerftResults(new(), 4, true);
+        //  Testing.BenchMarkMINIMAX();
 
         /* GenerateMoves -> getVisionForPieceAt -> GetPseudoLegalMoves */
 
