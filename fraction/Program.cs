@@ -196,36 +196,26 @@ public class Program {
             Chessboard.FromFEN("r1bqr1k1/pp1n1pbp/2pp1np1/4p3/P1BP1B2/4PN1P/1PPN1PP1/R2Q1RK1"),
             Chessboard.FromFEN("1r1q1rk1/2p2ppp/2np1n2/2bNp3/1pB1P1b1/2P2N2/1P1PQPPP/R1B2RK1"),
             Chessboard.FromFEN("rnbqkb1r/pp3ppp/4pn2/2ppN3/3P1B2/8/PPP1PPPP/RN1QKB1R")
-         }; */
-
-        /*
-        en passant todo
-
-        -wenn pawn doubleMove macht wird das en passant sqr des chessboards auf korrektes sqr gesetzt
-        -pawn capture sqrs schauen nach enemyPieces und nach dem en passant sqr
-        -wenn pawnmove auf das en passant sqr gemacht wird, wird der entsprechende pawn gekilled
-        */
-        Chessboard[] checkMates ={
+         };Chessboard[] checkMates ={
             Chessboard.FromFEN("8/8/8/8/8/2k5/1q6/1K6"),
             Chessboard.FromFEN("1k5R/6R1/8/8/8/8/8/1K6"),
             Chessboard.FromFEN("1k6/2P5/Q2P4/8/8/8/8/1K6"),
             Chessboard.FromFEN("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR")
-         };
-        /*
-                Chessboard castleTest = Chessboard.FromFEN("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R");
-                DisplayBoard(castleTest);
-                var mv = MoveGen.GenerateBoards(castleTest, true);
-                Console.WriteLine("" + mv.Length);
+         }; */
 
-                 foreach (var item in mv) {
-                    DisplayBoard(item);
-                    Console.WriteLine();
-                }
-         */
-        Testing.PerftResults(new(), 4, true);
-        //  Testing.BenchMarkMINIMAX();
 
-        /* GenerateMoves -> getVisionForPieceAt -> GetPseudoLegalMoves */
+
+        /* Chessboard cb = new();
+        cb = cb.GenerateBoardWithMove((Utility.ANtoPos("f2")), (Utility.ANtoPos("f3")), Piece.wPawn);
+        cb = cb.GenerateBoardWithMove((Utility.ANtoPos("e7")), (Utility.ANtoPos("e6")), Piece.bPawn);
+        cb = cb.GenerateBoardWithMove((Utility.ANtoPos("e1")), (Utility.ANtoPos("f2")), Piece.wKing);
+        cb = cb.GenerateBoardWithMove((Utility.ANtoPos("d8")), (Utility.ANtoPos("f6")), Piece.bQueen);
+ */
+        Testing.PerftResults(new(), 6, true);
+
+        /* Exception:
+        to debug, also display the boardIndex in the Exception msg, then work with the boardIndex to identify issue  */
+
 
     }
 }

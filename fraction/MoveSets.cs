@@ -43,17 +43,17 @@ public static class MoveSets {
 
                     BitBoard enemyPiecesBB = allPiecesBB & ~sameColorPieces;
 
-                    BitBoard targetSqrs = attackSqrs & enemyPiecesBB;
+                    //en passant is also a valid attack sqr
+                    enemyPiecesBB |= board.enPassantSqr > 0 ? 1ul << board.enPassantSqr : 0;
+
+                    //debug
+                    BitBoard targetSqrs = attackSqrs;
+                    if (!includeCoverage) targetSqrs &= enemyPiecesBB;
+
                     BitBoard moveSqrs = ~allPiecesBB & (1ul << posIndex + 8);
 
                     int sqrTwoAbove = posIndex + 16;
-
-                    //double move 
-                    if ((moveSqrs != 0 && !allPiecesBB[sqrTwoAbove])) {
-                        moveSqrs |= (y == 1 ? 1ul << sqrTwoAbove : 0);
-
-                        //todo: logic to set en passant sqr of chessboard
-                    }
+                    moveSqrs |= (moveSqrs != 0 && !allPiecesBB[sqrTwoAbove]) ? (y == 1 ? 1ul << sqrTwoAbove : 0) : 0;
 
                     return targetSqrs | moveSqrs;
                 }
@@ -69,12 +69,16 @@ public static class MoveSets {
 
                     BitBoard enemyPiecesBB = allPiecesBB & ~sameColorPieces;
 
-                    BitBoard targetSqrs = attackSqrs & enemyPiecesBB;
+                    //en passant is also a valid attack sqr
+                    enemyPiecesBB |= board.enPassantSqr > 0 ? 1ul << board.enPassantSqr : 0;
+
+                    //debug
+                    BitBoard targetSqrs = attackSqrs;
+                    if (!includeCoverage) targetSqrs &= enemyPiecesBB;
+
                     BitBoard moveSqrs = ~allPiecesBB & (1ul << posIndex - 8);
 
                     int sqrTwoAbove = posIndex - 16;
-
-
                     moveSqrs |= (moveSqrs != 0 && !allPiecesBB[sqrTwoAbove]) ? (y == 6 ? 1ul << (sqrTwoAbove) : 0) : 0;
 
                     return targetSqrs | moveSqrs;

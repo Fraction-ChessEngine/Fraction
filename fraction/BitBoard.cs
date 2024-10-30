@@ -175,4 +175,8 @@ public struct BitBoard {
 
         return sb.ToString();
     }
+
+    public void Print() {
+        Console.WriteLine(ToString());
+    }
 }

@@ -102,16 +102,22 @@ public static class MoveGen {
         Span<int> pawns = stackalloc int[pawnBB.PopCount];
         _ = pawnBB.FindOnes(pawns);
 
+        /*  Utility.PrintBitBoard(b.WPawnBB); Console.WriteLine();
+         Utility.PrintBitBoard(b.BPawnBB); */
+
         for (int i = 0; i < pawns.Length; i++) {
             Vision v = GetVisionForPieceAt(b, pawns[i], pawn, includeCoverage);
-            if (v.MoveBB == 0)
+            if (v.MoveBB == 0 /* && !includeCoverage --not necessary--*/) {
                 continue;
+            }
+
+            //   Console.WriteLine("Index =  " + currIndex + ", pos = " + pawns[i]);
             possibleMoves[currIndex] = v;
             currIndex++;
         }
     }
 
-    //das einzige piece zu dem man promoten kann, dh es kann 8 geben
+    //autoQueen is on, so max. 8 queens
     private static void GenerateMovesForQueens(Chessboard b, BitBoard queenBB,
             ref Vision[] possibleMoves, ref int currIndex, Piece queen, bool includeCoverage = false) {
 
@@ -120,8 +126,9 @@ public static class MoveGen {
 
         for (int i = 0; i < queens.Length; i++) {
             Vision v = GetVisionForPieceAt(b, queens[i], queen, includeCoverage);
-            if (v.MoveBB == 0)
-                continue;
+
+            if (v.MoveBB == 0) continue;
+
             possibleMoves[currIndex] = v;
             currIndex++;
         }
@@ -318,7 +325,8 @@ public static class MoveGen {
 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
         if (b.pinnedBB[i]) {
-            bb &= b.pinnedBB;
+            BitBoard pinLine = b.GetPinLineBB(1ul << i);
+            bb &= pinLine;
         }
 
 

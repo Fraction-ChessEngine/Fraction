@@ -7,7 +7,7 @@ namespace fraction;
 
 
 public class Chessboard {
-    public static int WKingSide = 0, WQueenSide = 1, BKingSide = 2, BQueenSide = 3;
+    readonly public static int WKingSide = 0, WQueenSide = 1, BKingSide = 2, BQueenSide = 3;
     public static int BoardCount = 0;
     //dient dem tracken einzelner boards im perft tree beim debuggen
     public int boardIndex;
@@ -37,6 +37,7 @@ public class Chessboard {
     private BitBoard wKingBB = 0b00010000ul;
     private BitBoard bPawnBB = 0b11111111ul << 48;
     private BitBoard wPawnBB = 0b11111111ul << 8;
+    public int enPassantSqr = -1;
 
     readonly public ulong[] CastlingRights ={
         0b01000000ul,0b100ul,0b01000000ul << 56, 0b100ul << 56, 0//null wert für optimisation
@@ -217,6 +218,9 @@ public class Chessboard {
                 int y = v.PosIndex >> 3;
                 int x = v.PosIndex & 7;
 
+                /* if (Program.debug) {
+                    Console.WriteLine("I am called with Pos=" + Utility.PosToAN(v.PosIndex));
+                } */
                 bb |= BB_Lookup.GetPawnAttackSqrs(x, y, forWhite);
             }
 
@@ -284,10 +288,28 @@ public class Chessboard {
         return WhitePiecesBB[index];
     }
 
-    //kein unterschied zwischen weißen und schwarzen pins, weil sowieso nach jedem zug das BB aktualisiert werden muss
+    //Contains every line between possible pinSliders, and the king (both exclusive)
+    //Order: Clockwise, starting with VertiTop
+    //Updates when GeneratePinnedPieceBB() is called
+    private readonly BitBoard[] PinLines = new BitBoard[8];
 
     /// <summary>
-    /// forWhite = white wird gepinned
+    /// 
+    /// </summary>
+    /// <param name="bb">BitBoard with only the pinnedPiece set  </param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public BitBoard GetPinLineBB(BitBoard bb) {
+        for (int i = 0; i < 8; i++) {
+            if ((PinLines[i] & bb) != 0) return PinLines[i];
+        }
+
+        throw new Exception("Pinned piece was not found on any generated pinLines");
+    }
+
+    //kein unterschied zwischen weißen und schwarzen pins, weil sowieso nach jedem zug das BB aktualisiert werden muss
+    /// <summary>
+    /// forWhite = white is pinned
     /// </summary>
     /// <param name="forWhite"></param>
     public void GeneratePinnedPieceBB(bool forWhite) {
@@ -296,7 +318,7 @@ public class Chessboard {
         BitBoard rookSightlines;
         BitBoard bishopSightlines;
 
-        //enemy pieces die sightlines auf den king haben, aka intersections of sightlines with pieces
+        //enemy pieces with sightlines at king, aka intersections of sightlines with pieces
         BitBoard intersectionsStraight;
         BitBoard intersectionDiags;
 
@@ -305,7 +327,6 @@ public class Chessboard {
 
             rookSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex);
             bishopSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wBishop, kingIndex);
-
 
             intersectionsStraight = rookSightlines & (BRookBB | BQueenBB);
             intersectionDiags = bishopSightlines & (BBishopBB | BQueenBB);
@@ -346,9 +367,14 @@ public class Chessboard {
             intersectionVertiTop = intersectionVertiTop == 0 ? 0 : MoveSets.InterpolateVertical(intersectionVertiTop.LowestOne, kingIndex);
             intersectionVertiTop = ValidatePin(intersectionVertiTop, sameColorPieces, enemyBlockers, kingIndex);
 
-            //wenn mehr oder weniger als ein piece der eigenen farbe auf der pinLine steht ist es kein pin
+            //if there are more or less than one piece of the own color on thepinLine -> no valid pin
 
             friendsInSightlines |= sameColorPieces & (intersectionHoriEast | intersectionHoriWest | intersectionVertiBottom | intersectionVertiTop);
+
+            PinLines[0] = intersectionVertiTop;
+            PinLines[2] = intersectionHoriEast;
+            PinLines[4] = intersectionVertiBottom;
+            PinLines[6] = intersectionHoriWest;
         }
 
         if (intersectionDiags != 0) {
@@ -377,9 +403,15 @@ public class Chessboard {
             intersectionDiagSW = ValidatePin(intersectionDiagSW, sameColorPieces, enemyBlockers, kingIndex);
 
             friendsInSightlines |= intersectionDiagNE | intersectionDiagNW | intersectionDiagSE | intersectionDiagSW;
+
+            PinLines[1] = intersectionDiagNE;
+            PinLines[3] = intersectionDiagSE;
+            PinLines[5] = intersectionDiagSW;
+            PinLines[7] = intersectionDiagNW;
         }
 
         pinnedBB = friendsInSightlines & ~WKingBB & ~BKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
+                                                             // Utility.PrintBitBoard(pinnedBB);
     }
 
     public Chessboard Clone() {
@@ -546,7 +578,9 @@ public class Chessboard {
         Chessboard board = Clone();
         board.Move(startIndex, endIndex, type);
 
-        //todo: checken ob castleMove gemacht wird, dh ob rook bewegt werden muss
+        board.enPassantSqr = -1;//sqr is reset as EP is only possible directly after the doublemove was played
+
+        //special behaviour such as castling, or en passant
         switch (type) {
 
 
@@ -575,9 +609,61 @@ public class Chessboard {
                 int side = GetSideOfRook(startIndex);
                 board.CastlingRights[side] = 0;
                 break;
+
+            case Piece.wPawn:
+            case Piece.bPawn:
+
+                if (IsDoubleMove(startIndex, endIndex)) {
+                    board.enPassantSqr = (startIndex + endIndex) / 2; //yes this works, i am a genius
+                    break;
+                }
+
+                //pawn needs to be killed if EP is captured
+                if (endIndex == enPassantSqr) {
+                    ulong bb = ~(1ul << GetEnPassantPawn(endIndex));
+                    if (type.IsWhite()) {
+                        board.bPawnBB &= bb;
+                    } else {
+                        board.wPawnBB &= bb;
+                    }
+                }
+                break;
         }
 
         return board;
+    }
+
+    //can technically be optimized with a full lookuptable, but that
+    //saves 1 (extremely fast) operation that only happens in extremely rare cases 
+    private int GetEnPassantPawn(int endIndex) {
+        switch (endIndex) {
+            case 24:
+            case 25:
+            case 26:
+            case 27:
+            case 28:
+            case 29:
+            case 30:
+            case 31:
+                return endIndex + 8; //endIndex is the sqr behind the pawn
+
+            case 40:
+            case 41:
+            case 42:
+            case 43:
+            case 44:
+            case 45:
+            case 46:
+            case 47:
+                return endIndex - 8;
+
+            default:
+                throw new Exception("No valid endIndex for capturing En Passant was entered");
+        }
+    }
+
+    private bool IsDoubleMove(int start, int end) {
+        return (end == start + 16) || (end == start - 16);
     }
 
     //if the move is castling, if yes where the rooks supposed be go

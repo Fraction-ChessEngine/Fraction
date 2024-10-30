@@ -7,6 +7,46 @@ using System.Security.Cryptography;
 
 namespace fraction;
 static class Utility {
+    public static void PrintBitBoard(BitBoard bb, int specialIndex = -1)
+    {
+        byte[] bytes = BitConverter.GetBytes(bb);
+        int[] pos = specialIndex >= 0 ? Utility.IndexToPos(specialIndex) : new int[2];
+        for (int i = 0; i < 8; i++)
+        {
+            byte x = bytes[7 - i];
+            string s = System.Convert.ToString(x, 2);
+            if (x < 128)
+                s = "0" + s;
+            if (x < 64)
+                s = "0" + s;
+            if (x < 32)
+                s = "0" + s;
+            if (x < 16)
+                s = "0" + s;
+            if (x < 8)
+                s = "0" + s;
+            if (x < 4)
+                s = "0" + s;
+            if (x < 2)
+                s = "0" + s;
+            if (specialIndex >= 0 && 7 - i == pos[1])
+            {
+                int a = 7 - pos[0];
+                s = s.Substring(0, a) + "X" + s.Substring(a + 1, 7 - a);
+            }
+            Console.WriteLine(Reverse(s));
+        }
+        Console.WriteLine(" ");
+    }
+
+    public static string Reverse(string s)
+    {
+        char[] charArray = s.ToCharArray();
+        Array.Reverse(charArray);
+        return new string(charArray);
+    }
+
+    
     /// <summary>
     /// Konvertiert einen FEN-String zu einer Position die einem Board gegeben werden kann
     /// </summary>
