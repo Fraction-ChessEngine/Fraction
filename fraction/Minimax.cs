@@ -20,12 +20,9 @@ public sealed class Minimax {
         bool whitesTurn,
         int quiescenceSearchPlies
     ) {
-        //checkmate detection, deprecated, wir haben jetzt eine richtige
-        float staticEval = Eval.BasicStaticEval(pos);
 
-        if (Math.Abs(staticEval) > 9000) {
-            return staticEval;
-        }
+        //prone for error, might be inverse, weird logical things are happening here
+        if (pos.isCheckMate) return whitesTurn ? float.MaxValue : float.MinValue;
 
         //quiescence search, 3 als hard limit für depth increase
         if (pos.AfterCapturePly && quiescenceSearchPlies < MaxQuiescenceSearchPlies) {
@@ -34,6 +31,8 @@ public sealed class Minimax {
             depth++;
         }
 
+        float staticEval = Eval.BasicStaticEval(pos);
+
         if (depth == 0) {
             Positions++;
             return staticEval;
@@ -41,8 +40,8 @@ public sealed class Minimax {
 
         Chessboard[] cbs = MoveGen.GenerateBoards(pos, whitesTurn);
 
-        if (cbs.Length == 0)
-            return staticEval;
+        if (cbs.Length == 0) return staticEval;
+
 
         if (whitesTurn) {
             float maxEval = float.MinValue;

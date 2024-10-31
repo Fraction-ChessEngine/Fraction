@@ -102,7 +102,10 @@ public static class MoveSets {
 
                 //king cant castle through check, or through pieces
                 ulong castleBlockers = enemyControlSqrs | board.WhitePiecesBB | board.BlackPiecesBB;
-                ulong castleSqrs;
+                ulong castleSqrs = 0;
+
+                //king cannot castle out of check
+                if (board.IsInCheck(isWhite)) return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, castleSqrs);
 
                 if (isWhite) {
                     ulong kingSide = board.CastlingRights[Chessboard.WKingSide];

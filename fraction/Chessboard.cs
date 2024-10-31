@@ -38,6 +38,7 @@ public class Chessboard {
     private BitBoard bPawnBB = 0b11111111ul << 48;
     private BitBoard wPawnBB = 0b11111111ul << 8;
     public int enPassantSqr = -1;
+    public bool isCheckMate = false;
 
     readonly public ulong[] CastlingRights ={
         0b01000000ul,0b100ul,0b01000000ul << 56, 0b100ul << 56, 0//null wert für optimisation
@@ -203,7 +204,7 @@ public class Chessboard {
         this.parentIndex = parentIndex;
     }
 
-    //berechnet neue BBs für die kontrollierten sqrs der beiden seiten
+    //calculates new BBs for the controlled sqrs of the given color
     public void UpdateAttackedSqrBB(Span<Vision> visions, bool forWhite) {
         BitBoard attackSqrBB = 0;
 
@@ -224,7 +225,8 @@ public class Chessboard {
                 bb |= BB_Lookup.GetPawnAttackSqrs(x, y, forWhite);
             }
 
-            attackSqrBB |= bb;
+            //a piece cannot cover itself
+            attackSqrBB |= bb & ~(1ul << v.PosIndex);
         }
 
         if (forWhite) {
@@ -363,7 +365,7 @@ public class Chessboard {
             intersectionVertiBottom = intersectionVertiBottom == 0 ? 0 : MoveSets.InterpolateVertical(kingIndex, intersectionVertiBottom.BitScanReverse);
             intersectionVertiBottom = ValidatePin(intersectionVertiBottom, sameColorPieces, enemyBlockers, kingIndex);
 
-            BitBoard intersectionVertiTop = intersectionsStraight & MoveSets.InterpolateVertical(kingIndex + (8 - y) * 8, kingIndex);
+            BitBoard intersectionVertiTop = intersectionsStraight & MoveSets.InterpolateVertical(kingIndex + (7 - y) * 8, kingIndex);
             intersectionVertiTop = intersectionVertiTop == 0 ? 0 : MoveSets.InterpolateVertical(intersectionVertiTop.LowestOne, kingIndex);
             intersectionVertiTop = ValidatePin(intersectionVertiTop, sameColorPieces, enemyBlockers, kingIndex);
 
@@ -376,6 +378,8 @@ public class Chessboard {
             PinLines[4] = intersectionVertiBottom;
             PinLines[6] = intersectionHoriWest;
         }
+
+
 
         if (intersectionDiags != 0) {
             enemyBlockers = forWhite ? BKnightBB | BRookBB | BPawnBB : WKnightBB | WRookBB | WPawnBB;
@@ -410,8 +414,9 @@ public class Chessboard {
             PinLines[7] = intersectionDiagNW;
         }
 
+
         pinnedBB = friendsInSightlines & ~WKingBB & ~BKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
-                                                             // Utility.PrintBitBoard(pinnedBB);
+
     }
 
     public Chessboard Clone() {
@@ -496,7 +501,7 @@ public class Chessboard {
         }
     }
 
-
+    //doesnt change the BB, only nullifies if necessary
     private BitBoard ValidatePin(BitBoard sightLine, BitBoard sameColorPieces, BitBoard enemyBlockers, int kingIndex) {
         sameColorPieces[kingIndex] = false;
 
@@ -637,14 +642,14 @@ public class Chessboard {
     //saves 1 (extremely fast) operation that only happens in extremely rare cases 
     private int GetEnPassantPawn(int endIndex) {
         switch (endIndex) {
-            case 24:
-            case 25:
-            case 26:
-            case 27:
-            case 28:
-            case 29:
-            case 30:
-            case 31:
+            case 16:
+            case 17:
+            case 18:
+            case 19:
+            case 20:
+            case 21:
+            case 22:
+            case 23:
                 return endIndex + 8; //endIndex is the sqr behind the pawn
 
             case 40:
@@ -658,7 +663,10 @@ public class Chessboard {
                 return endIndex - 8;
 
             default:
-                throw new Exception("No valid endIndex for capturing En Passant was entered");
+                Print();
+                Console.WriteLine("endIndex = " + endIndex);
+
+                throw new Exception("No valid endIndex for capturing En Passant was entered in board with index = " + boardIndex);
         }
     }
 
@@ -699,4 +707,9 @@ public class Chessboard {
 
         throw new ArgumentOutOfRangeException("Kein valider posIndex für CastlingRights bei rook änderung");
     }
+
+    public void Print() {
+        Program.DisplayBoard(this);
+    }
+
 }

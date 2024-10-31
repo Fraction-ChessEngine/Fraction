@@ -419,7 +419,7 @@ static class Testing {
     public static void PerftResults(Chessboard b, int d, bool whitesTurn) {
         Chessboard[] boards = MoveGen.GenerateBoards(b, whitesTurn, true);
 
-        int sum = 0;
+        long sum = 0;
         for (int i = 0; i < boards.Length; i++) {
             Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
             minimax.Run(boards[i], d - 1, !whitesTurn);

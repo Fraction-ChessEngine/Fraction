@@ -178,20 +178,22 @@ public static class MoveGen {
         //double check, king muss bewegt werden
         if (amount > 1) {
             if (kingMobile) return new Vision[] { kingVision };
+            b.isCheckMate = true;
             return null;//entspricht checkmate
 
         } else {//nur ein piece checkt den king
-
             return GenerateMovesForSingleCheck(b, forWhite, combined, posIndex);
         }
     }
 
+    //muss mit checkmates getestet werden
     /// <summary>
     /// Wird in GenerateMovesForCheck gecalled wenn es nur ein Piece check gibt
     /// </summary>
     /// <returns></returns>
     private static Span<Vision> GenerateMovesForSingleCheck(Chessboard b, bool forWhite, BitBoard combined, int kingIndex) {
         Span<Vision> pseudoLegal = GenerateMoves(b, forWhite);
+
         Vision[] legal = new Vision[16];
         int currIndex = 0;
 
@@ -212,10 +214,17 @@ public static class MoveGen {
                 }
 
             }
+            //no legal moves found in check, therefore checkmate
+            if (currIndex == 0) {
+                b.isCheckMate = true;
+                return null;
+            }
+
             return legal.AsSpan(0..currIndex);
 
         } else {//es ist ein slider
             BitBoard checkLine = GetCheckLine(kingIndex, combined.LowestOne) & ~(1ul << kingIndex);
+
 
             for (int i = 0; i < pseudoLegal.Length; i++) {
                 Vision v = pseudoLegal[i];
@@ -229,6 +238,11 @@ public static class MoveGen {
                     legal[currIndex] = v;
                     currIndex++;
                 }
+            }
+            //no legal moves found in check, therefore checkmate
+            if (currIndex == 0) {
+                b.isCheckMate = true;
+                return null;
             }
             return legal.AsSpan(0..currIndex);
         }
@@ -303,6 +317,7 @@ public static class MoveGen {
             Vision v = visions[i];
             Span<int> moves = stackalloc int[v.MoveBB.PopCount];
             _ = v.MoveBB.FindOnes(moves);
+
             for (int j = 0; j < v.MoveBB.PopCount; j++) {
                 Chessboard cb = b.GenerateBoardWithMove(v.PosIndex, moves[j], v.PieceType);
                 boards[index] = cb;
@@ -314,6 +329,7 @@ public static class MoveGen {
                         Utility.PosToAN(moves[j]);
                 }
             }
+
         }
 #pragma warning restore CA2014
 
