@@ -167,7 +167,7 @@ public class Chessboard {
         BitBoard bCtrlBB,
         int BoardIndex,
         int parentIndex,
-        int[] castlingRights
+    int[] castlingRights
     ) {
         this.WKingBB = wKingBB;
         this.BKingBB = bKingBB;
@@ -378,7 +378,7 @@ public class Chessboard {
 
 
         if (intersectionsStraight != 0) {
-            enemyBlockers = forWhite ? BKnightBB | BBishopBB | BPawnBB : WKnightBB | WBishopBB | WPawnBB;
+            enemyBlockers = forWhite ? BKnightBB | BBishopBB | BPawnBB | BKingBB : WKnightBB | WBishopBB | WPawnBB | WKingBB;
 
             BitBoard intersectionHoriWest = intersectionsStraight & MoveSets.InterpolateHorizontal(kingIndex, kingIndex - x);
             intersectionHoriWest = intersectionHoriWest == 0 ? 0 : MoveSets.InterpolateHorizontal(kingIndex, intersectionHoriWest.BitScanReverse);
@@ -392,6 +392,8 @@ public class Chessboard {
             intersectionVertiBottom = intersectionVertiBottom == 0 ? 0 : MoveSets.InterpolateVertical(kingIndex, intersectionVertiBottom.BitScanReverse);
             intersectionVertiBottom = ValidatePin(intersectionVertiBottom, sameColorPieces, enemyBlockers, kingIndex);
 
+
+
             BitBoard intersectionVertiTop = intersectionsStraight & MoveSets.InterpolateVertical(kingIndex + (7 - y) * 8, kingIndex);
             intersectionVertiTop = intersectionVertiTop == 0 ? 0 : MoveSets.InterpolateVertical(intersectionVertiTop.LowestOne, kingIndex);
             intersectionVertiTop = ValidatePin(intersectionVertiTop, sameColorPieces, enemyBlockers, kingIndex);
@@ -399,7 +401,6 @@ public class Chessboard {
             //if there are more or less than one piece of the own color on the pinLine -> no valid pin
 
             friendsInSightlines |= sameColorPieces & (intersectionHoriEast | intersectionHoriWest | intersectionVertiBottom | intersectionVertiTop);
-
             PinLines[0] = intersectionVertiTop;
             PinLines[2] = intersectionHoriEast;
             PinLines[4] = intersectionVertiBottom;

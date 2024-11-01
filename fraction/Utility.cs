@@ -243,14 +243,14 @@ static class Utility {
         return 8 * y + x;
     }
 
-    public static void printIntArr(int[] sqrs) {
+    /* public static void printIntArr(int[] sqrs) {
         string str = "";
         for (int i = 0; i < sqrs.Length; i++) {
             str += sqrs[i] + ", ";
         }
 
         Console.WriteLine(str);
-    }
+    } */
 
     /// <summary>
     /// Generiert das Bitboard einer pieceArt aus der positionsdarstellung
