@@ -207,22 +207,24 @@ public class Program {
 
 
 
-        Chessboard cb = new();
-        cb = cb.GenerateBoardWithMove((Utility.ANtoPos("a2")), (Utility.ANtoPos("a3")), Piece.wPawn);
-        cb = cb.GenerateBoardWithMove((Utility.ANtoPos("c7")), (Utility.ANtoPos("c6")), Piece.bPawn);
-        cb = cb.GenerateBoardWithMove((Utility.ANtoPos("e2")), (Utility.ANtoPos("e3")), Piece.wPawn);
-        cb = cb.GenerateBoardWithMove((Utility.ANtoPos("d8")), (Utility.ANtoPos("b6")), Piece.bQueen);
-        cb = cb.GenerateBoardWithMove((Utility.ANtoPos("g1")), (Utility.ANtoPos("e2")), Piece.wKnight);
-        cb = cb.GenerateBoardWithMove((Utility.ANtoPos("b6")), (Utility.ANtoPos("e3")), Piece.bQueen);
-        /*cb = cb.GenerateBoardWithMove((Utility.ANtoPos("g1")), (Utility.ANtoPos("f3")), Piece.wKnight);
-        cb = cb.GenerateBoardWithMove((Utility.ANtoPos("d7")), (Utility.ANtoPos("d2")), Piece.bQueen); */
+        Chessboard cb = Chessboard.FromFEN("5b1k/5p2/4pP1p/4P3/1n3P2/7P/b4B2/1B4K1 w");
+        /*   cb = cb.GenerateBoardWithMove((Utility.ANtoPos("g1")), (Utility.ANtoPos("g2")), Piece.wKing);
+           cb = cb.GenerateBoardWithMove((Utility.ANtoPos("a2")), (Utility.ANtoPos("d5")), Piece.bBishop);
+           cb = cb.GenerateBoardWithMove((Utility.ANtoPos("b1")), (Utility.ANtoPos("e4")), Piece.wBishop);
+           cb = cb.GenerateBoardWithMove((Utility.ANtoPos("h8")), (Utility.ANtoPos("g8")), Piece.bKing);
+
+           cb = cb.GenerateBoardWithMove((Utility.ANtoPos("f2")), (Utility.ANtoPos("e1")), Piece.wBishop);
+             cb = cb.GenerateBoardWithMove((Utility.ANtoPos("b6")), (Utility.ANtoPos("e3")), Piece.bQueen);
+           cb = cb.GenerateBoardWithMove((Utility.ANtoPos("g1")), (Utility.ANtoPos("f3")), Piece.wKnight);
+           cb = cb.GenerateBoardWithMove((Utility.ANtoPos("d7")), (Utility.ANtoPos("d2")), Piece.bQueen); */
         // cb.Print();
 
         Testing.PerftResults(new(), 7, true);
-
-        /*Perft:  3246355418 nodes
+  /*Perft begin:  3246355418 nodes
                    -50262561 (fixed bug where king castles out of check)
-                   -14397 (fixed bug where pins where calculated incorrectly)
+                      -14397 (fixed bug where pins where calculated incorrectly) 
+                    -1060059 (fixed bug where controlledSqrs considered pins wrong) = 3195018401
+
         */
     }
 }

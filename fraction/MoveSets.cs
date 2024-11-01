@@ -183,10 +183,13 @@ public static class MoveSets {
                 BitBoard sameColorPieces, Piece type, bool includeCoverage = false, bool isWhite = true) {
 
         BitBoard patternBB = BB_Lookup.GetBBforPieceAtSqr(type, posIndex);
+
+
+
         BitBoard allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
 
-        //der enemyKing blockiert die sightlines eines sliders auf die felder
-        //hinter dem king nicht, weil er dann per definition im nächsten zug verhindern muss in dieser sightline zu stehen
+        // enemyKing does not block a sliders sightline at the sqrs behind him
+        //since he has to move by definition to avoid being in the sightline
         if (includeCoverage) {
             BitBoard enemyKingBB = isWhite ? board.BKingBB : board.WKingBB;
             allPiecesBB &= ~enemyKingBB;
@@ -198,7 +201,7 @@ public static class MoveSets {
         GetPseudoTargetSqrsBishop(targetBB, posIndex) : GetPseudoTargetSqrsRook(targetBB, posIndex);
 
         BitBoard targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
-
+        
         return targetSqrs;
     }
 
@@ -213,7 +216,7 @@ public static class MoveSets {
     /// <returns></returns>
     public static BitBoard GetPseudoTargetSqrsBishop(BitBoard pieceBB, int posIndex) {
         pieceBB &= ~(1ul << posIndex);
-        ; //das bit an der position von von posIndex wird 0 gesetzt um komplikationen zu vermeiden
+        //das bit an der position von von posIndex wird 0 gesetzt um komplikationen zu vermeiden
 
         BitBoard nullifier = posIndex == 0 ? 0 : 1ul;
         int reverseIndex = 64 - posIndex;
@@ -246,9 +249,9 @@ public static class MoveSets {
         return antiDiag | diag;
     }
 
-    private static ulong[] CastlePath = { 0b1100000ul, 0b1100ul, 0b1100000ul << 56, 0b1100ul << 56 };
+    readonly private static ulong[] CastlePath = [0b1100000ul, 0b1100ul, 0b1100000ul << 56, 0b1100ul << 56];
 
-    private static int[] projectAntiDiagSELookupTable =
+    readonly private static int[] projectAntiDiagSELookupTable =
     {
             0, 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7, 15, 2, 3, 4, 5, 6, 7,
             15, 23, 3, 4, 5, 6, 7, 15, 23, 31, 4, 5, 6, 7, 15, 23, 31, 39, 5,
@@ -256,7 +259,7 @@ public static class MoveSets {
             31, 39, 47, 55, 63
     };
 
-    private static int[] projectAntiDiagNWLookupTable =
+    readonly private static int[] projectAntiDiagNWLookupTable =
     {
             0, 8, 16, 24, 32, 40, 48, 56, 8, 16, 24, 32, 40, 48, 56, 57, 16,
             24, 32, 40, 48, 56, 57, 58, 24, 32, 40, 48, 56, 57, 58, 59, 32, 40,
@@ -264,7 +267,7 @@ public static class MoveSets {
             58, 59, 60, 61, 62, 56, 57, 58, 59, 60, 61, 62, 63,
         };
 
-    private static int[] projectdiagSWLookupTable =
+    readonly private static int[] projectdiagSWLookupTable =
     {
             0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 16, 8, 0, 1, 2, 3,
             4, 5, 24, 16, 8, 0, 1, 2, 3, 4, 32, 24, 16, 8, 0, 1, 2, 3, 40, 32,
@@ -272,7 +275,7 @@ public static class MoveSets {
             24, 16, 8, 0,
         };
 
-    private static int[] projectdiagNELookupTable =
+    readonly private static int[] projectdiagNELookupTable =
     {
             63, 55, 47, 39, 31, 23, 15, 7, 62, 63, 55, 47, 39, 31, 23, 15, 61,
             62, 63, 55, 47, 39, 31, 23, 60, 61, 62, 63, 55, 47, 39, 31, 59, 60,

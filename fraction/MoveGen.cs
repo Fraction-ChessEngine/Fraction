@@ -288,7 +288,9 @@ public static class MoveGen {
 
         //provisorische lösung
         Span<Vision> attackVisions = GenerateMoves(b, !whitesTurn, true);
+
         b.UpdateAttackedSqrBB(attackVisions, !whitesTurn);
+
 
         //wenn check ist muss white in einer anderen funktion moves generieren
         //sowas wie GenerateMovesForCheck(...)
@@ -340,7 +342,7 @@ public static class MoveGen {
         BitBoard bb = MoveSets.GetPseudoLegalMoves(b, i, type, includeCoverage);
 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
-        if (b.pinnedBB[i]) {
+        if (b.pinnedBB[i] && !includeCoverage) {
             BitBoard pinLine = b.GetPinLineBB(1ul << i);
             bb &= pinLine;
         }

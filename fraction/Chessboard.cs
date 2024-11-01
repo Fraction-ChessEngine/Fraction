@@ -12,18 +12,6 @@ public class Chessboard {
     //dient dem tracken einzelner boards im perft tree beim debuggen
     public int boardIndex;
     public int parentIndex;
-    /* private BitBoard bRookBB = new(0b1000_0001, 0, 0, 0, 0, 0, 0, 0);
-    private BitBoard wRookBB = new(0, 0, 0, 0, 0, 0, 0, 0b1000_0001);
-    private BitBoard bBishopBB = new(0b0010_0100, 0, 0, 0, 0, 0, 0, 0);
-    private BitBoard wBishopBB = new(0, 0, 0, 0, 0, 0, 0, 0b0010_0100);
-    private BitBoard bKnightBB = new(0b0100_0010, 0, 0, 0, 0, 0, 0, 0);
-    private BitBoard wKnightBB = new(0, 0, 0, 0, 0, 0, 0, 0b0100_0010);
-    private BitBoard bQueenBB = new(0b0001_0000, 0, 0, 0, 0, 0, 0, 0);
-    private BitBoard wQueenBB = new(0, 0, 0, 0, 0, 0, 0, 0b0001_0000);
-    private BitBoard bKingBB = new(0b0000_1000, 0, 0, 0, 0, 0, 0, 0);
-    private BitBoard wKingBB = new(0, 0, 0, 0, 0, 0, 0, 0b0000_1000);
-    private BitBoard bPawnBB = new(0, 0b1111_1111, 0, 0, 0, 0, 0, 0);
-    private BitBoard wPawnBB = new(0, 0, 0, 0, 0, 0, 0b1111_1111, 0); */
 
     private BitBoard bRookBB = 0b10000001ul << 56;
     private BitBoard wRookBB = 0b10000001ul;
@@ -40,7 +28,7 @@ public class Chessboard {
     public int enPassantSqr = -1;
     public bool isCheckMate = false;
 
-    readonly public ulong[] CastlingRights ={
+    public ulong[] CastlingRights ={
         0b01000000ul,0b100ul,0b01000000ul << 56, 0b100ul << 56, 0//null wert für optimisation
     };
     //private BitBoard whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
@@ -178,7 +166,8 @@ public class Chessboard {
         BitBoard wCtrlBB,
         BitBoard bCtrlBB,
         int BoardIndex,
-        int parentIndex
+        int parentIndex,
+        int[] castlingRights
     ) {
         this.WKingBB = wKingBB;
         this.BKingBB = bKingBB;
@@ -218,10 +207,6 @@ public class Chessboard {
 
                 int y = v.PosIndex >> 3;
                 int x = v.PosIndex & 7;
-
-                /* if (Program.debug) {
-                    Console.WriteLine("I am called with Pos=" + Utility.PosToAN(v.PosIndex));
-                } */
                 bb |= BB_Lookup.GetPawnAttackSqrs(x, y, forWhite);
             }
 
@@ -237,8 +222,50 @@ public class Chessboard {
     }
 
     public static Chessboard FromFEN(string fen) {
-        return new Chessboard(Utility.FENtoPosition(fen));
+        string[] data = fen.Split(' ');
+
+        Chessboard cb = new Chessboard(Utility.FENtoPosition(data[0]));
+
+        string forWhite = data[1];
+
+        if (data.Length < 3) {
+            cb.CastlingRights[0] = 0;
+            cb.CastlingRights[1] = 0;
+            cb.CastlingRights[2] = 0;
+            cb.CastlingRights[3] = 0;
+            return cb;
+        };
+
+        string castleData = data[2];
+
+        bool[] rights = [false, false, false, false];
+        foreach (char c in castleData) {
+            switch (c) {
+                case 'K':
+                    rights[Chessboard.WKingSide] = true;
+                    break;
+                case 'Q':
+                    rights[Chessboard.WQueenSide] = true;
+                    break;
+
+                case 'k':
+                    rights[Chessboard.BKingSide] = true;
+                    break;
+                case 'q':
+                    rights[Chessboard.BQueenSide] = true;
+                    break;
+            }
+        }
+
+        for (int i = 0; i < rights.Length; i++) {
+            bool b = rights[i];
+            if (!b) cb.CastlingRights[i] = 0;
+        }
+
+        return cb;
     }
+
+
 
     /// <summary>
     /// Returnt immer ein Piece, dh davor muss überprüft werden ob hier überhaupt ein Piece existiert
@@ -369,7 +396,7 @@ public class Chessboard {
             intersectionVertiTop = intersectionVertiTop == 0 ? 0 : MoveSets.InterpolateVertical(intersectionVertiTop.LowestOne, kingIndex);
             intersectionVertiTop = ValidatePin(intersectionVertiTop, sameColorPieces, enemyBlockers, kingIndex);
 
-            //if there are more or less than one piece of the own color on thepinLine -> no valid pin
+            //if there are more or less than one piece of the own color on the pinLine -> no valid pin
 
             friendsInSightlines |= sameColorPieces & (intersectionHoriEast | intersectionHoriWest | intersectionVertiBottom | intersectionVertiTop);
 
@@ -420,6 +447,7 @@ public class Chessboard {
     }
 
     public Chessboard Clone() {
+
         return new() {
             wPawnBB = wPawnBB,
             wKingBB = wKingBB,
@@ -441,6 +469,7 @@ public class Chessboard {
             pinnedBB = pinnedBB,
             boardIndex = ++BoardCount,
             parentIndex = boardIndex,
+            CastlingRights = CastlingRights
         };
     }
 
@@ -587,8 +616,6 @@ public class Chessboard {
 
         //special behaviour such as castling, or en passant
         switch (type) {
-
-
             case Piece.wKing:
             case Piece.bKing:
 
