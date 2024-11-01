@@ -203,10 +203,6 @@ public class Program {
             Chessboard.FromFEN("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR")
          }; */
 
-
-
-
-
         Chessboard cb = new();
         cb = cb.GenerateBoardWithMove((Utility.ANtoPos("d2")), (Utility.ANtoPos("d3")), Piece.wPawn);
         /*   cb = cb.GenerateBoardWithMove((Utility.ANtoPos("d7")), (Utility.ANtoPos("d5")), Piece.bPawn);
@@ -215,17 +211,22 @@ public class Program {
           cb = cb.GenerateBoardWithMove((Utility.ANtoPos("e1")), (Utility.ANtoPos("d2")), Piece.wKing);
           cb = cb.GenerateBoardWithMove((Utility.ANtoPos("e8")), (Utility.ANtoPos("d7")), Piece.bKing);
              cb = cb.GenerateBoardWithMove((Utility.ANtoPos("g1")), (Utility.ANtoPos("f3")), Piece.wKnight);
-           cb = cb.GenerateBoardWithMove((Utility.ANtoPos("d7")), (Utility.ANtoPos("d2")), Piece.bQueen); */
-        cb.Print();
+           cb = cb.GenerateBoardWithMove((Utility.ANtoPos("d7")), (Utility.ANtoPos("d2")), Piece.bQueen); 
+        cb.Print();*/
 
-        Testing.PerftResults(new(), 7, true);
+        for (int i = 2; i <= 6; i++) {
+            Testing.BenchmarkPERFT(i);
+          //  Testing.BenchmarkPERFT(i);
+        }
+
+        // Testing.PerftResults(new(), 7, true);
 
         //  Utility.PrintBitBoard(cb.pinnedBB);
         /*Perft begin:  3246355418 nodes
                          -50262561 (fixed bug where king castles out of check)
                             -14397 (fixed bug where pins where calculated incorrectly) 
-                          -1060059 (fixed bug where controlledSqrs considered pins wrong) = 3195018401
-                               -10 (fixed bug where king didnt block own sliders sightlines at enemyKing)
+                          -1060059 (fixed bug where controlledSqrs considered pins wrong)
+                               -10 (fixed bug where king didnt block own sliders sightlines at enemyKing) = 3195018411
 
               */
     }

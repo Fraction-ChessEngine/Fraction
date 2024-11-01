@@ -201,7 +201,7 @@ public static class MoveSets {
         GetPseudoTargetSqrsBishop(targetBB, posIndex) : GetPseudoTargetSqrsRook(targetBB, posIndex);
 
         BitBoard targetSqrs = pseudoTargetSqrs & ~sameColorPieces;
-        
+
         return targetSqrs;
     }
 

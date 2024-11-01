@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace fraction;
 public static class MoveGen {
@@ -288,20 +289,11 @@ public static class MoveGen {
 
         //provisorische lösung
         Span<Vision> attackVisions = GenerateMoves(b, !whitesTurn, true);
-
         b.UpdateAttackedSqrBB(attackVisions, !whitesTurn);
 
-
-        //wenn check ist muss white in einer anderen funktion moves generieren
-        //sowas wie GenerateMovesForCheck(...)
         bool isCheck = b.IsInCheck(whitesTurn);
 
-        Span<Vision> visions;
-        if (isCheck) {
-            visions = GenerateMovesForCheck(b, whitesTurn);
-        } else {
-            visions = GenerateMoves(b, whitesTurn);
-        }
+        Span<Vision> visions = isCheck ? GenerateMovesForCheck(b, whitesTurn) : GenerateMoves(b, whitesTurn);
 
         //gesamtlänge des endarrays wird bestimmt
         int endLength = 0;
@@ -315,6 +307,7 @@ public static class MoveGen {
 
 
 #pragma warning disable CA2014
+
         for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
             Span<int> moves = stackalloc int[v.MoveBB.PopCount];
@@ -331,13 +324,14 @@ public static class MoveGen {
                         Utility.PosToAN(moves[j]);
                 }
             }
-
         }
 #pragma warning restore CA2014
 
         return boards;
     }
 
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vision GetVisionForPieceAt(Chessboard b, int i, Piece type, bool includeCoverage = false) {
         BitBoard bb = MoveSets.GetPseudoLegalMoves(b, i, type, includeCoverage);
 
@@ -346,7 +340,6 @@ public static class MoveGen {
             BitBoard pinLine = b.GetPinLineBB(1ul << i);
             bb &= pinLine;
         }
-
 
         return new Vision(i, bb, type);
     }

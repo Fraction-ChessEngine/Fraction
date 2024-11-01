@@ -9,7 +9,7 @@ namespace fraction;
 public struct BitBoard {
     private ulong _value; // must have 64b!
 
-    public int PopCount => PopCount(_value);
+    public readonly int PopCount => PopCount(_value);
     public int TrailingZeroCount => TrailingZeroCount(_value);
     public int LeadingZeroCount => LeadingZeroCount(_value);
     public int LowestOne => TrailingZeroCount;

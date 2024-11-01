@@ -228,11 +228,11 @@ static class Testing {
                 {
                     if (currPiece != p)
                         continue; //nur für die richtige pieceArt checken
-                    if (
-                        MoveSets.GetPseudoLegalMoves(
-                            new Chessboard(pos),
-                            index, currPiece
-                        )[endPos]
+                    if (true
+                    /* MoveSets.GetPseudoLegalMoves(
+                        new Chessboard(pos),
+                        index, currPiece
+                    )[endPos] */
                     )
                         return index;
                 }
@@ -362,6 +362,34 @@ static class Testing {
         sw.Stop();
 
         Console.WriteLine("Time elapsed={0}", sw.Elapsed);
+
+        float t = sw.Elapsed.Seconds + (float)sw.Elapsed.Milliseconds / 1000f;
+    }
+
+
+    // dotnet-trace collect -- ./bin/Release/net8.0/fraction
+    // dotnet-trace report fraction_20241012_181527.nettrace topN -n 10
+
+    public static void BenchmarkPERFT(int depth = 6) {
+        Stopwatch sw = new Stopwatch();
+
+        sw.Start();
+
+        var b = new Chessboard();
+        Chessboard[] boards = MoveGen.GenerateBoards(b, true, true);
+
+        long sum = 0;
+        for (int i = 0; i < boards.Length; i++) {
+            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
+            minimax.Run(boards[i], depth - 1, false);
+            sum += minimax.Positions;
+        }
+
+        sw.Stop();
+        Console.WriteLine("Benchmarked Perft with depth= " + depth);
+        Console.WriteLine("Time elapsed: {0}", sw.Elapsed);
+        Console.WriteLine("Nodes: " + sum);
+        Console.WriteLine("Nodes per second: " + (1000 * sum / sw.ElapsedMilliseconds) + "\n");
 
         float t = sw.Elapsed.Seconds + (float)sw.Elapsed.Milliseconds / 1000f;
     }
