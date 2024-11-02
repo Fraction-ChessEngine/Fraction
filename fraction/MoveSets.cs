@@ -227,9 +227,9 @@ public static class MoveSets {
         BitBoard diagSW = ((diagBB << reverseIndex) >> reverseIndex) * nullifier;
         BitBoard diagNE = ((diagBB >> posIndex) << posIndex);
         int indexSW =
-            diagSW == 0 ? projectdiagSWLookupTable[posIndex] : diagSW.BitScanReverse % 64;
+            diagSW == 0 ? projectdiagSWLookupTable[posIndex] : diagSW.BitScanReverse /* % 64 */;
         int indexNE =
-            diagNE == 0 ? projectdiagNELookupTable[posIndex] : diagNE.LowestOne % 64;
+            diagNE == 0 ? projectdiagNELookupTable[posIndex] : diagNE.LowestOne /* % 64 */;
 
         BitBoard diag = InterpolateDiagonal(indexNE, indexSW);
 
@@ -238,11 +238,11 @@ public static class MoveSets {
         int indexSE =
             antiDiagSe == 0
                 ? projectAntiDiagSELookupTable[posIndex]
-                : antiDiagSe.BitScanReverse % 64;
+                : antiDiagSe.BitScanReverse /* % 64 */;
         int indexNW =
             antiDiagNW == 0
                 ? projectAntiDiagNWLookupTable[posIndex]
-                : antiDiagNW.LowestOne % 64;
+                : antiDiagNW.LowestOne/*  % 64 */;
 
         BitBoard antiDiag = InterpolateAntiDiagonal(indexNW, indexSE);
 

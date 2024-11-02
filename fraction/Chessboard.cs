@@ -393,7 +393,6 @@ public class Chessboard {
             intersectionVertiBottom = ValidatePin(intersectionVertiBottom, sameColorPieces, enemyBlockers, kingIndex);
 
 
-
             BitBoard intersectionVertiTop = intersectionsStraight & MoveSets.InterpolateVertical(kingIndex + (7 - y) * 8, kingIndex);
             intersectionVertiTop = intersectionVertiTop == 0 ? 0 : MoveSets.InterpolateVertical(intersectionVertiTop.LowestOne, kingIndex);
             intersectionVertiTop = ValidatePin(intersectionVertiTop, sameColorPieces, enemyBlockers, kingIndex);
@@ -474,12 +473,11 @@ public class Chessboard {
         };
     }
 
-    public void Move(int start, int end, Piece type) {
-        AfterCapturePly = BlackPiecesBB[end] || WhitePiecesBB[end];
 
-        // essential for checkmate detection
-        wKingBB[end] = false;
-        bKingBB[end] = false;
+
+    public void MakeMove(int start, int end, Piece type, Piece promotion = Piece.wQueen) {
+
+        AfterCapturePly = BlackPiecesBB[end] || WhitePiecesBB[end];
 
         wKnightBB[end] = false;
         bKnightBB[end] = false;
@@ -498,8 +496,7 @@ public class Chessboard {
                 wPawnBB[end] = true;
                 //auto queen
                 if (end > 55) {
-                    wPawnBB[end] = false;
-                    wQueenBB[end] = true;
+                    PromoteTo(end, promotion);
                 }
                 break;
 
@@ -508,8 +505,7 @@ public class Chessboard {
                 bPawnBB[end] = true;
 
                 if (end < 8) {
-                    bPawnBB[end] = false;
-                    bQueenBB[end] = true;
+                    PromoteTo(end, promotion);
                 }
                 break;
 
@@ -530,6 +526,50 @@ public class Chessboard {
                 break;
         }
     }
+
+    private void PromoteTo(int end, Piece type) {
+        switch (type) {
+            case Piece.wBishop:
+                wPawnBB[end] = false;
+                wBishopBB[end] = true;
+                break;
+            case Piece.wQueen:
+                wPawnBB[end] = false;
+                wQueenBB[end] = true;
+                break;
+            case Piece.wRook:
+                wPawnBB[end] = false;
+                wRookBB[end] = true;
+                break;
+            case Piece.wKnight:
+                wPawnBB[end] = false;
+                wKnightBB[end] = true;
+                break;
+
+            case Piece.bBishop:
+                bPawnBB[end] = false;
+                bBishopBB[end] = true;
+                break;
+            case Piece.bQueen:
+                bPawnBB[end] = false;
+                bQueenBB[end] = true;
+                break;
+            case Piece.bRook:
+                bPawnBB[end] = false;
+                bRookBB[end] = true;
+                break;
+            case Piece.bKnight:
+                bPawnBB[end] = false;
+                bKnightBB[end] = true;
+                break;
+
+
+            default:
+                throw new Exception("Invalid piece entered for promotion");
+        }
+    }
+
+
 
     //doesnt change the BB, only nullifies if necessary
     private BitBoard ValidatePin(BitBoard sightLine, BitBoard sameColorPieces, BitBoard enemyBlockers, int kingIndex) {
@@ -609,9 +649,9 @@ public class Chessboard {
     /// </summary>
     /// <param name="startIndex"></param>
     /// <param name="endIndex"></param>
-    public Chessboard GenerateBoardWithMove(int startIndex, int endIndex, Piece type) {
+    public Chessboard GenerateBoardWithMove(int startIndex, int endIndex, Piece type, Piece promotion = Piece.wQueen) {
         Chessboard board = Clone();
-        board.Move(startIndex, endIndex, type);
+        board.MakeMove(startIndex, endIndex, type, promotion);
 
         board.enPassantSqr = -1;//sqr is reset as EP is only possible directly after the doublemove was played
 
@@ -633,7 +673,7 @@ public class Chessboard {
 
                 if (!isCastling) return board;
 
-                board.Move(rookStartIndex, rookEndIndex, rook);
+                board.MakeMove(rookStartIndex, rookEndIndex, rook);
                 break;
 
             case Piece.wRook:

@@ -370,13 +370,29 @@ static class Testing {
     // dotnet-trace collect -- ./bin/Release/net8.0/fraction
     // dotnet-trace report fraction_20241012_181527.nettrace topN -n 10
 
+    public static Chessboard BuildPosition(string moves) {
+        string[] data = moves.Split(' ');
+        Chessboard b = new();
+
+        foreach (string move in data) {
+            int start = Utility.ANtoPos(move[0..2]);
+            int end = Utility.ANtoPos(move[2..4]);
+            b = b.GenerateBoardWithMove(start, end, b.GetPieceAt(start));
+        }
+
+        MoveGen.GenerateBoards(b, true);
+        MoveGen.GenerateBoards(b, false);
+
+        return b;
+    }
+
     public static void BenchmarkPERFT(int depth = 6) {
         Stopwatch sw = new Stopwatch();
 
         sw.Start();
 
         var b = new Chessboard();
-        Chessboard[] boards = MoveGen.GenerateBoards(b, true, true);
+        Span<Chessboard> boards = MoveGen.GenerateBoards(b, true, true);
 
         long sum = 0;
         for (int i = 0; i < boards.Length; i++) {
@@ -445,7 +461,7 @@ static class Testing {
     //es gibt wohl nie mehr als 128 moves
     public static string[] perftmoves = new string[128];
     public static void PerftResults(Chessboard b, int d, bool whitesTurn) {
-        Chessboard[] boards = MoveGen.GenerateBoards(b, whitesTurn, true);
+        Span<Chessboard> boards = MoveGen.GenerateBoards(b, whitesTurn, true);
 
         long sum = 0;
         for (int i = 0; i < boards.Length; i++) {

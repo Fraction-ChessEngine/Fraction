@@ -186,40 +186,13 @@ public class Program {
     static Chessboard? visualBoard; //board auf dem die "wahre" position gespeichert wird
     public static bool debug = false;
     static void Main(string[] args) {
-        /* Chessboard[] checks = new Chessboard[]{
-            Chessboard.FromFEN("rnb1kbnr/pp1ppppp/2p5/q7/3P4/8/PPP1PPPP/RNBQKBNR"),
-            Chessboard.FromFEN("3k4/8/8/4n3/8/r1PK4/8/8"),
-            Chessboard.FromFEN("3k3r/8/b7/8/8/2PK4/7b/8")
-        };
 
-        Chessboard[] noChecks = new Chessboard[]{
-            Chessboard.FromFEN("r1bqr1k1/pp1n1pbp/2pp1np1/4p3/P1BP1B2/4PN1P/1PPN1PP1/R2Q1RK1"),
-            Chessboard.FromFEN("1r1q1rk1/2p2ppp/2np1n2/2bNp3/1pB1P1b1/2P2N2/1P1PQPPP/R1B2RK1"),
-            Chessboard.FromFEN("rnbqkb1r/pp3ppp/4pn2/2ppN3/3P1B2/8/PPP1PPPP/RN1QKB1R")
-         };Chessboard[] checkMates ={
-            Chessboard.FromFEN("8/8/8/8/8/2k5/1q6/1K6"),
-            Chessboard.FromFEN("1k5R/6R1/8/8/8/8/8/1K6"),
-            Chessboard.FromFEN("1k6/2P5/Q2P4/8/8/8/8/1K6"),
-            Chessboard.FromFEN("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR")
-         }; */
+        Chessboard cb = Testing.BuildPosition("e2e4 c7c6 b1a3");
 
-        Chessboard cb = new();
-        cb = cb.GenerateBoardWithMove((Utility.ANtoPos("d2")), (Utility.ANtoPos("d3")), Piece.wPawn);
-        /*   cb = cb.GenerateBoardWithMove((Utility.ANtoPos("d7")), (Utility.ANtoPos("d5")), Piece.bPawn);
-          cb = cb.GenerateBoardWithMove((Utility.ANtoPos("c2")), (Utility.ANtoPos("c4")), Piece.wPawn);
-          cb = cb.GenerateBoardWithMove((Utility.ANtoPos("d5")), (Utility.ANtoPos("c4")), Piece.bPawn);
-          cb = cb.GenerateBoardWithMove((Utility.ANtoPos("e1")), (Utility.ANtoPos("d2")), Piece.wKing);
-          cb = cb.GenerateBoardWithMove((Utility.ANtoPos("e8")), (Utility.ANtoPos("d7")), Piece.bKing);
-             cb = cb.GenerateBoardWithMove((Utility.ANtoPos("g1")), (Utility.ANtoPos("f3")), Piece.wKnight);
-           cb = cb.GenerateBoardWithMove((Utility.ANtoPos("d7")), (Utility.ANtoPos("d2")), Piece.bQueen); 
-        cb.Print();*/
 
-        for (int i = 2; i <= 6; i++) {
-            Testing.BenchmarkPERFT(i);
-          //  Testing.BenchmarkPERFT(i);
-        }
 
-        // Testing.PerftResults(new(), 7, true);
+        // Testing.PerftResults(cb, 1, true);
+        // Testing.BenchMarkMINIMAX();
 
         //  Utility.PrintBitBoard(cb.pinnedBB);
         /*Perft begin:  3246355418 nodes
@@ -229,5 +202,17 @@ public class Program {
                                -10 (fixed bug where king didnt block own sliders sightlines at enemyKing) = 3195018411
 
               */
+
+        /*  
+        promotion todo
+        -in movegen muss für jede anstehende pawn promo 4 anstatt 1 zu endlength geadded werden
+        -implementiert indem generateMoves direkt für jede promo ein eigenes vision baut
+        todo: weitermachen
+        */
+        /* 
+        en passant bug handling
+        https://peterellisjones.com/posts/generating-legal-chess-moves-efficiently/
+
+         */
     }
 }

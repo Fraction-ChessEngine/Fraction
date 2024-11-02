@@ -6,6 +6,8 @@ public sealed class Minimax {
     public int MaxQuiescenceSearchPlies { get; init; } = 3;
     public int Positions { get; private set; } = 0;
     public int NonQuietEndNodes { get; private set; } = 0;
+    private Chessboard[] boardHistory = new Chessboard[128];
+    int historyIndex = 0;
 
     public Minimax() { }
 
@@ -24,7 +26,7 @@ public sealed class Minimax {
         //prone for error, might be inverse, weird logical things are happening here
         if (pos.isCheckMate) return whitesTurn ? float.MaxValue : float.MinValue;
 
-        //quiescence search, 3 als hard limit für depth increase
+        //quiescence search, 3 as hard limit for depth increase
         if (pos.AfterCapturePly && quiescenceSearchPlies < MaxQuiescenceSearchPlies) {
             NonQuietEndNodes++;
             quiescenceSearchPlies++;
@@ -38,7 +40,7 @@ public sealed class Minimax {
             return staticEval;
         }
 
-        Chessboard[] cbs = MoveGen.GenerateBoards(pos, whitesTurn);
+        Span<Chessboard> cbs = MoveGen.GenerateBoards(pos, whitesTurn);
 
         if (cbs.Length == 0) return staticEval;
 
