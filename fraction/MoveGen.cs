@@ -60,24 +60,22 @@ public static class MoveGen {
         int currIndex = 0;
 
         if (forWhite) {
-            GenerateMovesForDoublePiece(b, b.WRookBB, ref possibleMoves, ref currIndex, Piece.wRook, includeCoverage);
-            GenerateMovesForDoublePiece(b, b.WKnightBB, ref possibleMoves, ref currIndex, Piece.wKnight, includeCoverage);
-            GenerateMovesForDoublePiece(b, b.WBishopBB, ref possibleMoves, ref currIndex, Piece.wBishop, includeCoverage);
+            GenerateMovesForPiece(b, b.WRookBB, ref possibleMoves, ref currIndex, Piece.wRook, includeCoverage);
+            GenerateMovesForPiece(b, b.WKnightBB, ref possibleMoves, ref currIndex, Piece.wKnight, includeCoverage);
+            GenerateMovesForPiece(b, b.WBishopBB, ref possibleMoves, ref currIndex, Piece.wBishop, includeCoverage);
+            GenerateMovesForPiece(b, b.WQueenBB, ref possibleMoves, ref currIndex, Piece.wQueen, includeCoverage);
 
             GenerateMovesForPawns(b, b.WPawnBB, ref possibleMoves, ref currIndex, Piece.wPawn, includeCoverage);
-
             GenerateMovesForKing(b, b.WKingBB, ref possibleMoves, ref currIndex, Piece.wKing, includeCoverage);
-            GenerateMovesForQueens(b, b.WQueenBB, ref possibleMoves, ref currIndex, Piece.wQueen, includeCoverage);
 
         } else {
-            GenerateMovesForDoublePiece(b, b.BRookBB, ref possibleMoves, ref currIndex, Piece.bRook, includeCoverage);
-            GenerateMovesForDoublePiece(b, b.BKnightBB, ref possibleMoves, ref currIndex, Piece.bKnight, includeCoverage);
-            GenerateMovesForDoublePiece(b, b.BBishopBB, ref possibleMoves, ref currIndex, Piece.bBishop, includeCoverage);
+            GenerateMovesForPiece(b, b.BRookBB, ref possibleMoves, ref currIndex, Piece.bRook, includeCoverage);
+            GenerateMovesForPiece(b, b.BKnightBB, ref possibleMoves, ref currIndex, Piece.bKnight, includeCoverage);
+            GenerateMovesForPiece(b, b.BBishopBB, ref possibleMoves, ref currIndex, Piece.bBishop, includeCoverage);
+            GenerateMovesForPiece(b, b.BQueenBB, ref possibleMoves, ref currIndex, Piece.bQueen, includeCoverage);
 
             GenerateMovesForPawns(b, b.BPawnBB, ref possibleMoves, ref currIndex, Piece.bPawn, includeCoverage);
-
             GenerateMovesForKing(b, b.BKingBB, ref possibleMoves, ref currIndex, Piece.bKing, includeCoverage);
-            GenerateMovesForQueens(b, b.BQueenBB, ref possibleMoves, ref currIndex, Piece.bQueen, includeCoverage);
         }
 
         return possibleMoves.AsSpan(0..currIndex);
@@ -116,15 +114,14 @@ public static class MoveGen {
     }
 
 
-    //autoQueen is on, so max. 8 queens
-    private static void GenerateMovesForQueens(Chessboard b, BitBoard queenBB,
-            ref Vision[] possibleMoves, ref int currIndex, Piece queen, bool includeCoverage = false) {
+    private static void GenerateMovesForPiece(Chessboard b, BitBoard pieceBB,
+            ref Vision[] possibleMoves, ref int currIndex, Piece type, bool includeCoverage = false) {
 
-        Span<int> queens = stackalloc int[queenBB.PopCount];
-        _ = queenBB.FindOnes(queens);
+        Span<int> pieces = stackalloc int[pieceBB.PopCount];
+        _ = pieceBB.FindOnes(pieces);
 
-        for (int i = 0; i < queens.Length; i++) {
-            Vision v = GetVisionForPieceAt(b, queens[i], queen, includeCoverage);
+        for (int i = 0; i < pieces.Length; i++) {
+            Vision v = GetVisionForPieceAt(b, pieces[i], type, includeCoverage);
 
             if (v.MoveBB == 0) continue;
 
@@ -293,7 +290,7 @@ public static class MoveGen {
         bool isCheck = b.IsInCheck(whitesTurn);
         Span<Vision> visions = isCheck ? GenerateMovesForCheck(b, whitesTurn) : GenerateMoves(b, whitesTurn);
 
-        Chessboard[] boards = new Chessboard[32];
+        Chessboard[] boards = new Chessboard[96];
         int index = 0;
 
 
@@ -347,7 +344,7 @@ public static class MoveGen {
                 //frisst hoffentlich nicht zu viel performance
                 if (perft) {
                     Testing.perftmoves[index - 1] = Utility.PosToAN(v.PosIndex) +
-                        Utility.PosToAN(moves[j]);
+                        Utility.PosToAN(end);
                 }
             }
         }
