@@ -3,59 +3,11 @@ using System.Runtime.CompilerServices;
 
 namespace fraction;
 public static class MoveGen {
-    /*
-    Architektur:
-    -funktion die einmal über das board loopt und für alle sqrs die mgl moves berechnet
-    suboptimale performance, muss aber nur 1x pro board executed werden
-
-    64 iterationen zur generation des possibleMovesBBs[] array (für jedes sqr getPseudoLegalMoves callen)
-    x64 iterationen um über das currMoveBB zu loopen und ein board mit dem entsprechenden move zu generieren
-    (kann optimiert werden da man wegen getSmallestBit und getBiggestBit nicht von 0-63 gehen muss)
-    ==> muss sehr intensiv gebenchmarked werden
-    */
-
-    private static void GenerateMovesForDoublePiece(
-        Chessboard b,
-        BitBoard pieceBB,
-        ref Vision[] possibleMoves,
-        ref int currIndex, Piece type,
-        bool includeCoverage = false
-    ) {
-        int amount = pieceBB.PopCount;
-        switch (amount) {
-            case 1:
-                int i1 = pieceBB.LowestOne;
-                Vision v = GetVisionForPieceAt(b, i1, type, includeCoverage);
-                if (v.MoveBB == 0ul)
-                    break;
-                possibleMoves[currIndex] = v;
-                currIndex++;
-                break;
-            case 2:
-                Span<int> j = stackalloc int[2];
-                _ = pieceBB.FindOnes(j);
-                Vision v1 = GetVisionForPieceAt(b, j[0], type, includeCoverage);
-                Vision v2 = GetVisionForPieceAt(b, j[1], type, includeCoverage);
-
-                if (v1.MoveBB != 0ul) {
-                    possibleMoves[currIndex] = v1;
-                    currIndex++;
-                }
-
-                if (v2.MoveBB != 0ul) {
-                    possibleMoves[currIndex] = v2;
-                    currIndex++;
-                }
-
-                break;
-            default:
-                break;
-        }
-    }
 
     public static Span<Vision> GenerateMoves(Chessboard b, bool forWhite, bool includeCoverage = false) {
         //weil maximal 16 pieces die je ein "Moves" bekommen
-        Vision[] possibleMoves = new Vision[16]; b.GeneratePinnedPieceBB(forWhite);
+        Vision[] possibleMoves = new Vision[16];
+        b.GeneratePinnedPieceBB(forWhite);
 
         int currIndex = 0;
 

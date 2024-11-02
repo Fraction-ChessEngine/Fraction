@@ -187,11 +187,9 @@ public class Program {
     public static bool debug = false;
     static void Main(string[] args) {
 
-        //Chessboard cb = Testing.BuildPosition("e2e4 c7c6 h2h4 c6c5 a2a4 c5c4 b2b3 c4c3 f2f3 c3d2");
-        Testing.PerftResults(new(), 7, true);
+        Chessboard cb = Testing.BuildPosition("g1h3 g8h6 g2g3 h8g8 f1g2 g8h8");
 
-        /* Chessboard cb = Chessboard.FromFEN("8/6P1/8/8/8/8/1NNRrnn1/KBBRrbbk w");
-        Testing.PerftResults(cb, 2, true); */
+        Testing.PerftResults(new(), 7, true);
         // Testing.BenchMarkMINIMAX();
 
         //  Utility.PrintBitBoard(cb.pinnedBB);
@@ -199,7 +197,8 @@ public class Program {
                          -50262561 (fixed bug where king castles out of check)
                             -14397 (fixed bug where pins where calculated incorrectly) 
                           -1060059 (fixed bug where controlledSqrs considered pins wrong)
-                               -10 (fixed bug where king didnt block own sliders sightlines at enemyKing) = 3195018411
+                               -10 (fixed bug where king didnt block own sliders sightlines at enemyKing)
+                          +1059938 (fixed bug where castlingRights were passed down by reference) = 3196078349
 
               */
 

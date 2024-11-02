@@ -27,8 +27,16 @@ public class Chessboard {
     private BitBoard wPawnBB = 0b11111111ul << 8;
     public int enPassantSqr = -1;
     public bool isCheckMate = false;
+    private int Rights = 0b1111;//only the 4 lsb contain data
+    public bool GetCastlingRights(int side) {
+        return ((1 << side) & Rights) != 0;
+    }
+    public void SetCastlingRightsNullAt(int side) {
+        Rights &= ~(1 << side);
+    }
 
-    public ulong[] CastlingRights ={
+
+    public readonly ulong[] CastlingRights ={
         0b01000000ul,0b100ul,0b01000000ul << 56, 0b100ul << 56, 0//null wert für optimisation
     };
     //private BitBoard whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
@@ -229,10 +237,10 @@ public class Chessboard {
         string forWhite = data[1];
 
         if (data.Length < 3) {
-            cb.CastlingRights[0] = 0;
-            cb.CastlingRights[1] = 0;
-            cb.CastlingRights[2] = 0;
-            cb.CastlingRights[3] = 0;
+            cb.SetCastlingRightsNullAt(0);
+            cb.SetCastlingRightsNullAt(1);
+            cb.SetCastlingRightsNullAt(2);
+            cb.SetCastlingRightsNullAt(3);
             return cb;
         };
 
@@ -259,7 +267,7 @@ public class Chessboard {
 
         for (int i = 0; i < rights.Length; i++) {
             bool b = rights[i];
-            if (!b) cb.CastlingRights[i] = 0;
+            if (!b) cb.SetCastlingRightsNullAt(i);
         }
 
         return cb;
@@ -469,7 +477,7 @@ public class Chessboard {
             pinnedBB = pinnedBB,
             boardIndex = ++BoardCount,
             parentIndex = boardIndex,
-            CastlingRights = CastlingRights
+            Rights = Rights
         };
     }
 
@@ -660,18 +668,21 @@ public class Chessboard {
             case Piece.wKing:
             case Piece.bKing:
 
-                if (type.IsWhite()) {
-                    board.CastlingRights[WKingSide] = 0;
-                    board.CastlingRights[WQueenSide] = 0;
-                } else {
-                    board.CastlingRights[BKingSide] = 0;
-                    board.CastlingRights[BQueenSide] = 0;
-                }
-
                 bool isCastling; int rookStartIndex; int rookEndIndex; Piece rook;
                 (isCastling, rookStartIndex, rookEndIndex, rook) = GetCastleRookData(startIndex, endIndex);
 
-                if (!isCastling) return board;
+                if (!isCastling) {
+                    // throw new Exception("\nnot castling with start, end = " + startIndex + ", " + endIndex);
+                    if (type.IsWhite()) {
+                        board.SetCastlingRightsNullAt(0);
+                        board.SetCastlingRightsNullAt(1);
+                    } else {
+                        board.SetCastlingRightsNullAt(2);
+                        board.SetCastlingRightsNullAt(3);
+                    }
+                    return board;
+                }
+
 
                 board.MakeMove(rookStartIndex, rookEndIndex, rook);
                 break;
