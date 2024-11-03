@@ -491,20 +491,30 @@ static class Testing {
     public static void LoadAndTest() {
         string[] lines = File.ReadAllLines("ethereal.txt");
 
-        foreach (string line in lines) {
+        for (int i = 0; i < 128; i++) {
+            string line = lines[i];
             string[] data = line.Split(';');
+
             (Chessboard cb, bool whiteStarts) = Chessboard.FromFEN(data[0]);
             MoveGen.GenerateBoards(cb, true);
             MoveGen.GenerateBoards(cb, false);
 
-            for (int i = 1; i < data.Length; i++) {
-                string currData = data[i];
-                int depth = int.Parse(currData.Substring(1, 1));
-                long sum = perftSum(cb, depth, whiteStarts);
-                Console.WriteLine(sum);
-            }
+            Console.Write("\nPosition " + i + " : ");
 
-            return;
+            for (int j = 1; j < data.Length; j++) {
+                string currData = data[j];
+                int depth = int.Parse(currData.Substring(1, 1));
+
+                long sum = perftSum(cb, depth, whiteStarts);
+                long correctSum = int.Parse(currData.Substring(3, currData.Length - 3));
+
+                if (sum == correctSum) {
+                    Console.Write("Passed " + currData.Substring(0, 2) + "; ");
+                } else {
+                    Console.Write("Failure on " + currData.Substring(0, 2) + "; ");
+                    break;
+                }
+            }
         }
     }
 
