@@ -684,17 +684,15 @@ public class Chessboard {
                 bool isCastling; int rookStartIndex; int rookEndIndex; Piece rook;
                 (isCastling, rookStartIndex, rookEndIndex, rook) = GetCastleRookData(startIndex, endIndex);
 
-                if (!isCastling) {
-                    // throw new Exception("\nnot castling with start, end = " + startIndex + ", " + endIndex);
-                    if (type.IsWhite()) {
-                        board.SetCastlingRightsNullAt(0);
-                        board.SetCastlingRightsNullAt(1);
-                    } else {
-                        board.SetCastlingRightsNullAt(2);
-                        board.SetCastlingRightsNullAt(3);
-                    }
-                    return board;
+                if (type.IsWhite()) {
+                    board.SetCastlingRightsNullAt(0);
+                    board.SetCastlingRightsNullAt(1);
+                } else {
+                    board.SetCastlingRightsNullAt(2);
+                    board.SetCastlingRightsNullAt(3);
                 }
+
+                if (!isCastling) return board;
 
 
                 board.MakeMove(rookStartIndex, rookEndIndex, rook);

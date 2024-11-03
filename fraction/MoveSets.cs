@@ -101,7 +101,8 @@ public static class MoveSets {
                 //enemy pieces prevent the king from castling through controlled sqrs
 
                 //king cant castle through check, or through pieces
-                ulong castleBlockers = enemyControlSqrs | board.WhitePiecesBB | board.BlackPiecesBB;
+                ulong castleBlockerPiece = board.WhitePiecesBB | board.BlackPiecesBB;
+                ulong castleBlockerAttack = enemyControlSqrs;
                 ulong castleSqrs = 0;
 
                 //king cannot castle out of check
@@ -111,10 +112,12 @@ public static class MoveSets {
                     ulong kingSide = board.GetCastlingRights(Chessboard.WKingSide) ? Chessboard.CastleSqrs[Chessboard.WKingSide] : 0;
                     ulong queenSide = board.GetCastlingRights(Chessboard.WQueenSide) ? Chessboard.CastleSqrs[Chessboard.WQueenSide] : 0;
 
-                    if ((CastlePath[Chessboard.WKingSide] & castleBlockers) != 0) {
+                    if ((CastlePathPieces[Chessboard.WKingSide] & castleBlockerPiece) != 0
+                    || (CastlePathAttack[Chessboard.WKingSide] & castleBlockerAttack) != 0) {
                         kingSide = 0;
                     }
-                    if ((CastlePath[Chessboard.WQueenSide] & castleBlockers) != 0) {
+                    if ((CastlePathPieces[Chessboard.WQueenSide] & castleBlockerPiece) != 0
+                    || (CastlePathAttack[Chessboard.WQueenSide] & castleBlockerAttack) != 0) {
                         queenSide = 0;
                     }
 
@@ -124,10 +127,12 @@ public static class MoveSets {
                     ulong kingSide = board.GetCastlingRights(Chessboard.BKingSide) ? Chessboard.CastleSqrs[Chessboard.BKingSide] : 0;
                     ulong queenSide = board.GetCastlingRights(Chessboard.BQueenSide) ? Chessboard.CastleSqrs[Chessboard.BQueenSide] : 0;
 
-                    if ((CastlePath[Chessboard.BKingSide] & castleBlockers) != 0) {
+                    if ((CastlePathPieces[Chessboard.BKingSide] & castleBlockerPiece) != 0
+                    || (CastlePathAttack[Chessboard.BKingSide] & castleBlockerAttack) != 0) {
                         kingSide = 0;
                     }
-                    if ((CastlePath[Chessboard.BQueenSide] & castleBlockers) != 0) {
+                    if ((CastlePathPieces[Chessboard.BQueenSide] & castleBlockerPiece) != 0
+                    || (CastlePathAttack[Chessboard.BQueenSide] & castleBlockerAttack) != 0) {
                         queenSide = 0;
                     }
 
@@ -249,8 +254,8 @@ public static class MoveSets {
         return antiDiag | diag;
     }
 
-    readonly private static ulong[] CastlePath = [0b1100000ul, 0b1110ul, 0b1100000ul << 56, 0b1110ul << 56];
-
+    readonly private static ulong[] CastlePathPieces = [0b1100000ul, 0b1110ul, 0b1100000ul << 56, 0b1110ul << 56];
+    readonly private static ulong[] CastlePathAttack = [0b1100000ul, 0b1100ul, 0b1100000ul << 56, 0b1100ul << 56];
     readonly private static int[] projectAntiDiagSELookupTable =
     {
             0, 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7, 15, 2, 3, 4, 5, 6, 7,

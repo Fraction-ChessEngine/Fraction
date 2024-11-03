@@ -370,9 +370,9 @@ static class Testing {
     // dotnet-trace collect -- ./bin/Release/net8.0/fraction
     // dotnet-trace report fraction_20241012_181527.nettrace topN -n 10
 
-    public static Chessboard BuildPosition(string moves) {
+    public static Chessboard BuildPosition(Chessboard b, string moves) {
         string[] data = moves.Split(' ');
-        Chessboard b = new();
+       // Chessboard b = new();
 
         foreach (string move in data) {
             int start = Utility.ANtoPos(move[0..2]);
@@ -490,6 +490,7 @@ static class Testing {
 
     public static void LoadAndTest() {
         string[] lines = File.ReadAllLines("ethereal.txt");
+        int correctPositions = 0;
 
         for (int i = 0; i < 128; i++) {
             string line = lines[i];
@@ -510,13 +511,14 @@ static class Testing {
 
                 if (sum == correctSum) {
                     Console.Write("Passed " + currData.Substring(0, 2) + "; ");
+                    if (j == data.Length - 1) correctPositions++;
                 } else {
                     Console.Write("Failure on " + currData.Substring(0, 2) + "; ");
                     break;
                 }
             }
         }
+
+        Console.WriteLine("\n" + correctPositions + " / " + 128);
     }
-
-
 }

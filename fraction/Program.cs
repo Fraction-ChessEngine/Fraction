@@ -184,9 +184,12 @@ public class Program {
     static Chessboard? visualBoard; //board auf dem die "wahre" position gespeichert wird
     public static bool debug = false;
     static void Main(string[] args) {
+        (Chessboard cb, bool whiteStarts) = Chessboard.FromFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+        // cb = Testing.BuildPosition(cb, "e1g1 e8c8");
 
-        (Chessboard cb, bool whiteStarts) = Chessboard.FromFEN("rnbk1bnr/pp1pp1pp/8/q1P2p2/8/8/PPPQPPPP/RNB1KBNR w KQkq f6 0 1");
-
+        //D1 48 ;D2 2039 ;D3 97862 ;D4 4085603 ;D5 193690690
+        /* DisplayBoard(cb);
+        Testing.PerftResults(cb, 3, true); */
 
         Testing.LoadAndTest();
         /* 
