@@ -322,8 +322,17 @@ public static class MoveGen {
 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
         if (b.pinnedBB[i] && !includeCoverage) {
+
+            if (i == 11) {
+                // Utility.PrintBitBoard(bb);
+            }
+
             BitBoard pinLine = b.GetPinLineBB(1ul << i);
             bb &= pinLine;
+
+            if (i == 11) {
+                //Utility.PrintBitBoard(pinLine);
+            }
         }
 
         return new Vision(i, bb, type);

@@ -82,8 +82,6 @@ public class Program {
         Chessboard error = new Chessboard(
             Utility.FENtoPosition("r1bqkbnr/pppppppp/B7/8/4P3/8/PPPP1PPP/RNBQK1NR")
         );
-        var prof = Chessboard.FromFEN("r1bqkb2/ppp1pnp1/2np4/5p1r/2B1P3/3P4/PPPN1PPP/RNB1K2R");
-        var evalB1 = Chessboard.FromFEN("5r2/1p6/2p1k3/4Q2p/3P4/8/5PK1/q7");
 
         // Utility.printBitBoard(prof.wPawnBB);
         // PGN_Formatter.CreateFormattedFile("mvl.txt", "gamesCarlsen.txt");
@@ -187,27 +185,10 @@ public class Program {
     public static bool debug = false;
     static void Main(string[] args) {
 
-        Chessboard cb = Testing.BuildPosition("g1h3 g8h6 g2g3 h8g8 f1g2 g8h8");
+        (Chessboard cb, bool whiteStarts) = Chessboard.FromFEN("rnbk1bnr/pp1pp1pp/8/q1P2p2/8/8/PPPQPPPP/RNB1KBNR w KQkq f6 0 1");
 
-        Testing.PerftResults(new(), 7, true);
-        // Testing.BenchMarkMINIMAX();
 
-        //  Utility.PrintBitBoard(cb.pinnedBB);
-        /*Perft begin:  3246355418 nodes
-                         -50262561 (fixed bug where king castles out of check)
-                            -14397 (fixed bug where pins where calculated incorrectly) 
-                          -1060059 (fixed bug where controlledSqrs considered pins wrong)
-                               -10 (fixed bug where king didnt block own sliders sightlines at enemyKing)
-                          +1059938 (fixed bug where castlingRights were passed down by reference) = 3196078349
-
-              */
-
-        /*  
-        promotion todo
-        -in movegen muss für jede anstehende pawn promo 4 anstatt 1 zu endlength geadded werden
-        -implementiert indem generateMoves direkt für jede promo ein eigenes vision baut
-        todo: weitermachen
-        */
+        Testing.LoadAndTest();
         /* 
         en passant bug handling
         https://peterellisjones.com/posts/generating-legal-chess-moves-efficiently/

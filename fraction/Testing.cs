@@ -475,13 +475,38 @@ static class Testing {
         Console.WriteLine("Sum: " + sum);
     }
 
-    public static void Checks() {
-        Chessboard[] checkBoards = {
-            Chessboard.FromFEN("rnbqkbnr/ppp1pppp/3p4/8/Q2P4/8/PPP1PPPP/RNB1KBNR"),
-            Chessboard.FromFEN("rnbqkbnr/ppp1pppp/2Qp4/8/3P4/8/PPP1PPPP/RNB1KBNR"),
-            Chessboard.FromFEN(""),
-            Chessboard.FromFEN(""),
-            Chessboard.FromFEN("")
-    };
+
+    private static long perftSum(Chessboard b, int d, bool whitesTurn) {
+        Span<Chessboard> boards = MoveGen.GenerateBoards(b, whitesTurn);
+
+        long sum = 0;
+        for (int i = 0; i < boards.Length; i++) {
+            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
+            minimax.Run(boards[i], d - 1, !whitesTurn);
+            sum += minimax.Positions;
+        }
+        return sum;
     }
+
+    public static void LoadAndTest() {
+        string[] lines = File.ReadAllLines("ethereal.txt");
+
+        foreach (string line in lines) {
+            string[] data = line.Split(';');
+            (Chessboard cb, bool whiteStarts) = Chessboard.FromFEN(data[0]);
+            MoveGen.GenerateBoards(cb, true);
+            MoveGen.GenerateBoards(cb, false);
+
+            for (int i = 1; i < data.Length; i++) {
+                string currData = data[i];
+                int depth = int.Parse(currData.Substring(1, 1));
+                long sum = perftSum(cb, depth, whiteStarts);
+                Console.WriteLine(sum);
+            }
+
+            return;
+        }
+    }
+
+
 }

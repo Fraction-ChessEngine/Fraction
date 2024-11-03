@@ -36,7 +36,7 @@ public class Chessboard {
     }
 
 
-    public readonly ulong[] CastlingRights ={
+    public static readonly ulong[] CastleSqrs ={
         0b01000000ul,0b100ul,0b01000000ul << 56, 0b100ul << 56, 0//null wert für optimisation
     };
     //private BitBoard whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
@@ -229,48 +229,54 @@ public class Chessboard {
         }
     }
 
-    public static Chessboard FromFEN(string fen) {
+    static bool hasCastl(string data) {
+        return (data.Contains("k")) || (data.Contains("q"))
+            || (data.Contains("W")) || (data.Contains("Q"));
+    }
+
+    static bool hasNumber(string data) {
+        return data.Contains("1") || data.Contains("2") || data.Contains("3") || data.Contains("4") ||
+        data.Contains("5") || data.Contains("6") || data.Contains("7") || data.Contains("8");
+    }
+
+    public static (Chessboard, bool) FromFEN(string fen) {
         string[] data = fen.Split(' ');
+        data = data[0..(data.Length - 2)];
+
+        bool forWhite = true;
 
         Chessboard cb = new Chessboard(Utility.FENtoPosition(data[0]));
 
-        string forWhite = data[1];
+        bool[] castl = [false, false, false, false];
 
-        if (data.Length < 3) {
-            cb.SetCastlingRightsNullAt(0);
-            cb.SetCastlingRightsNullAt(1);
-            cb.SetCastlingRightsNullAt(2);
-            cb.SetCastlingRightsNullAt(3);
-            return cb;
-        };
+        for (int i = 1; i < data.Length; i++) {
+            string s = data[i];
 
-        string castleData = data[2];
-
-        bool[] rights = [false, false, false, false];
-        foreach (char c in castleData) {
-            switch (c) {
-                case 'K':
-                    rights[Chessboard.WKingSide] = true;
-                    break;
-                case 'Q':
-                    rights[Chessboard.WQueenSide] = true;
-                    break;
-
-                case 'k':
-                    rights[Chessboard.BKingSide] = true;
-                    break;
-                case 'q':
-                    rights[Chessboard.BQueenSide] = true;
-                    break;
+            if (s == "w") {
+                forWhite = true;
+            } else if (s == "b") {
+                forWhite = false;
+            } else if (hasCastl(s)) {
+                if (s.Contains("K")) castl[Chessboard.WKingSide] = true;
+                if (s.Contains("Q")) castl[Chessboard.WQueenSide] = true;
+                if (s.Contains("k")) castl[Chessboard.BKingSide] = true;
+                if (s.Contains("q")) castl[Chessboard.BQueenSide] = true;
+            } else if (hasNumber(s)) {
+                cb.enPassantSqr = Utility.ANtoPos(s);
             }
+
         }
 
-        for (int i = 0; i < rights.Length; i++) {
-            bool b = rights[i];
+
+
+        for (int i = 0; i < castl.Length; i++) {
+            bool b = castl[i];
             if (!b) cb.SetCastlingRightsNullAt(i);
         }
 
-        return cb;
+
+
+        return (cb, forWhite);
     }
 
 
@@ -338,7 +344,8 @@ public class Chessboard {
     /// <exception cref="Exception"></exception>
     public BitBoard GetPinLineBB(BitBoard bb) {
         for (int i = 0; i < 8; i++) {
-            if ((PinLines[i] & bb) != 0) return PinLines[i];
+            BitBoard line = PinLines[i];
+            if ((line & bb) != 0) return line;
         }
 
         throw new Exception("Pinned piece was not found on any generated pinLines");
@@ -350,6 +357,11 @@ public class Chessboard {
     /// </summary>
     /// <param name="forWhite"></param>
     public void GeneratePinnedPieceBB(bool forWhite) {
+        //need to be reset for edgy edge cases
+        for (int i = 0; i < 8; i++) {
+            PinLines[i] = 0;
+        }
+
         int kingIndex;
 
         BitBoard rookSightlines;
@@ -358,6 +370,7 @@ public class Chessboard {
         //enemy pieces with sightlines at king, aka intersections of sightlines with pieces
         BitBoard intersectionsStraight;
         BitBoard intersectionDiags;
+
 
         if (forWhite) {
             kingIndex = wKingBB.LowestOne;
@@ -386,6 +399,7 @@ public class Chessboard {
 
 
         if (intersectionsStraight != 0) {
+            //pieces of the other color that block this pin
             enemyBlockers = forWhite ? BKnightBB | BBishopBB | BPawnBB | BKingBB : WKnightBB | WBishopBB | WPawnBB | WKingBB;
 
             BitBoard intersectionHoriWest = intersectionsStraight & MoveSets.InterpolateHorizontal(kingIndex, kingIndex - x);
@@ -413,7 +427,6 @@ public class Chessboard {
             PinLines[4] = intersectionVertiBottom;
             PinLines[6] = intersectionHoriWest;
         }
-
 
 
         if (intersectionDiags != 0) {
@@ -691,7 +704,7 @@ public class Chessboard {
             case Piece.bRook:
 
                 int side = GetSideOfRook(startIndex);
-                board.CastlingRights[side] = 0;
+                board.SetCastlingRightsNullAt(side);
                 break;
 
             case Piece.wPawn:

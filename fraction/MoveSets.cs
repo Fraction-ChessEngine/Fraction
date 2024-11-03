@@ -108,8 +108,8 @@ public static class MoveSets {
                 if (board.IsInCheck(isWhite)) return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, castleSqrs);
 
                 if (isWhite) {
-                    ulong kingSide = board.CastlingRights[Chessboard.WKingSide];
-                    ulong queenSide = board.CastlingRights[Chessboard.WQueenSide];
+                    ulong kingSide = board.GetCastlingRights(Chessboard.WKingSide) ? Chessboard.CastleSqrs[Chessboard.WKingSide] : 0;
+                    ulong queenSide = board.GetCastlingRights(Chessboard.WQueenSide) ? Chessboard.CastleSqrs[Chessboard.WQueenSide] : 0;
 
                     if ((CastlePath[Chessboard.WKingSide] & castleBlockers) != 0) {
                         kingSide = 0;
@@ -121,8 +121,8 @@ public static class MoveSets {
                     castleSqrs = kingSide | queenSide;
 
                 } else {
-                    ulong kingSide = board.CastlingRights[Chessboard.BKingSide];
-                    ulong queenSide = board.CastlingRights[Chessboard.BQueenSide];
+                    ulong kingSide = board.GetCastlingRights(Chessboard.BKingSide) ? Chessboard.CastleSqrs[Chessboard.BKingSide] : 0;
+                    ulong queenSide = board.GetCastlingRights(Chessboard.BQueenSide) ? Chessboard.CastleSqrs[Chessboard.BQueenSide] : 0;
 
                     if ((CastlePath[Chessboard.BKingSide] & castleBlockers) != 0) {
                         kingSide = 0;
@@ -249,7 +249,7 @@ public static class MoveSets {
         return antiDiag | diag;
     }
 
-    readonly private static ulong[] CastlePath = [0b1100000ul, 0b1100ul, 0b1100000ul << 56, 0b1100ul << 56];
+    readonly private static ulong[] CastlePath = [0b1100000ul, 0b1110ul, 0b1100000ul << 56, 0b1110ul << 56];
 
     readonly private static int[] projectAntiDiagSELookupTable =
     {
