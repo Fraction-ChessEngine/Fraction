@@ -106,7 +106,7 @@ public static class MoveSets {
                 ulong castleSqrs = 0;
 
                 //king cannot castle out of check
-                if (board.IsInCheck(isWhite)) return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, castleSqrs);
+                if (board.IsInCheck(isWhite)) return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, castleSqrs, includeCoverage);
 
                 if (isWhite) {
                     ulong kingSide = board.GetCastlingRights(Chessboard.WKingSide) ? Chessboard.CastleSqrs[Chessboard.WKingSide] : 0;
@@ -139,7 +139,7 @@ public static class MoveSets {
                     castleSqrs = kingSide | queenSide;
                 }
 
-                return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, castleSqrs);
+                return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, castleSqrs, includeCoverage);
 
             case Piece.wQueen:
             case Piece.bQueen:
@@ -155,8 +155,12 @@ public static class MoveSets {
         }
     }
 
-    public static BitBoard GetKingPseudoLegalMoves(int posIndex, BitBoard sameColorPieces, BitBoard enemyControlSqrs, BitBoard castleSqrs) {
+    public static BitBoard GetKingPseudoLegalMoves(int posIndex, BitBoard sameColorPieces, BitBoard enemyControlSqrs, BitBoard castleSqrs, bool includeCoverage = false) {
         BitBoard patternBB = BB_Lookup.GetBBforPieceAtSqr(Piece.bKing, posIndex);
+
+        if (includeCoverage) {
+            return patternBB | castleSqrs;
+        }
 
         BitBoard targetSqrs = patternBB & ~sameColorPieces;
 

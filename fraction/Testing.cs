@@ -372,7 +372,7 @@ static class Testing {
 
     public static Chessboard BuildPosition(Chessboard b, string moves) {
         string[] data = moves.Split(' ');
-       // Chessboard b = new();
+        // Chessboard b = new();
 
         foreach (string move in data) {
             int start = Utility.ANtoPos(move[0..2]);
@@ -476,7 +476,7 @@ static class Testing {
     }
 
 
-    private static long perftSum(Chessboard b, int d, bool whitesTurn) {
+    public static long perftSum(Chessboard b, int d, bool whitesTurn) {
         Span<Chessboard> boards = MoveGen.GenerateBoards(b, whitesTurn);
 
         long sum = 0;
@@ -497,6 +497,7 @@ static class Testing {
             string[] data = line.Split(';');
 
             (Chessboard cb, bool whiteStarts) = Chessboard.FromFEN(data[0]);
+
             MoveGen.GenerateBoards(cb, true);
             MoveGen.GenerateBoards(cb, false);
 
@@ -507,13 +508,13 @@ static class Testing {
                 int depth = int.Parse(currData.Substring(1, 1));
 
                 long sum = perftSum(cb, depth, whiteStarts);
-                long correctSum = int.Parse(currData.Substring(3, currData.Length - 3));
+                long correctSum = int.Parse(currData[3..]);
 
                 if (sum == correctSum) {
-                    Console.Write("Passed " + currData.Substring(0, 2) + "; ");
+                    Console.Write("Passed " + currData[..2] + "; ");
                     if (j == data.Length - 1) correctPositions++;
                 } else {
-                    Console.Write("Failure on " + currData.Substring(0, 2) + "; ");
+                    Console.Write("Failure on " + currData[..2] + "; ");
                     break;
                 }
             }

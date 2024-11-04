@@ -231,7 +231,7 @@ public class Chessboard {
 
     static bool hasCastl(string data) {
         return (data.Contains("k")) || (data.Contains("q"))
-            || (data.Contains("W")) || (data.Contains("Q"));
+           || (data.Contains("K")) || (data.Contains("Q"));
     }
 
     static bool hasNumber(string data) {
@@ -241,7 +241,7 @@ public class Chessboard {
 
     public static (Chessboard, bool) FromFEN(string fen) {
         string[] data = fen.Split(' ');
-        data = data[0..(data.Length - 2)];
+        data = data[0..(data.Length - 2)];//removes the plys necessary for 50move rule
 
         bool forWhite = true;
 
@@ -257,6 +257,7 @@ public class Chessboard {
             } else if (s == "b") {
                 forWhite = false;
             } else if (hasCastl(s)) {
+
                 if (s.Contains("K")) castl[Chessboard.WKingSide] = true;
                 if (s.Contains("Q")) castl[Chessboard.WQueenSide] = true;
                 if (s.Contains("k")) castl[Chessboard.BKingSide] = true;
