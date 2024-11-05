@@ -358,7 +358,7 @@ public class Chessboard {
     /// </summary>
     /// <param name="forWhite"></param>
     public void GeneratePinnedPieceBB(bool forWhite) {
-        //need to be reset for edgy edge cases
+        //needs to be reset for edgy edge cases
         for (int i = 0; i < 8; i++) {
             PinLines[i] = 0;
         }
@@ -710,8 +710,14 @@ public class Chessboard {
             case Piece.bPawn:
 
                 if (IsDoubleMove(startIndex, endIndex)) {
-                    board.enPassantSqr = (startIndex + endIndex) / 2; //yes this works, i am a genius
-                    break;
+                    //if king is separated from a horizontal slider by only this pawn and an enemy pawn
+                    //--> this must become -1 again
+                    //can be ineffient as this is an edge case
+                    if (!hasSussyEnpassantPin(type.IsWhite(), endIndex)) {
+                        board.enPassantSqr = (startIndex + endIndex) / 2; //yes this works, i am a genius
+                        break;
+                    }
+
                 }
 
                 //pawn needs to be killed if EP is captured
@@ -727,6 +733,41 @@ public class Chessboard {
         }
 
         return board;
+    }
+
+    //can technically be optimized, but not a bottlenecking function
+    private bool hasSussyEnpassantPin(bool forWhite, int endIndexPawn) {
+        Chessboard cb = Clone();
+        ulong enemyPawnBB;
+
+        //  Utility.PrintBitBoard(cb.wPawnBB);
+        //pawn is nulled
+        if (forWhite) {
+            cb.wPawnBB &= ~1ul << endIndexPawn;
+
+
+            enemyPawnBB = bPawnBB;
+        } else {
+            cb.bPawnBB &= ~1ul << endIndexPawn;
+            enemyPawnBB = wPawnBB;
+        }
+
+        cb.GeneratePinnedPieceBB(!forWhite);
+
+        for (int i = 0; i < 2; i++) {
+            //contains the whole line between king and slider
+            //set to zero if more than one piece on this line
+            BitBoard pinLine = cb.PinLines[i * 4 + 2];
+            //there is a intersection, so there is pinned pawn
+            if ((pinLine & enemyPawnBB) != 0) {
+                return true;
+            }
+        }
+
+        return false;
+        /* 
+        Idea: build verison of this chessboard without this pawn, 
+        see if now theres a pinline with a enemyPawn next to this missing pawn*/
     }
 
     //can technically be optimized with a full lookuptable, but that

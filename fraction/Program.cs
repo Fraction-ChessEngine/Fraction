@@ -184,17 +184,20 @@ public class Program {
     static Chessboard? visualBoard; //board auf dem die "wahre" position gespeichert wird
     public static bool debug = false;
     static void Main(string[] args) {
-        (Chessboard cb, bool whiteStarts) = Chessboard.FromFEN("8/8/8/8/8/K7/P7/k7 b - - 0 1");
-        // cb = Testing.BuildPosition(cb, "e1g1 e8c8");
+        //8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1 ;D4 43238 ;D5 674624 ;D6 11030083
+
+        (Chessboard cb, bool whiteStarts) = Chessboard.FromFEN("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
+        // cb = Testing.BuildPosition(cb, "e2e3 h5c5 g2g4");
 
         //;D1 15 ;D2 66 ;D3 1197 ;D4 7059 ;D5 133987 ;D6 764643
-
-        //(cb);
-        // Testing.PerftResults(cb, 1, false);
+        //f4g3 ist sus
+        // cb.Print();
+        DisplayBoard(cb);
+        Testing.PerftResults(cb, 4, true);
         //Console.WriteLine(Testing.perftSum(cb, 1, false));
 
 
-        Testing.LoadAndTest();
+        //Testing.LoadAndTest();
         /* 
         en passant bug handling
         https://peterellisjones.com/posts/generating-legal-chess-moves-efficiently/
