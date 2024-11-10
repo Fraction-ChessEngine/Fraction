@@ -147,13 +147,38 @@ public static class MoveGen {
 
         if ((b.CheckPieceBBs[0] | b.CheckPieceBBs[1]) != 0) {//es ist ein knight oder pawn, dh kein piece kann blocken
 
-            //überprüfen ob knight genommen werden kann
+            //überprüfen ob knight/pawn genommen werden kann
             for (int i = 0; i < pseudoLegal.Length; i++) {
                 Vision v = pseudoLegal[i];
 
                 //der king dürfte auch andere moves ausser captures machen
                 if (v.PosIndex != kingIndex) {
-                    v.MoveBB &= combined;//nur moves die das checkPiece capturen werden zugelassen
+                    /* 
+                    logic to check if EP sqr is behind the checkPiece,
+                     combined is just a bitboard the checkPieceBit set 
+                     */
+                    bool enPassantPawnGivesCheckAndCanBeCapturedByCurrentPawn =
+                    b.CheckPieceBBs[0] != 0 && (v.PieceType == Piece.wPawn || v.PieceType == Piece.bPawn)
+                    && b.enPassantSqr > 0
+                    && v.MoveBB[b.enPassantSqr];
+
+                    if (enPassantPawnGivesCheckAndCanBeCapturedByCurrentPawn) {//confirmed pawn
+
+                        //possible EP is on the board
+                        int checkPieceIndex = combined.HighestOne;
+                        int EPpawnIndex = Chessboard.GetEnPassantPawn(b.enPassantSqr);
+
+                        //en passant pawn gave check
+                        if (EPpawnIndex == checkPieceIndex) {
+                            v.MoveBB &= combined;
+                            v.MoveBB |= 1ul << b.enPassantSqr;
+                        } else {
+                            v.MoveBB &= combined;//nur moves die das checkPiece capturen werden zugelassen
+                        }
+
+                    } else {
+                        v.MoveBB &= combined;//nur moves die das checkPiece capturen werden zugelassen
+                    }
                 }
 
                 if (v.MoveBB != 0) {

@@ -187,17 +187,19 @@ public class Program {
         //8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1 ;D4 43238 ;D5 674624 ;D6 11030083
 
         (Chessboard cb, bool whiteStarts) = Chessboard.FromFEN("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
-        // cb = Testing.BuildPosition(cb, "e2e3 h5c5 g2g4");
+        // cb = Testing.BuildPosition(cb, "b4c4 h4g5 c4c6 g5f6 e2e4");
+        //f4e3 wird nicht generated
+        //  Console.WriteLine(cb.enPassantSqr);
 
-        //;D1 15 ;D2 66 ;D3 1197 ;D4 7059 ;D5 133987 ;D6 764643
-        //f4g3 ist sus
         // cb.Print();
+        /* 
         DisplayBoard(cb);
-        Testing.PerftResults(cb, 4, true);
+        Testing.PerftResults(cb, 6, true); 
+        */
         //Console.WriteLine(Testing.perftSum(cb, 1, false));
 
 
-        //Testing.LoadAndTest();
+        Testing.LoadAndTest();
         /* 
         en passant bug handling
         https://peterellisjones.com/posts/generating-legal-chess-moves-efficiently/

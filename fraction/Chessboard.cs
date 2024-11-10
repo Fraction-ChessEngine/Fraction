@@ -265,10 +265,13 @@ public class Chessboard {
             } else if (hasNumber(s)) {
                 cb.enPassantSqr = Utility.ANtoPos(s);
             }
-
         }
 
-
+        //if there are no rooks, castlingrights need to be revoked for the given side
+        if (!cb.wRookBB[0]) castl[Chessboard.WQueenSide] = false;
+        if (!cb.wRookBB[7]) castl[Chessboard.WKingSide] = false;
+        if (!cb.bRookBB[56]) castl[Chessboard.BQueenSide] = false;
+        if (!cb.bRookBB[63]) castl[Chessboard.BKingSide] = false;
 
         for (int i = 0; i < castl.Length; i++) {
             bool b = castl[i];
@@ -675,6 +678,22 @@ public class Chessboard {
         Chessboard board = Clone();
         board.MakeMove(startIndex, endIndex, type, promotion);
 
+
+        switch (endIndex) {
+            case 0:
+                board.SetCastlingRightsNullAt(Chessboard.WQueenSide);
+                break;
+            case 7:
+                board.SetCastlingRightsNullAt(Chessboard.WKingSide);
+                break;
+            case 56:
+                board.SetCastlingRightsNullAt(Chessboard.BQueenSide);
+                break;
+            case 63:
+                board.SetCastlingRightsNullAt(Chessboard.BKingSide);
+                break;
+        }
+
         board.enPassantSqr = -1;//sqr is reset as EP is only possible directly after the doublemove was played
 
         //special behaviour such as castling, or en passant
@@ -712,12 +731,11 @@ public class Chessboard {
                 if (IsDoubleMove(startIndex, endIndex)) {
                     //if king is separated from a horizontal slider by only this pawn and an enemy pawn
                     //--> this must become -1 again
-                    //can be ineffient as this is an edge case
-                    if (!hasSussyEnpassantPin(type.IsWhite(), endIndex)) {
+                    //can be made ineffient as this is an edge case
+                    if (!board.hasSussyEnpassantPin(type.IsWhite(), endIndex)) {
                         board.enPassantSqr = (startIndex + endIndex) / 2; //yes this works, i am a genius
                         break;
                     }
-
                 }
 
                 //pawn needs to be killed if EP is captured
@@ -735,7 +753,13 @@ public class Chessboard {
         return board;
     }
 
+    /* TODO:
+    removes pawn, finds king has an pinnned pawn  despite the removed pawn not being part of the pin
+     */
+
     //can technically be optimized, but not a bottlenecking function
+    //usecase:  a double pawn move was just made, therefore we need to make sure the EP sqr is valid
+    //its not valid if capturing it reveals an attack at the enemys king
     private bool hasSussyEnpassantPin(bool forWhite, int endIndexPawn) {
         Chessboard cb = Clone();
         ulong enemyPawnBB;
@@ -743,36 +767,37 @@ public class Chessboard {
         //  Utility.PrintBitBoard(cb.wPawnBB);
         //pawn is nulled
         if (forWhite) {
-            cb.wPawnBB &= ~1ul << endIndexPawn;
-
-
+            cb.wPawnBB &= ~(1ul << endIndexPawn);
             enemyPawnBB = bPawnBB;
         } else {
-            cb.bPawnBB &= ~1ul << endIndexPawn;
+            cb.bPawnBB &= ~(1ul << endIndexPawn);
             enemyPawnBB = wPawnBB;
         }
 
+        //is the enemy now pinned without the doubleMovePawn?
+        //then they cannot capture
         cb.GeneratePinnedPieceBB(!forWhite);
 
         for (int i = 0; i < 2; i++) {
             //contains the whole line between king and slider
             //set to zero if more than one piece on this line
             BitBoard pinLine = cb.PinLines[i * 4 + 2];
-            //there is a intersection, so there is pinned pawn
-            if ((pinLine & enemyPawnBB) != 0) {
+            //there is a intersection, so without the doubleMovepawn, there would be a pinned pawn
+            //the doubleMovePawn also needs be on the pinLine
+            if ((pinLine & enemyPawnBB) != 0 && ((1ul << endIndexPawn) & pinLine) != 0) {
                 return true;
             }
         }
 
         return false;
         /* 
-        Idea: build verison of this chessboard without this pawn, 
+        Idea: build version of this chessboard without this pawn, 
         see if now theres a pinline with a enemyPawn next to this missing pawn*/
     }
 
     //can technically be optimized with a full lookuptable, but that
     //saves 1 (extremely fast) operation that only happens in extremely rare cases 
-    private int GetEnPassantPawn(int endIndex) {
+    public static int GetEnPassantPawn(int endIndex) {
         switch (endIndex) {
             case 16:
             case 17:
@@ -795,10 +820,9 @@ public class Chessboard {
                 return endIndex - 8;
 
             default:
-                Print();
                 Console.WriteLine("endIndex = " + endIndex);
 
-                throw new Exception("No valid endIndex for capturing En Passant was entered in board with index = " + boardIndex);
+                throw new Exception("No valid endIndex for capturing En Passant was entered in board with index = i dont fucking know");
         }
     }
 
