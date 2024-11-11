@@ -186,24 +186,18 @@ public class Program {
     static void Main(string[] args) {
         //8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1 ;D4 43238 ;D5 674624 ;D6 11030083
 
-        (Chessboard cb, bool whiteStarts) = Chessboard.FromFEN("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
-        // cb = Testing.BuildPosition(cb, "b4c4 h4g5 c4c6 g5f6 e2e4");
-        //f4e3 wird nicht generated
-        //  Console.WriteLine(cb.enPassantSqr);
-
-        // cb.Print();
         /* 
-        DisplayBoard(cb);
-        Testing.PerftResults(cb, 6, true); 
-        */
-        //Console.WriteLine(Testing.perftSum(cb, 1, false));
-
-
-        Testing.LoadAndTest();
-        /* 
-        en passant bug handling
-        https://peterellisjones.com/posts/generating-legal-chess-moves-efficiently/
-
+        TODO: consider checkmate, stalemate in evaluation of minimax
+        also: if i see forced mate before i reach final depth, i can 
+        just return (maybe implemented with FoundMate flag in minimax)
+        
          */
+
+        (Chessboard cb, _) = Chessboard.FromFEN("k7/ppp5/8/8/8/8/8/K4R2 w - - 0 1");
+        DisplayBoard(cb);
+
+        (int a, int b) = Minimax.BestMove(cb, true, 6);
+        Console.WriteLine(Utility.PosToAN(a) + Utility.PosToAN(b));
+
     }
 }

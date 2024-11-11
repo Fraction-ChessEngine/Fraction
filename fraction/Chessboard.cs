@@ -12,6 +12,7 @@ public class Chessboard {
     //dient dem tracken einzelner boards im perft tree beim debuggen
     public int boardIndex;
     public int parentIndex;
+    public (int, int) lastMove;
 
     private BitBoard bRookBB = 0b10000001ul << 56;
     private BitBoard wRookBB = 0b10000001ul;
@@ -677,6 +678,8 @@ public class Chessboard {
     public Chessboard GenerateBoardWithMove(int startIndex, int endIndex, Piece type, Piece promotion = Piece.wQueen) {
         Chessboard board = Clone();
         board.MakeMove(startIndex, endIndex, type, promotion);
+
+        board.lastMove = (startIndex, endIndex);
 
 
         switch (endIndex) {

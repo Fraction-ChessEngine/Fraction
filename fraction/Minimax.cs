@@ -6,8 +6,6 @@ public sealed class Minimax {
     public int MaxQuiescenceSearchPlies { get; init; } = 3;
     public int Positions { get; private set; } = 0;
     public int NonQuietEndNodes { get; private set; } = 0;
-    private Chessboard[] boardHistory = new Chessboard[128];
-    int historyIndex = 0;
 
     public Minimax() { }
 
@@ -73,5 +71,32 @@ public sealed class Minimax {
             return minEval;
         }
     }
+
+    public static (int, int) BestMove(Chessboard cb, bool whitesTurn, int depth) {
+        (int, int) currBestMove = (-1, -1);
+        float currBestEval = whitesTurn ? -10_000 : 10_000;
+
+        Span<Chessboard> children = MoveGen.GenerateBoards(cb, whitesTurn);
+
+        foreach (Chessboard currCB in children) {
+            Minimax m = new();
+            float eval = m.Run(currCB, depth - 1, !whitesTurn);
+
+            if (whitesTurn) {//we want to maximize eval
+                if (eval > currBestEval) {
+                    currBestEval = eval;
+                    currBestMove = currCB.lastMove;
+                }
+            } else {//we want to minimize eval
+                if (eval < currBestEval) {
+                    currBestEval = eval;
+                    currBestMove = currCB.lastMove;
+                }
+            }
+        }
+
+        return currBestMove;
+    }
+
 }
 
