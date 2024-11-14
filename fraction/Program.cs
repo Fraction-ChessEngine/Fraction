@@ -187,17 +187,23 @@ public class Program {
         //8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1 ;D4 43238 ;D5 674624 ;D6 11030083
 
         /* 
-        TODO: consider checkmate, stalemate in evaluation of minimax
+        TODO:
+        - consider checkmate, stalemate in evaluation of minimax
         also: if i see forced mate before i reach final depth, i can 
         just return (maybe implemented with FoundMate flag in minimax)
-        
+        - 50move rule
+        - threefold repetition 
+        - iterative deepening
          */
 
-        (Chessboard cb, _) = Chessboard.FromFEN("k7/ppp5/8/8/8/8/8/K4R2 w - - 0 1");
+        /* (Chessboard cb, _) = Chessboard.FromFEN("k7/pppp4/pppp4/pppp4/8/8/8/KRN5 w - - 0 1");
         DisplayBoard(cb);
 
-        (int a, int b) = Minimax.BestMove(cb, true, 6);
+        (int a, int b, Piece p) = Minimax.BestMove(cb, true, 6);
         Console.WriteLine(Utility.PosToAN(a) + Utility.PosToAN(b));
+ */
+        Console.WriteLine(Minimax.BestMoveTime(new Chessboard(), true, 5000));
+        //string x = Console.ReadLine();
 
     }
 }

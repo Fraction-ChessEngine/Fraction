@@ -1,4 +1,10 @@
 using System;
+using System.Timers;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Diagnostics;
+
 
 namespace fraction;
 public sealed class Minimax {
@@ -21,8 +27,7 @@ public sealed class Minimax {
         int quiescenceSearchPlies
     ) {
 
-        //prone for error, might be inverse, weird logical things are happening here
-        if (pos.isCheckMate) return whitesTurn ? float.MaxValue : float.MinValue;
+
 
         //quiescence search, 3 as hard limit for depth increase
         if (pos.AfterCapturePly && quiescenceSearchPlies < MaxQuiescenceSearchPlies) {
@@ -40,7 +45,12 @@ public sealed class Minimax {
 
         Span<Chessboard> cbs = MoveGen.GenerateBoards(pos, whitesTurn);
 
-        if (cbs.Length == 0) return staticEval;
+        //only true, if i didnt find any legal moves and i am in check
+        //It is my turn, i realise its mate, this is very bad
+        if (pos.isCheckMate) return whitesTurn ? float.MinValue : float.MaxValue;
+
+        //no legal moves, therefore draw, should be null values
+        if (cbs.Length == 0) return 0;
 
 
         if (whitesTurn) {
@@ -72,8 +82,8 @@ public sealed class Minimax {
         }
     }
 
-    public static (int, int) BestMove(Chessboard cb, bool whitesTurn, int depth) {
-        (int, int) currBestMove = (-1, -1);
+    public static (int, int, Piece) BestMove(Chessboard cb, bool whitesTurn, int depth) {
+        (int, int, Piece) currBestMove = (-1, -1, Piece.wKing);
         float currBestEval = whitesTurn ? -10_000 : 10_000;
 
         Span<Chessboard> children = MoveGen.GenerateBoards(cb, whitesTurn);
@@ -98,5 +108,38 @@ public sealed class Minimax {
         return currBestMove;
     }
 
+
+    public static (int, int, Piece) bestFound = (-1, -1, Piece.wKing);
+    public static (int, int, Piece) BestMoveTime(Chessboard cb, bool whitesTurn, float ms) {
+        //use bestMove(depth) to get the best move with the given depth
+        //search 1 depth deeper as soon as search is completed until time runs out
+
+        int currDepth = 1;
+
+        try {
+            System.Timers.Timer aTimer = new();
+            aTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+            aTimer.Interval = ms;
+            aTimer.Enabled = true;
+
+            while (true) {
+                bestFound = BestMove(cb, whitesTurn, currDepth);
+                Console.WriteLine("debug: completed depth " + currDepth);
+                currDepth++;
+            }
+
+        } catch (System.Exception) {
+            //damit der compiler ruhe gibt, hier wird nichts returnt weil der process davor abgetötet wird
+            return bestFound;
+        }
+    }
+
+
+    private static void OnTimedEvent(object source, ElapsedEventArgs e) {
+        Process.GetCurrentProcess().Kill();
+        throw new Exception();
+    }
+
 }
+
 
