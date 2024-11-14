@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fraction", "fraction\fracti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fraction.Benchmarks", "fraction.Benchmarks\fraction.Benchmarks.csproj", "{1405158A-7DBA-4D8B-B056-27ECDE0F14B0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fraction.Tests", "fraction.Tests\fraction.Tests.csproj", "{2833E2B0-0DFF-4813-98AA-6551A6B655AD}"
+EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -47,5 +49,17 @@ Global
 		{1405158A-7DBA-4D8B-B056-27ECDE0F14B0}.Release|x64.Build.0 = Release|Any CPU
 		{1405158A-7DBA-4D8B-B056-27ECDE0F14B0}.Release|x86.ActiveCfg = Release|Any CPU
 		{1405158A-7DBA-4D8B-B056-27ECDE0F14B0}.Release|x86.Build.0 = Release|Any CPU
+		{2833E2B0-0DFF-4813-98AA-6551A6B655AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2833E2B0-0DFF-4813-98AA-6551A6B655AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2833E2B0-0DFF-4813-98AA-6551A6B655AD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2833E2B0-0DFF-4813-98AA-6551A6B655AD}.Debug|x64.Build.0 = Debug|Any CPU
+		{2833E2B0-0DFF-4813-98AA-6551A6B655AD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2833E2B0-0DFF-4813-98AA-6551A6B655AD}.Debug|x86.Build.0 = Debug|Any CPU
+		{2833E2B0-0DFF-4813-98AA-6551A6B655AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2833E2B0-0DFF-4813-98AA-6551A6B655AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2833E2B0-0DFF-4813-98AA-6551A6B655AD}.Release|x64.ActiveCfg = Release|Any CPU
+		{2833E2B0-0DFF-4813-98AA-6551A6B655AD}.Release|x64.Build.0 = Release|Any CPU
+		{2833E2B0-0DFF-4813-98AA-6551A6B655AD}.Release|x86.ActiveCfg = Release|Any CPU
+		{2833E2B0-0DFF-4813-98AA-6551A6B655AD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
