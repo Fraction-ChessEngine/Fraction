@@ -1,3 +1,4 @@
+using fraction;
 namespace fraction.Test;
 
 public class BitBoardTests {
@@ -38,7 +39,7 @@ public class BitBoardTests {
     [InlineData(0x0ul, 0)]
     [InlineData(0xaaaa_aaaa_aaaa_aaaaul, 32)]
     public void Count_ReturnsPopCount(ulong bb, int popCount) {
-        Assert.Equal(popCount, ((BitBoard)bb).Count);
+        Assert.Equal(popCount, ((BitBoard)bb).PopCount);
     }
 
     [Fact]
