@@ -12,6 +12,8 @@
 *.user
 *.userosscache
 *.sln.docstates
+*.nettrace
+*.nettrace.etlx
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
