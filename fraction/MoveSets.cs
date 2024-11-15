@@ -147,7 +147,6 @@ public static class MoveSets {
                 | GetSliderPseudoLegalMoves(board, posIndex, sameColorPieces, Piece.wBishop, includeCoverage, isWhite);
             default:
                 Console.WriteLine("-- Something went wrong in getPseudoLegalMovesBB --");
-                Program.DisplayBoard(board);
                 Console.WriteLine("posIndex: " + posIndex);
                 Console.WriteLine("includeCoverage: " + includeCoverage);
 

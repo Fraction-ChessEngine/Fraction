@@ -279,7 +279,6 @@ static class Utility {
             }
 
             foreach (var b2 in b1) {
-                Program.DisplayBoard(b2);
             }
         }
     }

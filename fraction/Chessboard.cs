@@ -866,9 +866,4 @@ public class Chessboard {
 
         throw new ArgumentOutOfRangeException("Kein valider posIndex für CastlingRights bei rook änderung");
     }
-
-    public void Print() {
-        Program.DisplayBoard(this);
-    }
-
 }
