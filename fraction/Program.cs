@@ -180,12 +180,8 @@ public class Program {
         Console.WriteLine("Sum: " + sum + " with depth = " + d);
     }
 
-    public static Chessboard errorComp = new();
-    static Chessboard? visualBoard; //board auf dem die "wahre" position gespeichert wird
-    public static bool debug = false;
     static void Main(string[] args) {
         //8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1 ;D4 43238 ;D5 674624 ;D6 11030083
-
         /* 
         TODO:
         - consider checkmate, stalemate in evaluation of minimax
@@ -195,14 +191,15 @@ public class Program {
         - threefold repetition 
         - iterative deepening
          */
-
         /* (Chessboard cb, _) = Chessboard.FromFEN("k7/pppp4/pppp4/pppp4/8/8/8/KRN5 w - - 0 1");
         DisplayBoard(cb);
 
         (int a, int b, Piece p) = Minimax.BestMove(cb, true, 6);
         Console.WriteLine(Utility.PosToAN(a) + Utility.PosToAN(b));
  */
-        Console.WriteLine(Minimax.BestMoveTime(new Chessboard(), true, 5000));
+        Minimax m = new();
+        m.BestMoveTime(new Chessboard(), true, 10000);
+        Console.WriteLine(m.GetBestMove);
         //string x = Console.ReadLine();
 
     }

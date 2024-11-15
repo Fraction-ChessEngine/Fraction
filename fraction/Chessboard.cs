@@ -12,7 +12,7 @@ public class Chessboard {
     //dient dem tracken einzelner boards im perft tree beim debuggen
     public int boardIndex;
     public int parentIndex;
-    public (int, int, Piece) lastMove;
+    public Move lastMove;
 
     private BitBoard bRookBB = 0b10000001ul << 56;
     private BitBoard wRookBB = 0b10000001ul;
@@ -679,21 +679,21 @@ public class Chessboard {
         Chessboard board = Clone();
         board.MakeMove(startIndex, endIndex, type, promotion);
 
-        board.lastMove = (startIndex, endIndex, promotion);
+        board.lastMove = new(startIndex, endIndex, promotion);
 
 
         switch (endIndex) {
             case 0:
-                board.SetCastlingRightsNullAt(Chessboard.WQueenSide);
+                board.SetCastlingRightsNullAt(WQueenSide);
                 break;
             case 7:
-                board.SetCastlingRightsNullAt(Chessboard.WKingSide);
+                board.SetCastlingRightsNullAt(WKingSide);
                 break;
             case 56:
-                board.SetCastlingRightsNullAt(Chessboard.BQueenSide);
+                board.SetCastlingRightsNullAt(BQueenSide);
                 break;
             case 63:
-                board.SetCastlingRightsNullAt(Chessboard.BKingSide);
+                board.SetCastlingRightsNullAt(BKingSide);
                 break;
         }
 

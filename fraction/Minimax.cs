@@ -1,6 +1,6 @@
 using System;
 using System.Timers;
-using System;
+using System.Windows;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
@@ -82,9 +82,9 @@ public sealed class Minimax {
         }
     }
 
-    public static (int, int, Piece) BestMove(Chessboard cb, bool whitesTurn, int depth) {
-        (int, int, Piece) currBestMove = (-1, -1, Piece.wKing);
-        float currBestEval = whitesTurn ? -10_000 : 10_000;
+    public static Move BestMove(Chessboard cb, bool whitesTurn, int depth) {
+        Move currBestMove = new(-1, -1, Piece.wKing);
+        float currBestEval = whitesTurn ? int.MinValue : int.MaxValue;
 
         Span<Chessboard> children = MoveGen.GenerateBoards(cb, whitesTurn);
 
@@ -109,37 +109,44 @@ public sealed class Minimax {
     }
 
 
-    public static (int, int, Piece) bestFound = (-1, -1, Piece.wKing);
-    public static (int, int, Piece) BestMoveTime(Chessboard cb, bool whitesTurn, float ms) {
+    /// <summary>
+    /// Needs to be called AFTER BestMoveTime else gay
+    /// </summary>
+    public Move GetBestMove => bestMove;
+
+    private Move bestMove;
+    private CancellationTokenSource tokenSource;
+
+    //todo: move ordering
+    //basic idea: store child positions and their eval at current depth and sort them by eval
+    private void BestMoveTime_(Chessboard cb, bool whitesTurn, int ms) {
         //use bestMove(depth) to get the best move with the given depth
         //search 1 depth deeper as soon as search is completed until time runs out
 
         int currDepth = 1;
 
-        try {
-            System.Timers.Timer aTimer = new();
-            aTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
-            aTimer.Interval = ms;
-            aTimer.Enabled = true;
+        System.Timers.Timer aTimer = new();
+        aTimer.Elapsed += new ElapsedEventHandler(cancel_Click);
+        aTimer.Interval = ms;
+        aTimer.Enabled = true;
 
-            while (true) {
-                bestFound = BestMove(cb, whitesTurn, currDepth);
-                Console.WriteLine("debug: completed depth " + currDepth);
-                currDepth++;
-            }
-
-        } catch (System.Exception) {
-            //damit der compiler ruhe gibt, hier wird nichts returnt weil der process davor abgetötet wird
-            return bestFound;
+        while (true) {
+            bestMove = BestMove(cb, whitesTurn, currDepth);
+            currDepth++;
         }
     }
 
+    //very basic iterative deepening
+    public void BestMoveTime(Chessboard cb, bool whitesTurn, int ms) {
+        tokenSource = new CancellationTokenSource();
+        Task.Factory.StartNew(() => BestMoveTime_(cb, whitesTurn, ms), tokenSource.Token);
 
-    private static void OnTimedEvent(object source, ElapsedEventArgs e) {
-        Process.GetCurrentProcess().Kill();
-        throw new Exception();
+        Thread.Sleep(ms);
     }
 
+    private void cancel_Click(object sender, ElapsedEventArgs e) {
+        tokenSource.Cancel();
+    }
 }
 
 
