@@ -1,3 +1,4 @@
+using fraction;
 namespace fraction.Test;
 
 public class ChessboardTest {
