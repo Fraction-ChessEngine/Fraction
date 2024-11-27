@@ -24,11 +24,25 @@ public static class PieceUtil {
         return (int)p < (int)Piece.bPawn;
     }
 
+    private const string symbols = "PBNRKQ  pbnrkq";
     //kovertiert pieces.irgendwas zu symbol
     public static string GetSymbol(this Piece p) {
         int n = (int)p;
-        string symbols = "PBNRKQ  pbnrkq";
         //string symbols2 = "♙♗♘♖♔♕♟♝♞♜♚♛"; coole idee, kann er aber nicht printen
         return symbols[n].ToString();
+    }
+
+    public static bool TryParse(string s, out Piece p) {
+        p = Piece.wPawn;
+        if (s.Length != 1) return false;
+        return TryParse(s[0], out p);
+    }
+    public static bool TryParse(char c, out Piece p) {
+        p = Piece.wPawn;
+        if (c == ' ') return false;
+        int i = symbols.IndexOf(c);
+        if (i < 0) return false;
+        p = (Piece)i;
+        return true;
     }
 }
