@@ -13,6 +13,7 @@ public static class Engine {
     private static TextWriter stdout = Console.Out;
 
     private static CancellationTokenSource cts = new();
+    private static Task? bestMove = null;
 
     private static Chessboard board = new();
 
@@ -40,6 +41,16 @@ public static class Engine {
     }
 
     private static void HandleIsReady() {
+        if (cts.IsCancellationRequested) {
+            bestMove?.Wait();
+            bestMove = null;
+        }
+        if (bestMove is null) {
+            if (!cts.TryReset()) {
+                cts.Dispose();
+                cts = new();
+            }
+        }
         stdout.WriteLine("readyok");
     }
 
@@ -93,10 +104,20 @@ public static class Engine {
     }
 
     private static void HandleGo(String[] args) {
+        if (bestMove is null) {
+            bestMove = Minimax.BestMoveAsync(new(), true, -1, cts.Token)
+                .ContinueWith(static (t) => {
+                    Move result = t.GetAwaiter().GetResult();
+                    bestMove = null;
+                    stdout.WriteLine($"bestMove {result}");
+                });
+        }
     }
 
     private static void HandleStop() {
-        cts.Cancel();
+        if (bestMove is not null) {
+            cts.Cancel();
+        }
     }
 
     public static void Run() {

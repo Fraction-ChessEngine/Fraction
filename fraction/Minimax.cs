@@ -1,9 +1,9 @@
 using System;
-using System.Timers;
-using System.Windows;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics;
+using System.Timers;
+using System.Windows;
 
 
 namespace fraction;
@@ -12,8 +12,12 @@ public sealed class Minimax {
     public int MaxQuiescenceSearchPlies { get; init; } = 3;
     public int Positions { get; private set; } = 0;
     public int NonQuietEndNodes { get; private set; } = 0;
+    public CancellationToken CancellationToken { get; set; }
 
     public Minimax() { }
+    public Minimax(CancellationToken ct) {
+        CancellationToken = ct;
+    }
 
     public float Run(Chessboard pos, int depth, bool whitesTurn)
         => Run(pos, depth, float.MinValue, float.MaxValue, whitesTurn, 0);
@@ -27,7 +31,7 @@ public sealed class Minimax {
         int quiescenceSearchPlies
     ) {
 
-
+        CancellationToken.ThrowIfCancellationRequested();
 
         //quiescence search, 3 as hard limit for depth increase
         if (pos.AfterCapturePly && quiescenceSearchPlies < MaxQuiescenceSearchPlies) {
@@ -82,14 +86,14 @@ public sealed class Minimax {
         }
     }
 
-    public static Move BestMove(Chessboard cb, bool whitesTurn, int depth) {
+    public static Move BestMove(Chessboard cb, bool whitesTurn, int depth, CancellationToken cancellationToken = new()) {
         Move currBestMove = new(-1, -1, Piece.wKing);
         float currBestEval = whitesTurn ? int.MinValue : int.MaxValue;
 
         Span<Chessboard> children = MoveGen.GenerateBoards(cb, whitesTurn);
 
         foreach (Chessboard currCB in children) {
-            Minimax m = new();
+            Minimax m = new(cancellationToken);
             float eval = m.Run(currCB, depth - 1, !whitesTurn);
 
             if (whitesTurn) {//we want to maximize eval
@@ -108,45 +112,17 @@ public sealed class Minimax {
         return currBestMove;
     }
 
+    public static Task<Move> BestMoveAsync(Chessboard cb, bool whitesTurn, int depth, CancellationToken ct) {
+        return Task<Move>.Run(() => {
+            Move bestMove = BestMove(cb, whitesTurn, 1);
 
-    /// <summary>
-    /// Needs to be called AFTER BestMoveTime else gay
-    /// </summary>
-    public Move GetBestMove => bestMove;
-
-    private Move bestMove;
-    private CancellationTokenSource tokenSource;
-
-    //todo: move ordering
-    //basic idea: store child positions and their eval at current depth and sort them by eval
-    private void BestMoveTime_(Chessboard cb, bool whitesTurn, int ms) {
-        //use bestMove(depth) to get the best move with the given depth
-        //search 1 depth deeper as soon as search is completed until time runs out
-
-        int currDepth = 1;
-
-        System.Timers.Timer aTimer = new();
-        aTimer.Elapsed += new ElapsedEventHandler(cancel_Click);
-        aTimer.Interval = ms;
-        aTimer.Enabled = true;
-
-        while (true) {
-            bestMove = BestMove(cb, whitesTurn, currDepth);
-            currDepth++;
-        }
-    }
-
-    //very basic iterative deepening
-    public void BestMoveTime(Chessboard cb, bool whitesTurn, int ms) {
-        tokenSource = new CancellationTokenSource();
-        Task.Factory.StartNew(() => BestMoveTime_(cb, whitesTurn, ms), tokenSource.Token);
-
-        Thread.Sleep(ms);
-    }
-
-    private void cancel_Click(object sender, ElapsedEventArgs e) {
-        tokenSource.Cancel();
+            for (int i = 1; !ct.IsCancellationRequested && (depth == -1 || i < depth); i++) {
+                try {
+                    bestMove = BestMove(cb, whitesTurn, i, ct);
+                } catch (OperationCanceledException) { }
+            }
+            return bestMove;
+        }, ct);
     }
 }
-
 

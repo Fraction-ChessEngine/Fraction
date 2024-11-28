@@ -32,7 +32,8 @@ public readonly struct Move {
     }
 
     public override string ToString() {
-        return "{" + Start + " -> " + End + ", Promotion?: " + Promotion + "}";
+        return $"{(char)((Start % 8) + 'a')}{(char)((Start / 8) + '1')}{(char)((End % 8) + 'a')}{(char)((End / 8) + '1')}{Promotion?.GetSymbol() ?? ""}";
+        //return "{" + Start + " -> " + End + ", Promotion?: " + Promotion + "}";
     }
 
 }
