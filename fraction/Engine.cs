@@ -94,7 +94,7 @@ public static class Engine {
         }
 
         for (int i = 0; i < count; i++) {
-            board.MakeMove(
+            board.MakeSimpleMove(
                 movesBuf[i].Start,
                 movesBuf[i].End,
                 board.GetPieceAt(movesBuf[i].Start),

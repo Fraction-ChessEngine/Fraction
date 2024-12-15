@@ -47,20 +47,23 @@ public sealed class Minimax {
             return staticEval;
         }
 
-        Span<Chessboard> cbs = MoveGen.GenerateBoards(pos, whitesTurn);
+        Span<Move> moves = MoveGen.GenerateMoves(pos, whitesTurn);
 
         //only true, if i didnt find any legal moves and i am in check
         //It is my turn, i realise its mate, this is very bad
         if (pos.isCheckMate) return whitesTurn ? float.MinValue : float.MaxValue;
 
         //no legal moves, therefore draw, should be null values
-        if (cbs.Length == 0) return 0;
+        if (moves.Length == 0) return 0;
 
+        Chessboard copy = pos.Clone();
 
         if (whitesTurn) {
             float maxEval = float.MinValue;
-            foreach (Chessboard c in cbs) {
-                float eval = Run(c, depth - 1, alpha, beta, false, quiescenceSearchPlies);
+            foreach (var move in moves) {
+                copy.Copy(pos);
+                copy.MakeMove(move);
+                float eval = Run(copy, depth - 1, alpha, beta, false, quiescenceSearchPlies);
                 maxEval = Math.Max(maxEval, eval);
 
                 if (AlphaBetaPruning) {
@@ -72,8 +75,10 @@ public sealed class Minimax {
             return maxEval;
         } else {
             float minEval = float.MaxValue;
-            foreach (Chessboard c in cbs) {
-                float eval = Run(c, depth - 1, alpha, beta, true, quiescenceSearchPlies);
+            foreach (var move in moves) {
+                copy.Copy(pos);
+                copy.MakeMove(move);
+                float eval = Run(copy, depth - 1, alpha, beta, true, quiescenceSearchPlies);
                 minEval = Math.Min(minEval, eval);
 
                 if (AlphaBetaPruning) {

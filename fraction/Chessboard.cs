@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace fraction;
 
@@ -472,36 +473,39 @@ public class Chessboard {
 
     }
 
-    public Chessboard Clone() {
+    public void Copy(Chessboard board) {
+        this.pinnedBB = board.pinnedBB;
+        this.boardIndex = board.boardIndex;
+        this.Rights = board.Rights;
+        this.bKingBB = board.bKingBB;
+        this.bPawnBB = board.bPawnBB;
+        this.bRookBB = board.bRookBB;
+        this.wKingBB = board.wKingBB;
+        this.wPawnBB = board.wPawnBB;
+        this.wRookBB = board.wRookBB;
+        this.bQueenBB = board.bQueenBB;
+        this.lastMove = board.lastMove;
+        this.wQueenBB = board.wQueenBB;
+        this.bBishopBB = board.bBishopBB;
+        this.bKnightBB = board.bKnightBB;
+        this.wBishopBB = board.wBishopBB;
+        this.wKnightBB = board.wKnightBB;
+        this.isCheckMate = board.isCheckMate;
+        this.parentIndex = board.parentIndex;
+        this.enPassantSqr = board.enPassantSqr;
+        this.bControlledSqrBB = board.bControlledSqrBB;
+        this.wControlledSqrBB = board.wControlledSqrBB;
+    }
 
-        return new() {
-            wPawnBB = wPawnBB,
-            wKingBB = wKingBB,
-            wRookBB = wRookBB,
-            wQueenBB = wQueenBB,
-            wBishopBB = wBishopBB,
-            wKnightBB = wKnightBB,
-            //whitePiecesBB = whitePiecesBB,
-            wControlledSqrBB = wControlledSqrBB,
-            bPawnBB = bPawnBB,
-            bKingBB = bKingBB,
-            bRookBB = bRookBB,
-            bQueenBB = bQueenBB,
-            bBishopBB = bBishopBB,
-            bKnightBB = bKnightBB,
-            //blackPiecesBB = blackPiecesBB,
-            bControlledSqrBB = bControlledSqrBB,
-            AfterCapturePly = AfterCapturePly,
-            pinnedBB = pinnedBB,
-            boardIndex = ++BoardCount,
-            parentIndex = boardIndex,
-            Rights = Rights
-        };
+    public Chessboard Clone() {
+        Chessboard board = (Chessboard) this.MemberwiseClone();
+        board.boardIndex = BoardCount++;
+        return board;
     }
 
 
 
-    public void MakeMove(int start, int end, Piece type, Piece promotion = Piece.wQueen) {
+    public void MakeSimpleMove(int start, int end, Piece type, Piece promotion = Piece.wQueen) {
 
         AfterCapturePly = BlackPiecesBB[end] || WhitePiecesBB[end];
 
@@ -551,6 +555,89 @@ public class Chessboard {
                 this[type] = bb;
                 break;
         }
+    }
+
+    public void MakeMove(Move move)
+        => MakeMove(move.Start, move.End, this.GetPieceAt(move.Start), move.Promotion ?? Piece.wQueen);
+    public void MakeMove(int start, int end, Piece type, Piece promotion = Piece.wQueen) {
+        var enPassantSqr = this.enPassantSqr;
+
+        this.MakeSimpleMove(start, end, type, promotion);
+
+        this.lastMove = new(start, end, promotion);
+
+
+        switch (end) {
+            case 0:
+                this.SetCastlingRightsNullAt(WQueenSide);
+                break;
+            case 7:
+                this.SetCastlingRightsNullAt(WKingSide);
+                break;
+            case 56:
+                this.SetCastlingRightsNullAt(BQueenSide);
+                break;
+            case 63:
+                this.SetCastlingRightsNullAt(BKingSide);
+                break;
+        }
+
+        this.enPassantSqr = -1;//sqr is reset as EP is only possible directly after the doublemove was played
+
+        //special behaviour such as castling, or en passant
+        switch (type) {
+            case Piece.wKing:
+            case Piece.bKing:
+
+                bool isCastling; int rookStartIndex; int rookEndIndex; Piece rook;
+                (isCastling, rookStartIndex, rookEndIndex, rook) = GetCastleRookData(start, end);
+
+                if (type.IsWhite()) {
+                    this.SetCastlingRightsNullAt(0);
+                    this.SetCastlingRightsNullAt(1);
+                } else {
+                    this.SetCastlingRightsNullAt(2);
+                    this.SetCastlingRightsNullAt(3);
+                }
+
+                if (!isCastling) return;
+
+
+                this.MakeSimpleMove(rookStartIndex, rookEndIndex, rook);
+                break;
+
+            case Piece.wRook:
+            case Piece.bRook:
+
+                int side = GetSideOfRook(start);
+                this.SetCastlingRightsNullAt(side);
+                break;
+
+            case Piece.wPawn:
+            case Piece.bPawn:
+
+                if (IsDoubleMove(start, end)) {
+                    //if king is separated from a horizontal slider by only this pawn and an enemy pawn
+                    //--> this must become -1 again
+                    //can be made ineffient as this is an edge case
+                    if (!this.hasSussyEnpassantPin(type.IsWhite(), end)) {
+                        this.enPassantSqr = (start + end) / 2; //yes this works, i am a genius
+                        break;
+                    }
+                }
+
+                //pawn needs to be killed if EP is captured
+                if (end == enPassantSqr) {
+                    ulong bb = ~(1ul << GetEnPassantPawn(end));
+                    if (type.IsWhite()) {
+                        this.bPawnBB &= bb;
+                    } else {
+                        this.wPawnBB &= bb;
+                    }
+                }
+                break;
+        }
+
     }
 
     private void PromoteTo(int end, Piece type) {
@@ -679,80 +766,6 @@ public class Chessboard {
         Chessboard board = Clone();
         board.MakeMove(startIndex, endIndex, type, promotion);
 
-        board.lastMove = new(startIndex, endIndex, promotion);
-
-
-        switch (endIndex) {
-            case 0:
-                board.SetCastlingRightsNullAt(WQueenSide);
-                break;
-            case 7:
-                board.SetCastlingRightsNullAt(WKingSide);
-                break;
-            case 56:
-                board.SetCastlingRightsNullAt(BQueenSide);
-                break;
-            case 63:
-                board.SetCastlingRightsNullAt(BKingSide);
-                break;
-        }
-
-        board.enPassantSqr = -1;//sqr is reset as EP is only possible directly after the doublemove was played
-
-        //special behaviour such as castling, or en passant
-        switch (type) {
-            case Piece.wKing:
-            case Piece.bKing:
-
-                bool isCastling; int rookStartIndex; int rookEndIndex; Piece rook;
-                (isCastling, rookStartIndex, rookEndIndex, rook) = GetCastleRookData(startIndex, endIndex);
-
-                if (type.IsWhite()) {
-                    board.SetCastlingRightsNullAt(0);
-                    board.SetCastlingRightsNullAt(1);
-                } else {
-                    board.SetCastlingRightsNullAt(2);
-                    board.SetCastlingRightsNullAt(3);
-                }
-
-                if (!isCastling) return board;
-
-
-                board.MakeMove(rookStartIndex, rookEndIndex, rook);
-                break;
-
-            case Piece.wRook:
-            case Piece.bRook:
-
-                int side = GetSideOfRook(startIndex);
-                board.SetCastlingRightsNullAt(side);
-                break;
-
-            case Piece.wPawn:
-            case Piece.bPawn:
-
-                if (IsDoubleMove(startIndex, endIndex)) {
-                    //if king is separated from a horizontal slider by only this pawn and an enemy pawn
-                    //--> this must become -1 again
-                    //can be made ineffient as this is an edge case
-                    if (!board.hasSussyEnpassantPin(type.IsWhite(), endIndex)) {
-                        board.enPassantSqr = (startIndex + endIndex) / 2; //yes this works, i am a genius
-                        break;
-                    }
-                }
-
-                //pawn needs to be killed if EP is captured
-                if (endIndex == enPassantSqr) {
-                    ulong bb = ~(1ul << GetEnPassantPawn(endIndex));
-                    if (type.IsWhite()) {
-                        board.bPawnBB &= bb;
-                    } else {
-                        board.wPawnBB &= bb;
-                    }
-                }
-                break;
-        }
-
         return board;
     }
 
@@ -829,12 +842,12 @@ public class Chessboard {
         }
     }
 
-    private bool IsDoubleMove(int start, int end) {
+    private static bool IsDoubleMove(int start, int end) {
         return (end == start + 16) || (end == start - 16);
     }
 
     //if the move is castling, if yes where the rooks supposed be go
-    private (bool, int, int, Piece rookType) GetCastleRookData(int startIndex, int endIndex) {
+    private static (bool, int, int, Piece rookType) GetCastleRookData(int startIndex, int endIndex) {
         switch (startIndex, endIndex) {
             case (4, 6)://white kingSide
                 return (true, 7, 5, Piece.wRook);
@@ -850,7 +863,7 @@ public class Chessboard {
         }
     }
     //to deny castlingRights on this side
-    private int GetSideOfRook(int posIndex) {
+    private static int GetSideOfRook(int posIndex) {
         switch (posIndex) {
             case 0:
                 return WQueenSide;

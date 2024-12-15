@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace fraction;
 public static class MoveGen {
 
-    public static Span<Vision> GenerateMoves(Chessboard b, bool forWhite, bool includeCoverage = false) {
+    public static Span<Vision> GenerateVisions(Chessboard b, bool forWhite, bool includeCoverage = false) {
         //weil maximal 16 pieces die je ein "Moves" bekommen
         Vision[] possibleMoves = new Vision[16];
         b.GeneratePinnedPieceBB(forWhite);
@@ -140,7 +140,7 @@ public static class MoveGen {
     /// </summary>
     /// <returns></returns>
     private static Span<Vision> GenerateMovesForSingleCheck(Chessboard b, bool forWhite, BitBoard combined, int kingIndex) {
-        Span<Vision> pseudoLegal = GenerateMoves(b, forWhite);
+        Span<Vision> pseudoLegal = GenerateVisions(b, forWhite);
 
         Vision[] legal = new Vision[16];
         int currIndex = 0;
@@ -258,14 +258,69 @@ public static class MoveGen {
     }
 
 
-    public static Span<Chessboard> GenerateBoards(Chessboard b, bool whitesTurn, bool perft = false) {
+    public static Span<Move> GenerateMoves(Chessboard b, bool whitesTurn, bool perft = false) {
 
         //provisorische lösung
-        Span<Vision> attackVisions = GenerateMoves(b, !whitesTurn, true);
+        Span<Vision> attackVisions = GenerateVisions(b, !whitesTurn, true);
         b.UpdateAttackedSqrBB(attackVisions, !whitesTurn);
 
         bool isCheck = b.IsInCheck(whitesTurn);
-        Span<Vision> visions = isCheck ? GenerateMovesForCheck(b, whitesTurn) : GenerateMoves(b, whitesTurn);
+        Span<Vision> visions = isCheck ? GenerateMovesForCheck(b, whitesTurn) : GenerateVisions(b, whitesTurn);
+
+        Move[] ret = new Move[96];
+        int index = 0;
+
+
+#pragma warning disable CA2014
+
+        for (int i = 0; i < visions.Length; i++) {
+            Vision v = visions[i];
+            Span<int> moves = stackalloc int[v.MoveBB.PopCount];
+            _ = v.MoveBB.FindOnes(moves);
+
+            for (int j = 0; j < v.MoveBB.PopCount; j++) {
+                int end = moves[j];
+
+                if (IsPromoting(end, v.PieceType)) {
+
+                    if (whitesTurn) {
+                        ret[index] = new(v.PosIndex, end, Piece.wQueen);
+                        ret[index + 1] = new(v.PosIndex, end, Piece.wRook);
+                        ret[index + 2] = new(v.PosIndex, end, Piece.wBishop);
+                        ret[index + 3] = new(v.PosIndex, end, Piece.wKnight);
+                        index += 4;
+                    } else {
+                        ret[index] = new(v.PosIndex, end, Piece.bQueen);
+                        ret[index + 1] = new(v.PosIndex, end, Piece.bRook);
+                        ret[index + 2] = new(v.PosIndex, end, Piece.bBishop);
+                        ret[index + 3] = new(v.PosIndex, end, Piece.bKnight);
+                        index += 4;
+                    }
+
+                } else {
+                    ret[index++] = new(v.PosIndex, end);
+                }
+
+                //frisst hoffentlich nicht zu viel performance
+                if (perft) {
+                    Testing.perftmoves[index - 1] = Utility.PosToAN(v.PosIndex) +
+                        Utility.PosToAN(end);
+                }
+            }
+        }
+#pragma warning restore CA2014
+
+        return ret[0..index];
+    }
+
+    public static Span<Chessboard> GenerateBoards(Chessboard b, bool whitesTurn, bool perft = false) {
+
+        //provisorische lösung
+        Span<Vision> attackVisions = GenerateVisions(b, !whitesTurn, true);
+        b.UpdateAttackedSqrBB(attackVisions, !whitesTurn);
+
+        bool isCheck = b.IsInCheck(whitesTurn);
+        Span<Vision> visions = isCheck ? GenerateMovesForCheck(b, whitesTurn) : GenerateVisions(b, whitesTurn);
 
         Chessboard[] boards = new Chessboard[96];
         int index = 0;
