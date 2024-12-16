@@ -673,7 +673,7 @@ public class Chessboard {
 
 
     //doesnt change the BB, only nullifies if necessary
-    private BitBoard ValidatePin(BitBoard sightLine, BitBoard sameColorPieces, BitBoard enemyBlockers, int kingIndex) {
+    private static BitBoard ValidatePin(BitBoard sightLine, BitBoard sameColorPieces, BitBoard enemyBlockers, int kingIndex) {
         sameColorPieces[kingIndex] = false;
 
         if ((sightLine & enemyBlockers) != 0) return 0;//enemy steht auf der pinLine
