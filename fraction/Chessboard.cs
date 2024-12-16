@@ -5,10 +5,10 @@ using System.Diagnostics;
 namespace fraction;
 
 public class Chessboard {
-    public static readonly int WKingSide = 0;
-    public static readonly int WQueenSide = 1;
-    public static readonly int BKingSide = 2;
-    public static readonly int BQueenSide = 3;
+    public const int WKingSide = 0;
+    public const int WQueenSide = 1;
+    public const int BKingSide = 2;
+    public const int BQueenSide = 3;
     public static int BoardCount { get; private set; } = 0;
 
     //dient dem tracken einzelner boards im perft tree beim debuggen
