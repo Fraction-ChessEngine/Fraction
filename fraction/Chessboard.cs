@@ -342,7 +342,7 @@ public class Chessboard {
     //Contains every line between possible pinSliders, and the king (both exclusive)
     //Order: Clockwise, starting with VertiTop
     //Updates when GeneratePinnedPieceBB() is called
-    private readonly BitBoard[] PinLines = new BitBoard[8];
+    private readonly BitBoard[] pinLines = new BitBoard[8];
 
     /// <summary>
     /// 
@@ -352,7 +352,7 @@ public class Chessboard {
     /// <exception cref="Exception"></exception>
     public BitBoard GetPinLineBB(BitBoard bb) {
         for (int i = 0; i < 8; i++) {
-            BitBoard line = PinLines[i];
+            BitBoard line = pinLines[i];
             if ((line & bb) != 0) return line;
         }
 
@@ -367,7 +367,7 @@ public class Chessboard {
     public void GeneratePinnedPieceBB(bool forWhite) {
         //needs to be reset for edgy edge cases
         for (int i = 0; i < 8; i++) {
-            PinLines[i] = 0;
+            pinLines[i] = 0;
         }
 
         int kingIndex;
@@ -430,10 +430,10 @@ public class Chessboard {
             //if there are more or less than one piece of the own color on the pinLine -> no valid pin
 
             friendsInSightlines |= sameColorPieces & (intersectionHoriEast | intersectionHoriWest | intersectionVertiBottom | intersectionVertiTop);
-            PinLines[0] = intersectionVertiTop;
-            PinLines[2] = intersectionHoriEast;
-            PinLines[4] = intersectionVertiBottom;
-            PinLines[6] = intersectionHoriWest;
+            pinLines[0] = intersectionVertiTop;
+            pinLines[2] = intersectionHoriEast;
+            pinLines[4] = intersectionVertiBottom;
+            pinLines[6] = intersectionHoriWest;
         }
 
 
@@ -464,10 +464,10 @@ public class Chessboard {
 
             friendsInSightlines |= intersectionDiagNE | intersectionDiagNW | intersectionDiagSE | intersectionDiagSW;
 
-            PinLines[1] = intersectionDiagNE;
-            PinLines[3] = intersectionDiagSE;
-            PinLines[5] = intersectionDiagSW;
-            PinLines[7] = intersectionDiagNW;
+            pinLines[1] = intersectionDiagNE;
+            pinLines[3] = intersectionDiagSE;
+            pinLines[5] = intersectionDiagSW;
+            pinLines[7] = intersectionDiagNW;
         }
 
 
@@ -504,9 +504,7 @@ public class Chessboard {
         board.BoardIndex = BoardCount++;
         return board;
     }
-
-
-
+    
     public void MakeSimpleMove(int start, int end, Piece type, Piece promotion = Piece.wQueen) {
 
         AfterCapturePly = BlackPiecesBB[end] || WhitePiecesBB[end];
@@ -785,7 +783,7 @@ public class Chessboard {
         for (int i = 0; i < 2; i++) {
             //contains the whole line between king and slider
             //set to zero if more than one piece on this line
-            BitBoard pinLine = cb.PinLines[i * 4 + 2];
+            BitBoard pinLine = cb.pinLines[i * 4 + 2];
             //there is a intersection, so without the doubleMovepawn, there would be a pinned pawn
             //the doubleMovePawn also needs be on the pinLine
             if ((pinLine & enemyPawnBB) != 0 && ((1ul << endIndexPawn) & pinLine) != 0) {
