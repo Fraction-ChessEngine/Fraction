@@ -803,32 +803,11 @@ public class Chessboard {
     //saves 1 (extremely fast) operation that only happens in extremely rare cases 
     /* ignore all of the above */
     public static int GetEnPassantPawn(int endIndex) {
-        switch (endIndex) {
-            case 16:
-            case 17:
-            case 18:
-            case 19:
-            case 20:
-            case 21:
-            case 22:
-            case 23:
-                return endIndex + 8; //endIndex is the sqr behind the pawn
-
-            case 40:
-            case 41:
-            case 42:
-            case 43:
-            case 44:
-            case 45:
-            case 46:
-            case 47:
-                return endIndex - 8;
-
-            default:
-                Console.WriteLine("endIndex = " + endIndex);
-
-                throw new Exception("No valid endIndex for capturing En Passant was entered in board with index = i dont fucking know");
-        }
+        return endIndex switch {
+            (>= 16) and (<= 23) => endIndex + 8,
+            (>= 40) and (<= 47) => endIndex - 8,
+            _ => throw new ArgumentException("No valid Index for capturing en passant", nameof(endIndex)),
+        };
     }
 
     private static bool IsDoubleMove(int start, int end) {
@@ -837,35 +816,22 @@ public class Chessboard {
 
     //if the move is castling, if yes where the rooks supposed be go
     private static (bool, int, int, Piece rookType) GetCastleRookData(int startIndex, int endIndex) {
-        switch (startIndex, endIndex) {
-            case (4, 6)://white kingSide
-                return (true, 7, 5, Piece.wRook);
-            case (4, 2)://white queenside
-                return (true, 0, 3, Piece.wRook);
-            case (60, 62):
-                return (true, 63, 61, Piece.bRook);
-            case (60, 58):
-                return (true, 56, 59, Piece.bRook);
-
-            default:
-                return (false, -1, -1, Piece.bKing);
-        }
+        return (startIndex, endIndex) switch {
+            (4, 6) => (true, 7, 5, Piece.wRook),
+            (4, 2) => (true, 0, 3, Piece.wRook),
+            (60, 62) => (true, 63, 61, Piece.bRook),
+            (60, 58) => (true, 56, 59, Piece.bRook),
+            _ => (false, -1, -1, Piece.bKing),
+        };
     }
     //to deny castlingRights on this side
     private static int GetSideOfRook(int posIndex) {
-        switch (posIndex) {
-            case 0:
-                return WQueenSide;
-            case 7:
-                return WKingSide;
-            case 56:
-                return BQueenSide;
-            case 63:
-                return BKingSide;
-            default:
-                return 4;
-        }
-
-        throw new ArgumentOutOfRangeException("Kein valider posIndex für CastlingRights bei rook änderung");
+        return posIndex switch {
+            0 => WQueenSide,
+            7 => WKingSide,
+            56 => BQueenSide,
+            63 => BKingSide,
+            _ => 4,
+        };
     }
 }
