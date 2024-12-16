@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
 
 namespace fraction;
 
 
 
 public class Chessboard {
-    readonly public static int WKingSide = 0, WQueenSide = 1, BKingSide = 2, BQueenSide = 3;
-    public static int BoardCount = 0;
+    public static readonly int WKingSide = 0;
+    public static readonly int WQueenSide = 1;
+    public static readonly int BKingSide = 2;
+    public static readonly int BQueenSide = 3;
+    public static int BoardCount {get; private set;} = 0;
     //dient dem tracken einzelner boards im perft tree beim debuggen
     public int boardIndex;
     public int parentIndex;
@@ -567,20 +569,7 @@ public class Chessboard {
         this.lastMove = new(start, end, promotion);
 
 
-        switch (end) {
-            case 0:
-                this.SetCastlingRightsNullAt(WQueenSide);
-                break;
-            case 7:
-                this.SetCastlingRightsNullAt(WKingSide);
-                break;
-            case 56:
-                this.SetCastlingRightsNullAt(BQueenSide);
-                break;
-            case 63:
-                this.SetCastlingRightsNullAt(BKingSide);
-                break;
-        }
+        this.SetCastlingRightsNullAt(GetSideOfRook(end));
 
         this.enPassantSqr = -1;//sqr is reset as EP is only possible directly after the doublemove was played
 
@@ -588,9 +577,8 @@ public class Chessboard {
         switch (type) {
             case Piece.wKing:
             case Piece.bKing:
-
-                bool isCastling; int rookStartIndex; int rookEndIndex; Piece rook;
-                (isCastling, rookStartIndex, rookEndIndex, rook) = GetCastleRookData(start, end);
+                (bool isCastling, int rookStartIndex, int rookEndIndex, Piece rook)
+                    = GetCastleRookData(start, end);
 
                 if (type.IsWhite()) {
                     this.SetCastlingRightsNullAt(0);
@@ -678,7 +666,7 @@ public class Chessboard {
 
 
             default:
-                throw new Exception("Invalid piece entered for promotion");
+                throw new ArgumentException("Invalid piece entered for promotion", nameof(type));
         }
     }
 
