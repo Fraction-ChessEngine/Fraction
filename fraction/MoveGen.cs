@@ -126,7 +126,7 @@ public static class MoveGen {
         //double check, king muss bewegt werden
         if (amount > 1) {
             if (kingMobile) return new Vision[] { kingVision };
-            b.isCheckMate = true;
+            b.IsCheckMate = true;
             return null;//entspricht checkmate
 
         } else {//nur ein piece checkt den king
@@ -159,19 +159,19 @@ public static class MoveGen {
                      */
                     bool enPassantPawnGivesCheckAndCanBeCapturedByCurrentPawn =
                     b.CheckPieceBBs[0] != 0 && (v.PieceType == Piece.wPawn || v.PieceType == Piece.bPawn)
-                    && b.enPassantSqr > 0
-                    && v.MoveBB[b.enPassantSqr];
+                    && b.EnPassantSqr > 0
+                    && v.MoveBB[b.EnPassantSqr];
 
                     if (enPassantPawnGivesCheckAndCanBeCapturedByCurrentPawn) {//confirmed pawn
 
                         //possible EP is on the board
                         int checkPieceIndex = combined.HighestOne;
-                        int EPpawnIndex = Chessboard.GetEnPassantPawn(b.enPassantSqr);
+                        int EPpawnIndex = Chessboard.GetEnPassantPawn(b.EnPassantSqr);
 
                         //en passant pawn gave check
                         if (EPpawnIndex == checkPieceIndex) {
                             v.MoveBB &= combined;
-                            v.MoveBB |= 1ul << b.enPassantSqr;
+                            v.MoveBB |= 1ul << b.EnPassantSqr;
                         } else {
                             v.MoveBB &= combined;//nur moves die das checkPiece capturen werden zugelassen
                         }
@@ -189,7 +189,7 @@ public static class MoveGen {
             }
             //no legal moves found in check, therefore checkmate
             if (currIndex == 0) {
-                b.isCheckMate = true;
+                b.IsCheckMate = true;
                 return null;
             }
 
@@ -214,7 +214,7 @@ public static class MoveGen {
             }
             //no legal moves found in check, therefore checkmate
             if (currIndex == 0) {
-                b.isCheckMate = true;
+                b.IsCheckMate = true;
                 return null;
             }
             return legal.AsSpan(0..currIndex);
@@ -400,7 +400,7 @@ public static class MoveGen {
         BitBoard bb = MoveSets.GetPseudoLegalMoves(b, i, type, includeCoverage);
 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
-        if (b.pinnedBB[i] && !includeCoverage) {
+        if (b.PinnedBB[i] && !includeCoverage) {
             BitBoard pinLine = b.GetPinLineBB(1ul << i);
             bb &= pinLine;
         }

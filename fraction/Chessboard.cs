@@ -4,18 +4,17 @@ using System.Diagnostics;
 
 namespace fraction;
 
-
-
 public class Chessboard {
     public static readonly int WKingSide = 0;
     public static readonly int WQueenSide = 1;
     public static readonly int BKingSide = 2;
     public static readonly int BQueenSide = 3;
-    public static int BoardCount {get; private set;} = 0;
+    public static int BoardCount { get; private set; } = 0;
+
     //dient dem tracken einzelner boards im perft tree beim debuggen
-    public int boardIndex;
-    public int parentIndex;
-    public Move lastMove;
+    public int BoardIndex { get; private set; }
+    public int ParentIndex { get; private set; }
+    public Move LastMove { get; private set; }
 
     private BitBoard bRookBB = 0b10000001ul << 56;
     private BitBoard wRookBB = 0b10000001ul;
@@ -29,24 +28,25 @@ public class Chessboard {
     private BitBoard wKingBB = 0b00010000ul;
     private BitBoard bPawnBB = 0b11111111ul << 48;
     private BitBoard wPawnBB = 0b11111111ul << 8;
-    public int enPassantSqr = -1;
-    public bool isCheckMate = false;
-    private int Rights = 0b1111;//only the 4 lsb contain data
+    private BitBoard wControlledSqrBB = 0;// 0b11111111ul << 16;
+    private BitBoard bControlledSqrBB = 0;//0b11111111ul << 40;
+    private int rights = 0b1111;//only the 4 lsb contain data
+
+    public int EnPassantSqr { get; private set; } = -1;
+    public bool IsCheckMate { get; set; } = false;
     public bool GetCastlingRights(int side) {
-        return ((1 << side) & Rights) != 0;
+        return ((1 << side) & rights) != 0;
     }
     public void SetCastlingRightsNullAt(int side) {
-        Rights &= ~(1 << side);
+        rights &= ~(1 << side);
     }
 
 
-    public static readonly ulong[] CastleSqrs ={
+    public static readonly ulong[] CastleSqrs = {
         0b01000000ul,0b100ul,0b01000000ul << 56, 0b100ul << 56, 0//null wert für optimisation
     };
     //private BitBoard whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
     //private BitBoard blackPiecesBB = 0b1111111111111111000000000000000000000000000000000000000000000000;
-    private BitBoard wControlledSqrBB = 0;// 0b11111111ul << 16;
-    private BitBoard bControlledSqrBB = 0;//0b11111111ul << 40;
 
     //0 ist ganz rechts, 63 ist ganz links, 0=a1, 63=h8
     public BitBoard BRookBB { get => bRookBB; set => bRookBB = value; }
@@ -69,7 +69,7 @@ public class Chessboard {
 
     public bool AfterCapturePly { get; set; } = false;
 
-    public BitBoard pinnedBB = 0;
+    public BitBoard PinnedBB { get; set; } = 0;
 
     public BitBoard this[Piece type] {
         get => type switch {
@@ -201,8 +201,8 @@ public class Chessboard {
         WControlledSqrBB = wCtrlBB;
         BControlledSqrBB = bCtrlBB;
 
-        this.boardIndex = BoardIndex;
-        this.parentIndex = parentIndex;
+        this.BoardIndex = BoardIndex;
+        this.ParentIndex = parentIndex;
     }
 
     //calculates new BBs for the controlled sqrs of the given color
@@ -267,7 +267,7 @@ public class Chessboard {
                 if (s.Contains("k")) castl[Chessboard.BKingSide] = true;
                 if (s.Contains("q")) castl[Chessboard.BQueenSide] = true;
             } else if (hasNumber(s)) {
-                cb.enPassantSqr = Utility.ANtoPos(s);
+                cb.EnPassantSqr = Utility.ANtoPos(s);
             }
         }
 
@@ -471,14 +471,14 @@ public class Chessboard {
         }
 
 
-        pinnedBB = friendsInSightlines & ~WKingBB & ~BKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
+        PinnedBB = friendsInSightlines & ~WKingBB & ~BKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
 
     }
 
     public void Copy(Chessboard board) {
-        this.pinnedBB = board.pinnedBB;
-        this.boardIndex = board.boardIndex;
-        this.Rights = board.Rights;
+        this.PinnedBB = board.PinnedBB;
+        this.BoardIndex = board.BoardIndex;
+        this.rights = board.rights;
         this.bKingBB = board.bKingBB;
         this.bPawnBB = board.bPawnBB;
         this.bRookBB = board.bRookBB;
@@ -486,22 +486,22 @@ public class Chessboard {
         this.wPawnBB = board.wPawnBB;
         this.wRookBB = board.wRookBB;
         this.bQueenBB = board.bQueenBB;
-        this.lastMove = board.lastMove;
+        this.LastMove = board.LastMove;
         this.wQueenBB = board.wQueenBB;
         this.bBishopBB = board.bBishopBB;
         this.bKnightBB = board.bKnightBB;
         this.wBishopBB = board.wBishopBB;
         this.wKnightBB = board.wKnightBB;
-        this.isCheckMate = board.isCheckMate;
-        this.parentIndex = board.parentIndex;
-        this.enPassantSqr = board.enPassantSqr;
+        this.IsCheckMate = board.IsCheckMate;
+        this.ParentIndex = board.ParentIndex;
+        this.EnPassantSqr = board.EnPassantSqr;
         this.bControlledSqrBB = board.bControlledSqrBB;
         this.wControlledSqrBB = board.wControlledSqrBB;
     }
 
     public Chessboard Clone() {
-        Chessboard board = (Chessboard) this.MemberwiseClone();
-        board.boardIndex = BoardCount++;
+        Chessboard board = (Chessboard)this.MemberwiseClone();
+        board.BoardIndex = BoardCount++;
         return board;
     }
 
@@ -562,16 +562,16 @@ public class Chessboard {
     public void MakeMove(Move move)
         => MakeMove(move.Start, move.End, this.GetPieceAt(move.Start), move.Promotion ?? Piece.wQueen);
     public void MakeMove(int start, int end, Piece type, Piece promotion = Piece.wQueen) {
-        var enPassantSqr = this.enPassantSqr;
+        var enPassantSqr = this.EnPassantSqr;
 
         this.MakeSimpleMove(start, end, type, promotion);
 
-        this.lastMove = new(start, end, promotion);
+        this.LastMove = new(start, end, promotion);
 
 
         this.SetCastlingRightsNullAt(GetSideOfRook(end));
 
-        this.enPassantSqr = -1;//sqr is reset as EP is only possible directly after the doublemove was played
+        this.EnPassantSqr = -1;//sqr is reset as EP is only possible directly after the doublemove was played
 
         //special behaviour such as castling, or en passant
         switch (type) {
@@ -609,7 +609,7 @@ public class Chessboard {
                     //--> this must become -1 again
                     //can be made ineffient as this is an edge case
                     if (!this.hasSussyEnpassantPin(type.IsWhite(), end)) {
-                        this.enPassantSqr = (start + end) / 2; //yes this works, i am a genius
+                        this.EnPassantSqr = (start + end) / 2; //yes this works, i am a genius
                         break;
                     }
                 }
@@ -684,7 +684,7 @@ public class Chessboard {
     /// <summary>
     /// Reihenfolge (nach Wert sortiert, aufsteigend): Pawn, Knight, Bishop, Rook, Queen
     /// </summary>
-    readonly public BitBoard[] CheckPieceBBs = new BitBoard[5];
+    public BitBoard[] CheckPieceBBs { get; } = new BitBoard[5];
 
     //forWhite = white is in check
     public bool IsInCheck(bool forWhite) {
@@ -801,6 +801,7 @@ public class Chessboard {
 
     //can technically be optimized with a full lookuptable, but that
     //saves 1 (extremely fast) operation that only happens in extremely rare cases 
+    /* ignore all of the above */
     public static int GetEnPassantPawn(int endIndex) {
         switch (endIndex) {
             case 16:

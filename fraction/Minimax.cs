@@ -51,7 +51,7 @@ public sealed class Minimax {
 
         //only true, if i didnt find any legal moves and i am in check
         //It is my turn, i realise its mate, this is very bad
-        if (pos.isCheckMate) return whitesTurn ? float.MinValue : float.MaxValue;
+        if (pos.IsCheckMate) return whitesTurn ? float.MinValue : float.MaxValue;
 
         //no legal moves, therefore draw, should be null values
         if (moves.Length == 0) return 0;
@@ -104,12 +104,12 @@ public sealed class Minimax {
             if (whitesTurn) {//we want to maximize eval
                 if (eval > currBestEval) {
                     currBestEval = eval;
-                    currBestMove = currCB.lastMove;
+                    currBestMove = currCB.LastMove;
                 }
             } else {//we want to minimize eval
                 if (eval < currBestEval) {
                     currBestEval = eval;
-                    currBestMove = currCB.lastMove;
+                    currBestMove = currCB.LastMove;
                 }
             }
         }
