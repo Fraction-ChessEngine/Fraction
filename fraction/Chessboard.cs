@@ -36,9 +36,11 @@ public class Chessboard {
 
     public int EnPassantSqr { get; private set; } = -1;
     public bool IsCheckMate { get; set; } = false;
+
     public bool GetCastlingRights(int side) {
         return ((1 << side) & rights) != 0;
     }
+
     public void SetCastlingRightsNullAt(int side) {
         rights &= ~(1 << side);
     }
@@ -168,44 +170,6 @@ public class Chessboard {
     }
 
     public Chessboard() { }
-
-    public Chessboard(
-        BitBoard wKingBB, BitBoard bKingBB,
-        BitBoard wKnightBB, BitBoard bKnightBB,
-        BitBoard wQueenBB, BitBoard bQueenBB,
-        BitBoard wRookBB, BitBoard bRookBB,
-        BitBoard wBishopBB, BitBoard bBishopBB,
-        BitBoard wPawnBB, BitBoard bPawnBB,
-        bool afterCapturePly,
-        BitBoard wCtrlBB,
-        BitBoard bCtrlBB,
-        int BoardIndex,
-        int parentIndex,
-    int[] castlingRights
-    ) {
-        this.WKingBB = wKingBB;
-        this.BKingBB = bKingBB;
-        this.WKnightBB = wKnightBB;
-        this.BKnightBB = bKnightBB;
-        this.WQueenBB = wQueenBB;
-        this.BQueenBB = bQueenBB;
-        this.WRookBB = wRookBB;
-        this.BRookBB = bRookBB;
-        this.WBishopBB = wBishopBB;
-        this.BBishopBB = bBishopBB;
-        this.WPawnBB = wPawnBB;
-        this.BPawnBB = bPawnBB;
-        this.AfterCapturePly = afterCapturePly;
-
-        //this.whitePiecesBB = wKingBB | wKnightBB | wQueenBB | wRookBB | wBishopBB | wPawnBB;
-        //this.blackPiecesBB = bKingBB | bKnightBB | bQueenBB | bRookBB | bBishopBB | bPawnBB;
-
-        WControlledSqrBB = wCtrlBB;
-        BControlledSqrBB = bCtrlBB;
-
-        this.BoardIndex = BoardIndex;
-        this.ParentIndex = parentIndex;
-    }
 
     //calculates new BBs for the controlled sqrs of the given color
     public void UpdateAttackedSqrBB(Span<Vision> visions, bool forWhite) {
