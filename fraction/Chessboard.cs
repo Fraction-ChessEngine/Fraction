@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 
 namespace fraction;
 
@@ -475,7 +477,11 @@ public class Chessboard {
 
     }
 
+    private static int _canary = typeof(Chessboard).GetRuntimeFields().Count();
     public void Copy(Chessboard board) {
+        // please add all fields here, otherwise, the canary will die
+        if (_canary != 31)
+            throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         this.PinnedBB = board.PinnedBB;
         this.BoardIndex = board.BoardIndex;
         this.rights = board.rights;
@@ -500,11 +506,14 @@ public class Chessboard {
     }
 
     public Chessboard Clone() {
+        // please add all fields here, otherwise, the canary will die
+        if (_canary != 31)
+            throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         Chessboard board = (Chessboard)this.MemberwiseClone();
         board.BoardIndex = BoardCount++;
         return board;
     }
-    
+
     public void MakeSimpleMove(int start, int end, Piece type, Piece promotion = Piece.wQueen) {
 
         AfterCapturePly = BlackPiecesBB[end] || WhitePiecesBB[end];
