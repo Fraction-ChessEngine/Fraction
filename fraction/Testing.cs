@@ -320,8 +320,8 @@ static class Testing {
 
         sw.Start();
         for (int i = 0; i < n; i++) {
-            chessboards[i].GeneratePinnedPieceBB(true);
-            chessboards[i].GeneratePinnedPieceBB(false);
+            chessboards[i].GetPinnedPieceBB(true);
+            chessboards[i].GetPinnedPieceBB(false);
         }
         sw.Stop();
 

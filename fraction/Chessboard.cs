@@ -73,8 +73,6 @@ public class Chessboard {
 
     public bool AfterCapturePly { get; set; } = false;
 
-    public BitBoard PinnedBB { get; set; } = 0;
-
     public BitBoard this[Piece type] {
         get => type switch {
             Piece.wPawn => wPawnBB,
@@ -328,7 +326,7 @@ public class Chessboard {
     /// forWhite = white is pinned
     /// </summary>
     /// <param name="forWhite"></param>
-    public void GeneratePinnedPieceBB(bool forWhite) {
+    public BitBoard GetPinnedPieceBB(bool forWhite) {
         //needs to be reset for edgy edge cases
         for (int i = 0; i < 8; i++) {
             pinLines[i] = 0;
@@ -435,16 +433,14 @@ public class Chessboard {
         }
 
 
-        PinnedBB = friendsInSightlines & ~WKingBB & ~BKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
-
+        return friendsInSightlines & ~WKingBB & ~BKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
     }
 
     private static int _canary = typeof(Chessboard).GetRuntimeFields().Count();
     public void Copy(Chessboard board) {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 31)
+        if (_canary != 30)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
-        this.PinnedBB = board.PinnedBB;
         this.BoardIndex = board.BoardIndex;
         this.rights = board.rights;
         this.bKingBB = board.bKingBB;
@@ -469,7 +465,7 @@ public class Chessboard {
 
     public Chessboard Clone() {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 31)
+        if (_canary != 30)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         Chessboard board = (Chessboard)this.MemberwiseClone();
         board.BoardIndex = BoardCount++;
@@ -750,7 +746,7 @@ public class Chessboard {
 
         //is the enemy now pinned without the doubleMovePawn?
         //then they cannot capture
-        cb.GeneratePinnedPieceBB(!forWhite);
+        cb.GetPinnedPieceBB(!forWhite);
 
         for (int i = 0; i < 2; i++) {
             //contains the whole line between king and slider

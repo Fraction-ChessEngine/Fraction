@@ -7,7 +7,7 @@ public static class MoveGen {
     public static Span<Vision> GenerateVisions(Chessboard b, bool forWhite, bool includeCoverage = false) {
         //weil maximal 16 pieces die je ein "Moves" bekommen
         Vision[] possibleMoves = new Vision[16];
-        b.GeneratePinnedPieceBB(forWhite);
+        b.GetPinnedPieceBB(forWhite);
 
         int currIndex = 0;
 
@@ -121,7 +121,7 @@ public static class MoveGen {
         bool kingMobile = kingVision.MoveBB != 0;//wenn 0: kingVision darf nicht returnt werden
 
 
-        b.GeneratePinnedPieceBB(forWhite);
+        b.GetPinnedPieceBB(forWhite);
 
         //double check, king muss bewegt werden
         if (amount > 1) {
@@ -398,7 +398,7 @@ public static class MoveGen {
         BitBoard bb = MoveSets.GetPseudoLegalMoves(b, i, type, includeCoverage);
 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
-        if (b.PinnedBB[i] && !includeCoverage) {
+        if (b.GetPinnedPieceBB(type.IsWhite())[i] && !includeCoverage) {
             BitBoard pinLine = b.GetPinLineBB(1ul << i);
             bb &= pinLine;
         }
