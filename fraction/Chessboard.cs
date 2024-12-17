@@ -253,8 +253,6 @@ public class Chessboard {
         return (cb, forWhite);
     }
 
-
-
     /// <summary>
     /// Returnt immer ein Piece, dh davor muss überprüft werden ob hier überhaupt ein Piece existiert
     /// | Sehr ineffiziente Funktion
@@ -595,8 +593,9 @@ public class Chessboard {
                     }
                 }
                 break;
+            default:
+                break;
         }
-
     }
 
     private void PromoteTo(int end, Piece type) {
