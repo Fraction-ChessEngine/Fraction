@@ -303,8 +303,7 @@ public static class MoveGen {
 
                 //frisst hoffentlich nicht zu viel performance
                 if (perft) {
-                    Testing.perftmoves[index - 1] = Utility.PosToAN(v.PosIndex) +
-                        Utility.PosToAN(end);
+                    Testing.perftmoves[index - 1] = new Move(v.PosIndex, end).ToString();
                 }
             }
         }
@@ -374,8 +373,7 @@ public static class MoveGen {
 
                 //frisst hoffentlich nicht zu viel performance
                 if (perft) {
-                    Testing.perftmoves[index - 1] = Utility.PosToAN(v.PosIndex) +
-                        Utility.PosToAN(end);
+                    Testing.perftmoves[index - 1] = new Move(v.PosIndex, end).ToString();
                 }
             }
         }

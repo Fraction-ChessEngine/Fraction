@@ -139,7 +139,7 @@ static class Testing {
                 currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 60, 58);
             } else {
                 //normale piece bewegungen
-                Piece piece = Utility.SymbolToPiece(currPly[0].ToString());
+                PieceUtil.TryParse(currPly[0].ToString(), out Piece piece);
 
                 // Console.WriteLine(currPly + ", Index = " + i);
 
