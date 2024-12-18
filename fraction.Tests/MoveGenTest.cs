@@ -20,4 +20,11 @@ public class MoveGenTest {
 
         Assert.Equal(expectedSum, sum);
     }
+
+    [Theory]
+    [ClassData(typeof(Ethereal))]
+    public void ethereal(string fen, int depth, long expectedSum) {
+        (var board, var whitesTurn) = Chessboard.FromFEN(fen);
+        Assert.Equal(expectedSum, Testing.perftSum(board, depth, whitesTurn));
+    }
 }

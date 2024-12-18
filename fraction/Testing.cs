@@ -12,7 +12,7 @@ using System.Linq;
     -funktionen die relevante funktionen von MoveGen und MoveSets benchmarken
 */
 namespace fraction;
-static class Testing {
+public static class Testing {
     /// <summary>
     /// Liest das Textfile ein und generiert ein Array aus Plys in string form
     /// </summary>
