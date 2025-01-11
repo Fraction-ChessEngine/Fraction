@@ -300,11 +300,6 @@ public static class MoveGen {
                 } else {
                     ret[index++] = new(v.PosIndex, end);
                 }
-
-                //frisst hoffentlich nicht zu viel performance
-                if (perft) {
-                    Testing.perftmoves[index - 1] = new Move(v.PosIndex, end).ToString();
-                }
             }
         }
 #pragma warning restore CA2014
@@ -369,11 +364,6 @@ public static class MoveGen {
                     Chessboard cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType);
                     boards[index] = cb;
                     index++;
-                }
-
-                //frisst hoffentlich nicht zu viel performance
-                if (perft) {
-                    Testing.perftmoves[index - 1] = new Move(v.PosIndex, end).ToString();
                 }
             }
         }

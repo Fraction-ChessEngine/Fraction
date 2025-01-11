@@ -458,24 +458,6 @@ public static class Testing {
         return boards;
     }
 
-    //es gibt wohl nie mehr als 128 moves
-    public static string[] perftmoves = new string[128];
-    public static void PerftResults(Chessboard b, int d, bool whitesTurn) {
-        Span<Chessboard> boards = MoveGen.GenerateBoards(b, whitesTurn, true);
-
-        long sum = 0;
-        for (int i = 0; i < boards.Length; i++) {
-            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
-            minimax.Run(boards[i], d - 1, !whitesTurn);
-            sum += minimax.Positions;
-
-            Console.WriteLine(perftmoves[i] + ": " + minimax.Positions);
-        }
-
-        Console.WriteLine("Sum: " + sum);
-    }
-
-
     public static long perftSum(Chessboard b, int d, bool whitesTurn) {
         Span<Chessboard> boards = MoveGen.GenerateBoards(b, whitesTurn);
 
