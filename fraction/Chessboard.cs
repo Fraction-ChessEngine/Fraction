@@ -140,24 +140,34 @@ public class Chessboard {
         }
     }
 
+    public Chessboard(FEN fen) {
+        BPawnBB = fen[Piece.bPawn];
+        WPawnBB = fen[Piece.wPawn];
+        BBishopBB = fen[Piece.bBishop];
+        WBishopBB = fen[Piece.wBishop];
+        BQueenBB = fen[Piece.bQueen];
+        WQueenBB = fen[Piece.wQueen];
+        BKingBB = fen[Piece.bKing];
+        WKingBB = fen[Piece.wKing];
+        BKnightBB = fen[Piece.bKnight];
+        WKnightBB = fen[Piece.wKnight];
+        BRookBB = fen[Piece.bRook];
+        WRookBB = fen[Piece.wRook];
+
+        enPassantSqr = fen.EnPassant ?? -1;
+
+        if (fen.CastleRights.WK) SetCastlingRightsNullAt(WKingSide);
+        if (fen.CastleRights.WQ) SetCastlingRightsNullAt(WQueenSide);
+        if (fen.CastleRights.BK) SetCastlingRightsNullAt(BKingSide);
+        if (fen.CastleRights.BQ) SetCastlingRightsNullAt(BQueenSide);
+    }
+
     /// <summary>
     /// Hiermit kann durch FENtoPos funktionen ein board gebaut werden
     /// </summary>
     /// <param name="pieces_"></param>
     public Chessboard(Dictionary<int, Piece> pieces_) {
         //bitboards müssen generiert werden
-        BPawnBB = Utility.GetBBofPosition(pieces_, Piece.bPawn);
-        WPawnBB = Utility.GetBBofPosition(pieces_, Piece.wPawn);
-        BBishopBB = Utility.GetBBofPosition(pieces_, Piece.bBishop);
-        WBishopBB = Utility.GetBBofPosition(pieces_, Piece.wBishop);
-        BQueenBB = Utility.GetBBofPosition(pieces_, Piece.bQueen);
-        WQueenBB = Utility.GetBBofPosition(pieces_, Piece.wQueen);
-        BKingBB = Utility.GetBBofPosition(pieces_, Piece.bKing);
-        WKingBB = Utility.GetBBofPosition(pieces_, Piece.wKing);
-        BKnightBB = Utility.GetBBofPosition(pieces_, Piece.bKnight);
-        WKnightBB = Utility.GetBBofPosition(pieces_, Piece.wKnight);
-        BRookBB = Utility.GetBBofPosition(pieces_, Piece.bRook);
-        WRookBB = Utility.GetBBofPosition(pieces_, Piece.wRook);
 
         //whitePiecesBB = wPawnBB | wBishopBB | wKingBB | wKnightBB | wRookBB | wQueenBB;
         //blackPiecesBB = bPawnBB | bBishopBB | bKingBB | bKnightBB | bRookBB | bQueenBB;
@@ -498,7 +508,7 @@ public class Chessboard {
     }
 
     public Chessboard Clone() {
-        Chessboard board = (Chessboard) this.MemberwiseClone();
+        Chessboard board = (Chessboard)this.MemberwiseClone();
         board.boardIndex = BoardCount++;
         return board;
     }
