@@ -1,19 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 
 namespace fraction;
 
-
-
 public class Chessboard {
-    readonly public static int WKingSide = 0, WQueenSide = 1, BKingSide = 2, BQueenSide = 3;
-    public static int BoardCount = 0;
+    public const int WKingSide = 0;
+    public const int WQueenSide = 1;
+    public const int BKingSide = 2;
+    public const int BQueenSide = 3;
+    public static int BoardCount { get; private set; } = 0;
+
     //dient dem tracken einzelner boards im perft tree beim debuggen
-    public int boardIndex;
-    public int parentIndex;
-    public Move lastMove;
+    public int BoardIndex { get; private set; }
+    public int ParentIndex { get; private set; }
+    public Move LastMove { get; private set; }
 
     private BitBoard bRookBB = 0b10000001ul << 56;
     private BitBoard wRookBB = 0b10000001ul;
@@ -27,24 +30,27 @@ public class Chessboard {
     private BitBoard wKingBB = 0b00010000ul;
     private BitBoard bPawnBB = 0b11111111ul << 48;
     private BitBoard wPawnBB = 0b11111111ul << 8;
-    public int enPassantSqr = -1;
-    public bool isCheckMate = false;
-    private int Rights = 0b1111;//only the 4 lsb contain data
+    private BitBoard wControlledSqrBB = 0;// 0b11111111ul << 16;
+    private BitBoard bControlledSqrBB = 0;//0b11111111ul << 40;
+    private int rights = 0b1111;//only the 4 lsb contain data
+
+    public int EnPassantSqr { get; private set; } = -1;
+    public bool IsCheckMate { get; set; } = false;
+
     public bool GetCastlingRights(int side) {
-        return ((1 << side) & Rights) != 0;
+        return ((1 << side) & rights) != 0;
     }
+
     public void SetCastlingRightsNullAt(int side) {
-        Rights &= ~(1 << side);
+        rights &= ~(1 << side);
     }
 
 
-    public static readonly ulong[] CastleSqrs ={
+    public static readonly ulong[] CastleSqrs = {
         0b01000000ul,0b100ul,0b01000000ul << 56, 0b100ul << 56, 0//null wert für optimisation
     };
     //private BitBoard whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
     //private BitBoard blackPiecesBB = 0b1111111111111111000000000000000000000000000000000000000000000000;
-    private BitBoard wControlledSqrBB = 0;// 0b11111111ul << 16;
-    private BitBoard bControlledSqrBB = 0;//0b11111111ul << 40;
 
     //0 ist ganz rechts, 63 ist ganz links, 0=a1, 63=h8
     public BitBoard BRookBB { get => bRookBB; set => bRookBB = value; }
@@ -66,8 +72,6 @@ public class Chessboard {
     public BitBoard BlackPiecesBB => bPawnBB | bBishopBB | bRookBB | bKnightBB | bKingBB | bQueenBB;
 
     public bool AfterCapturePly { get; set; } = false;
-
-    public BitBoard pinnedBB = 0;
 
     public BitBoard this[Piece type] {
         get => type switch {
@@ -154,7 +158,7 @@ public class Chessboard {
         BRookBB = fen[Piece.bRook];
         WRookBB = fen[Piece.wRook];
 
-        enPassantSqr = fen.EnPassant ?? -1;
+        EnPassantSqr = fen.EnPassant ?? -1;
 
         if (fen.CastleRights.WK) SetCastlingRightsNullAt(WKingSide);
         if (fen.CastleRights.WQ) SetCastlingRightsNullAt(WQueenSide);
@@ -174,44 +178,6 @@ public class Chessboard {
     }
 
     public Chessboard() { }
-
-    public Chessboard(
-        BitBoard wKingBB, BitBoard bKingBB,
-        BitBoard wKnightBB, BitBoard bKnightBB,
-        BitBoard wQueenBB, BitBoard bQueenBB,
-        BitBoard wRookBB, BitBoard bRookBB,
-        BitBoard wBishopBB, BitBoard bBishopBB,
-        BitBoard wPawnBB, BitBoard bPawnBB,
-        bool afterCapturePly,
-        BitBoard wCtrlBB,
-        BitBoard bCtrlBB,
-        int BoardIndex,
-        int parentIndex,
-    int[] castlingRights
-    ) {
-        this.WKingBB = wKingBB;
-        this.BKingBB = bKingBB;
-        this.WKnightBB = wKnightBB;
-        this.BKnightBB = bKnightBB;
-        this.WQueenBB = wQueenBB;
-        this.BQueenBB = bQueenBB;
-        this.WRookBB = wRookBB;
-        this.BRookBB = bRookBB;
-        this.WBishopBB = wBishopBB;
-        this.BBishopBB = bBishopBB;
-        this.WPawnBB = wPawnBB;
-        this.BPawnBB = bPawnBB;
-        this.AfterCapturePly = afterCapturePly;
-
-        //this.whitePiecesBB = wKingBB | wKnightBB | wQueenBB | wRookBB | wBishopBB | wPawnBB;
-        //this.blackPiecesBB = bKingBB | bKnightBB | bQueenBB | bRookBB | bBishopBB | bPawnBB;
-
-        WControlledSqrBB = wCtrlBB;
-        BControlledSqrBB = bCtrlBB;
-
-        this.boardIndex = BoardIndex;
-        this.parentIndex = parentIndex;
-    }
 
     //calculates new BBs for the controlled sqrs of the given color
     public void UpdateAttackedSqrBB(Span<Vision> visions, bool forWhite) {
@@ -275,7 +241,7 @@ public class Chessboard {
                 if (s.Contains("k")) castl[Chessboard.BKingSide] = true;
                 if (s.Contains("q")) castl[Chessboard.BQueenSide] = true;
             } else if (hasNumber(s)) {
-                cb.enPassantSqr = Utility.ANtoPos(s);
+                cb.EnPassantSqr = Utility.ANtoPos(s);
             }
         }
 
@@ -294,8 +260,6 @@ public class Chessboard {
 
         return (cb, forWhite);
     }
-
-
 
     /// <summary>
     /// Returnt immer ein Piece, dh davor muss überprüft werden ob hier überhaupt ein Piece existiert
@@ -350,7 +314,7 @@ public class Chessboard {
     //Contains every line between possible pinSliders, and the king (both exclusive)
     //Order: Clockwise, starting with VertiTop
     //Updates when GeneratePinnedPieceBB() is called
-    private readonly BitBoard[] PinLines = new BitBoard[8];
+    private readonly BitBoard[] pinLines = new BitBoard[8];
 
     /// <summary>
     /// 
@@ -360,7 +324,7 @@ public class Chessboard {
     /// <exception cref="Exception"></exception>
     public BitBoard GetPinLineBB(BitBoard bb) {
         for (int i = 0; i < 8; i++) {
-            BitBoard line = PinLines[i];
+            BitBoard line = pinLines[i];
             if ((line & bb) != 0) return line;
         }
 
@@ -372,10 +336,10 @@ public class Chessboard {
     /// forWhite = white is pinned
     /// </summary>
     /// <param name="forWhite"></param>
-    public void GeneratePinnedPieceBB(bool forWhite) {
+    public BitBoard GetPinnedPieceBB(bool forWhite) {
         //needs to be reset for edgy edge cases
         for (int i = 0; i < 8; i++) {
-            PinLines[i] = 0;
+            pinLines[i] = 0;
         }
 
         int kingIndex;
@@ -438,10 +402,10 @@ public class Chessboard {
             //if there are more or less than one piece of the own color on the pinLine -> no valid pin
 
             friendsInSightlines |= sameColorPieces & (intersectionHoriEast | intersectionHoriWest | intersectionVertiBottom | intersectionVertiTop);
-            PinLines[0] = intersectionVertiTop;
-            PinLines[2] = intersectionHoriEast;
-            PinLines[4] = intersectionVertiBottom;
-            PinLines[6] = intersectionHoriWest;
+            pinLines[0] = intersectionVertiTop;
+            pinLines[2] = intersectionHoriEast;
+            pinLines[4] = intersectionVertiBottom;
+            pinLines[6] = intersectionHoriWest;
         }
 
 
@@ -472,21 +436,23 @@ public class Chessboard {
 
             friendsInSightlines |= intersectionDiagNE | intersectionDiagNW | intersectionDiagSE | intersectionDiagSW;
 
-            PinLines[1] = intersectionDiagNE;
-            PinLines[3] = intersectionDiagSE;
-            PinLines[5] = intersectionDiagSW;
-            PinLines[7] = intersectionDiagNW;
+            pinLines[1] = intersectionDiagNE;
+            pinLines[3] = intersectionDiagSE;
+            pinLines[5] = intersectionDiagSW;
+            pinLines[7] = intersectionDiagNW;
         }
 
 
-        pinnedBB = friendsInSightlines & ~WKingBB & ~BKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
-
+        return friendsInSightlines & ~WKingBB & ~BKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
     }
 
+    private static int _canary = typeof(Chessboard).GetRuntimeFields().Count();
     public void Copy(Chessboard board) {
-        this.pinnedBB = board.pinnedBB;
-        this.boardIndex = board.boardIndex;
-        this.Rights = board.Rights;
+        // please add all fields here, otherwise, the canary will die
+        if (_canary != 30)
+            throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
+        this.BoardIndex = board.BoardIndex;
+        this.rights = board.rights;
         this.bKingBB = board.bKingBB;
         this.bPawnBB = board.bPawnBB;
         this.bRookBB = board.bRookBB;
@@ -494,26 +460,27 @@ public class Chessboard {
         this.wPawnBB = board.wPawnBB;
         this.wRookBB = board.wRookBB;
         this.bQueenBB = board.bQueenBB;
-        this.lastMove = board.lastMove;
+        this.LastMove = board.LastMove;
         this.wQueenBB = board.wQueenBB;
         this.bBishopBB = board.bBishopBB;
         this.bKnightBB = board.bKnightBB;
         this.wBishopBB = board.wBishopBB;
         this.wKnightBB = board.wKnightBB;
-        this.isCheckMate = board.isCheckMate;
-        this.parentIndex = board.parentIndex;
-        this.enPassantSqr = board.enPassantSqr;
+        this.IsCheckMate = board.IsCheckMate;
+        this.ParentIndex = board.ParentIndex;
+        this.EnPassantSqr = board.EnPassantSqr;
         this.bControlledSqrBB = board.bControlledSqrBB;
         this.wControlledSqrBB = board.wControlledSqrBB;
     }
 
     public Chessboard Clone() {
+        // please add all fields here, otherwise, the canary will die
+        if (_canary != 30)
+            throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         Chessboard board = (Chessboard)this.MemberwiseClone();
-        board.boardIndex = BoardCount++;
+        board.BoardIndex = BoardCount++;
         return board;
     }
-
-
 
     public void MakeSimpleMove(int start, int end, Piece type, Piece promotion = Piece.wQueen) {
 
@@ -570,37 +537,23 @@ public class Chessboard {
     public void MakeMove(Move move)
         => MakeMove(move.Start, move.End, this.GetPieceAt(move.Start), move.Promotion ?? Piece.wQueen);
     public void MakeMove(int start, int end, Piece type, Piece promotion = Piece.wQueen) {
-        var enPassantSqr = this.enPassantSqr;
+        var enPassantSqr = this.EnPassantSqr;
 
         this.MakeSimpleMove(start, end, type, promotion);
 
-        this.lastMove = new(start, end, promotion);
+        this.LastMove = new(start, end, promotion);
 
 
-        switch (end) {
-            case 0:
-                this.SetCastlingRightsNullAt(WQueenSide);
-                break;
-            case 7:
-                this.SetCastlingRightsNullAt(WKingSide);
-                break;
-            case 56:
-                this.SetCastlingRightsNullAt(BQueenSide);
-                break;
-            case 63:
-                this.SetCastlingRightsNullAt(BKingSide);
-                break;
-        }
+        this.SetCastlingRightsNullAt(GetSideOfRook(end));
 
-        this.enPassantSqr = -1;//sqr is reset as EP is only possible directly after the doublemove was played
+        this.EnPassantSqr = -1;//sqr is reset as EP is only possible directly after the doublemove was played
 
         //special behaviour such as castling, or en passant
         switch (type) {
             case Piece.wKing:
             case Piece.bKing:
-
-                bool isCastling; int rookStartIndex; int rookEndIndex; Piece rook;
-                (isCastling, rookStartIndex, rookEndIndex, rook) = GetCastleRookData(start, end);
+                (bool isCastling, int rookStartIndex, int rookEndIndex, Piece rook)
+                    = GetCastleRookData(start, end);
 
                 if (type.IsWhite()) {
                     this.SetCastlingRightsNullAt(0);
@@ -631,7 +584,7 @@ public class Chessboard {
                     //--> this must become -1 again
                     //can be made ineffient as this is an edge case
                     if (!this.hasSussyEnpassantPin(type.IsWhite(), end)) {
-                        this.enPassantSqr = (start + end) / 2; //yes this works, i am a genius
+                        this.EnPassantSqr = (start + end) / 2; //yes this works, i am a genius
                         break;
                     }
                 }
@@ -646,8 +599,9 @@ public class Chessboard {
                     }
                 }
                 break;
+            default:
+                break;
         }
-
     }
 
     private void PromoteTo(int end, Piece type) {
@@ -688,14 +642,14 @@ public class Chessboard {
 
 
             default:
-                throw new Exception("Invalid piece entered for promotion");
+                throw new ArgumentException("Invalid piece entered for promotion", nameof(type));
         }
     }
 
 
 
     //doesnt change the BB, only nullifies if necessary
-    private BitBoard ValidatePin(BitBoard sightLine, BitBoard sameColorPieces, BitBoard enemyBlockers, int kingIndex) {
+    private static BitBoard ValidatePin(BitBoard sightLine, BitBoard sameColorPieces, BitBoard enemyBlockers, int kingIndex) {
         sameColorPieces[kingIndex] = false;
 
         if ((sightLine & enemyBlockers) != 0) return 0;//enemy steht auf der pinLine
@@ -706,7 +660,7 @@ public class Chessboard {
     /// <summary>
     /// Reihenfolge (nach Wert sortiert, aufsteigend): Pawn, Knight, Bishop, Rook, Queen
     /// </summary>
-    readonly public BitBoard[] CheckPieceBBs = new BitBoard[5];
+    public BitBoard[] CheckPieceBBs { get; } = new BitBoard[5];
 
     //forWhite = white is in check
     public bool IsInCheck(bool forWhite) {
@@ -802,12 +756,12 @@ public class Chessboard {
 
         //is the enemy now pinned without the doubleMovePawn?
         //then they cannot capture
-        cb.GeneratePinnedPieceBB(!forWhite);
+        cb.GetPinnedPieceBB(!forWhite);
 
         for (int i = 0; i < 2; i++) {
             //contains the whole line between king and slider
             //set to zero if more than one piece on this line
-            BitBoard pinLine = cb.PinLines[i * 4 + 2];
+            BitBoard pinLine = cb.pinLines[i * 4 + 2];
             //there is a intersection, so without the doubleMovepawn, there would be a pinned pawn
             //the doubleMovePawn also needs be on the pinLine
             if ((pinLine & enemyPawnBB) != 0 && ((1ul << endIndexPawn) & pinLine) != 0) {
@@ -823,33 +777,13 @@ public class Chessboard {
 
     //can technically be optimized with a full lookuptable, but that
     //saves 1 (extremely fast) operation that only happens in extremely rare cases 
+    /* ignore all of the above */
     public static int GetEnPassantPawn(int endIndex) {
-        switch (endIndex) {
-            case 16:
-            case 17:
-            case 18:
-            case 19:
-            case 20:
-            case 21:
-            case 22:
-            case 23:
-                return endIndex + 8; //endIndex is the sqr behind the pawn
-
-            case 40:
-            case 41:
-            case 42:
-            case 43:
-            case 44:
-            case 45:
-            case 46:
-            case 47:
-                return endIndex - 8;
-
-            default:
-                Console.WriteLine("endIndex = " + endIndex);
-
-                throw new Exception("No valid endIndex for capturing En Passant was entered in board with index = i dont fucking know");
-        }
+        return endIndex switch {
+            (>= 16) and (<= 23) => endIndex + 8,
+            (>= 40) and (<= 47) => endIndex - 8,
+            _ => throw new ArgumentException("No valid Index for capturing en passant", nameof(endIndex)),
+        };
     }
 
     private static bool IsDoubleMove(int start, int end) {
@@ -858,35 +792,22 @@ public class Chessboard {
 
     //if the move is castling, if yes where the rooks supposed be go
     private static (bool, int, int, Piece rookType) GetCastleRookData(int startIndex, int endIndex) {
-        switch (startIndex, endIndex) {
-            case (4, 6)://white kingSide
-                return (true, 7, 5, Piece.wRook);
-            case (4, 2)://white queenside
-                return (true, 0, 3, Piece.wRook);
-            case (60, 62):
-                return (true, 63, 61, Piece.bRook);
-            case (60, 58):
-                return (true, 56, 59, Piece.bRook);
-
-            default:
-                return (false, -1, -1, Piece.bKing);
-        }
+        return (startIndex, endIndex) switch {
+            (4, 6) => (true, 7, 5, Piece.wRook),
+            (4, 2) => (true, 0, 3, Piece.wRook),
+            (60, 62) => (true, 63, 61, Piece.bRook),
+            (60, 58) => (true, 56, 59, Piece.bRook),
+            _ => (false, -1, -1, Piece.bKing),
+        };
     }
     //to deny castlingRights on this side
     private static int GetSideOfRook(int posIndex) {
-        switch (posIndex) {
-            case 0:
-                return WQueenSide;
-            case 7:
-                return WKingSide;
-            case 56:
-                return BQueenSide;
-            case 63:
-                return BKingSide;
-            default:
-                return 4;
-        }
-
-        throw new ArgumentOutOfRangeException("Kein valider posIndex für CastlingRights bei rook änderung");
+        return posIndex switch {
+            0 => WQueenSide,
+            7 => WKingSide,
+            56 => BQueenSide,
+            63 => BKingSide,
+            _ => 4,
+        };
     }
 }

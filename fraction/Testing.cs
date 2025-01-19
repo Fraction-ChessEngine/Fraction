@@ -12,7 +12,7 @@ using System.Linq;
     -funktionen die relevante funktionen von MoveGen und MoveSets benchmarken
 */
 namespace fraction;
-static class Testing {
+public static class Testing {
     /// <summary>
     /// Liest das Textfile ein und generiert ein Array aus Plys in string form
     /// </summary>
@@ -139,7 +139,7 @@ static class Testing {
                 currPos = GeneratePosWithMove(Utility.BoardToFEN(currPos), 60, 58);
             } else {
                 //normale piece bewegungen
-                Piece piece = Utility.SymbolToPiece(currPly[0].ToString());
+                PieceUtil.TryParse(currPly[0].ToString(), out Piece piece);
 
                 // Console.WriteLine(currPly + ", Index = " + i);
 
@@ -320,8 +320,8 @@ static class Testing {
 
         sw.Start();
         for (int i = 0; i < n; i++) {
-            chessboards[i].GeneratePinnedPieceBB(true);
-            chessboards[i].GeneratePinnedPieceBB(false);
+            chessboards[i].GetPinnedPieceBB(true);
+            chessboards[i].GetPinnedPieceBB(false);
         }
         sw.Stop();
 

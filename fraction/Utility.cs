@@ -7,46 +7,6 @@ using System.Security.Cryptography;
 
 namespace fraction;
 static class Utility {
-    public static void PrintBitBoard(BitBoard bb, int specialIndex = -1)
-    {
-        byte[] bytes = BitConverter.GetBytes(bb);
-        int[] pos = specialIndex >= 0 ? Utility.IndexToPos(specialIndex) : new int[2];
-        for (int i = 0; i < 8; i++)
-        {
-            byte x = bytes[7 - i];
-            string s = System.Convert.ToString(x, 2);
-            if (x < 128)
-                s = "0" + s;
-            if (x < 64)
-                s = "0" + s;
-            if (x < 32)
-                s = "0" + s;
-            if (x < 16)
-                s = "0" + s;
-            if (x < 8)
-                s = "0" + s;
-            if (x < 4)
-                s = "0" + s;
-            if (x < 2)
-                s = "0" + s;
-            if (specialIndex >= 0 && 7 - i == pos[1])
-            {
-                int a = 7 - pos[0];
-                s = s.Substring(0, a) + "X" + s.Substring(a + 1, 7 - a);
-            }
-            Console.WriteLine(Reverse(s));
-        }
-        Console.WriteLine(" ");
-    }
-
-    public static string Reverse(string s)
-    {
-        char[] charArray = s.ToCharArray();
-        Array.Reverse(charArray);
-        return new string(charArray);
-    }
-
-    
     /// <summary>
     /// Konvertiert einen FEN-String zu einer Position die einem Board gegeben werden kann
     /// </summary>
@@ -155,80 +115,8 @@ static class Utility {
         return fen;
     }
 
-    /// <summary>
-    /// Konvertiert einen index (0-63) zu einem 2er array mit x,y (0-7)
-    /// </summary>
-    /// <param name="index">Der index des Pieces in einem 64er array</param>
-    /// <returns></returns>
-    public static int[] IndexToPos(int index) {
-        //y * 8 + x = index
-
-        int y = index >> 3;
-        int x = index & 7;
-        return new int[] { x, y };
-    }
-
-    /// <summary>
-    /// Konvertiert ein 2er array mit x,y zu einem index in einem 64er array
-    /// </summary>
-    /// <param name="pos"></param>
-    /// <returns></returns>
-    public static int PosToIndex(int[] pos) {
-        return pos[1] * 8 + pos[0];
-    }
-
     public static int PosToIndex(int i1, int i2) {
         return 8 * i2 + i1;
-    }
-
-
-    public static Piece SymbolToPiece(string symbol) {
-        switch (symbol) {
-            case "r":
-                return Piece.bRook;
-            case "n":
-                return Piece.bKnight;
-            case "b":
-                return Piece.bBishop;
-            case "q":
-                return Piece.bQueen;
-            case "k":
-                return Piece.bKing;
-            case "p":
-                return Piece.bPawn;
-
-            case "R":
-                return Piece.wRook;
-            case "N":
-                return Piece.wKnight;
-            case "B":
-                return Piece.wBishop;
-            case "Q":
-                return Piece.wQueen;
-            case "K":
-                return Piece.wKing;
-            case "P":
-                return Piece.wPawn;
-
-            default:
-                Console.WriteLine(
-                    "Something went terribly wrong in (Utility.SymbolToPiece(...)"
-                );
-                return Piece.bKing;
-        }
-    }
-
-    /// <summary>
-    /// position zu Algebraic Notation; hat bis jetzt nur den zweck einer leichteren visualisierung
-    /// </summary>
-    /// <returns></returns>
-    public static string PosToAN(int[] pos) {
-        return "abcdefgh"[pos[0]].ToString() + pos[1]; //funktionert, frag nicht wieso
-    }
-
-    public static string PosToAN(int pos) {
-        return "abcdefgh"[pos & 7].ToString() + ((pos >> 3) + 1);
-        //das sieht echt bodenlos aus, aber es klappt
     }
 
     /// <summary>
@@ -270,16 +158,5 @@ static class Utility {
         }
 
         return retBB;
-    }
-
-    public static void DisplayAllBoards(Chessboard[][] b) {
-        foreach (var b1 in b) {
-            if (b1 == null) {
-                continue;
-            }
-
-            foreach (var b2 in b1) {
-            }
-        }
     }
 }
