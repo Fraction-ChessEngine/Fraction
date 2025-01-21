@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,6 +17,7 @@ public static class Engine {
     private static Task? bestMove = null;
 
     private static Chessboard board = new();
+    private static bool WhitesTurn = true;
 
     public static bool Debug { get; private set; } = false;
 
@@ -57,49 +59,48 @@ public static class Engine {
     private static void HandleUciNewGame() { }
 
     private static void HandlePosition(String[] args) {
-        bool startpos = false;
-        int start = 0;
-        foreach (var arg in args) {
-            switch (arg.ToLower()) {
-                case "startpos":
-                    startpos = true;
-                    break;
-                case "moves":
-                    break;
-                default:
-                    start++;
-                    continue;
-            }
-            break;
+        var start = 0;
+        var op = 0;
+        for (; op == 0 && start < args.Length; start++) {
+            op = args[start].ToLower() switch {
+                "startpos" => 1,
+                "fen" => 2,
+                "moves" => 3,
+                _ => 0,
+            };
         }
 
-        foreach (var arg in args[start..^1]) {
-            switch (arg.ToLower()) {
-                case "moves":
-                    break;
-                default:
-                    start++;
-                    continue;
-            }
-            break;
+        switch (op) {
+            case 0: return;
+            case 1:
+                (board, WhitesTurn) = (new(), true);
+                start++;
+                break;
+            case 2:
+                FEN? fen = null;
+                for (; start < args.Length - 6 && !FEN.TryParse(string.Join(' ', args, start, start + 6), out fen); start++) ;
+                if (fen is null) return;
+                (board, WhitesTurn) = (new(fen), fen.WhitesTurn);
+                start += 6;
+                break;
+            case 3:
+                break;
         }
 
-        Span<Move> movesBuf = stackalloc Move[args.Length - start];
-        int count = 0;
-        for (int i = start; i < args.Length; i++) {
-            if (Move.TryParse(args[i].ToLower(), out Move m)) {
-                movesBuf[count] = m;
-                count++;
-            }
+        for (; start < args.Length; start++) {
+            if (args[start].ToLower() == "moves") return;
         }
 
-        for (int i = 0; i < count; i++) {
-            board.MakeSimpleMove(
-                movesBuf[i].Start,
-                movesBuf[i].End,
-                board.GetPieceAt(movesBuf[i].Start),
-                movesBuf[i].Promotion ?? Piece.wQueen
-            );
+        if (++start >= args.Length) return;
+
+        for (; start < args.Length; start++) {
+            if (Move.TryParse(args[start], out var move)) {
+                var moves = MoveGen.GenerateMoves(board, WhitesTurn).ToArray();
+                if (moves.Contains(move)) {
+                    board.MakeMove(move);
+                    WhitesTurn = !WhitesTurn;
+                }
+            }
         }
     }
 
@@ -126,33 +127,36 @@ public static class Engine {
 
         for (string? cmd = stdin.ReadLine(); cmd is not null; cmd = stdin.ReadLine()) {
             String[] args = cmd.Split(' ');
-            switch (args[0].ToLower()) {
-                case "uci":
-                    HandleUci();
-                    break;
-                case "debug":
-                    HandleDebug(args);
-                    break;
-                case "isready":
-                    HandleIsReady();
-                    break;
-                case "ucinewgame":
-                    HandleUciNewGame();
-                    break;
-                case "position":
-                    HandlePosition(args);
-                    break;
-                case "go":
-                    HandleGo(args);
-                    break;
-                case "stop":
-                    HandleStop();
-                    break;
-                case "quit":
-                    Environment.Exit(0);
-                    break;
-                default:
-                    break;
+            for (int i = 0; i < args.Length; i++) {
+                switch (args[i].ToLower()) {
+                    case "uci":
+                        HandleUci();
+                        break;
+                    case "debug":
+                        HandleDebug(args[i..]);
+                        break;
+                    case "isready":
+                        HandleIsReady();
+                        break;
+                    case "ucinewgame":
+                        HandleUciNewGame();
+                        break;
+                    case "position":
+                        HandlePosition(args[i..]);
+                        break;
+                    case "go":
+                        HandleGo(args[i..]);
+                        break;
+                    case "stop":
+                        HandleStop();
+                        break;
+                    case "quit":
+                        Environment.Exit(0);
+                        break;
+                    default:
+                        i = args.Length;
+                        break;
+                }
             }
             stdout.Flush();
         }
