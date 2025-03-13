@@ -14,6 +14,7 @@ public abstract class Engine {
         { IsReady.arg0, new IsReady.Parser() },
         { SetOption.arg0, new SetOption.Parser() },
         { UciNewGame.arg0, new UciNewGame.Parser() },
+        { Position.arg0, new Position.Parser() },
         { Go.arg0, new Go.Parser() },
         { Stop.arg0, new Stop.Parser() },
         { PonderHit.arg0, new PonderHit.Parser() },

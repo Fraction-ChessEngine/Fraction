@@ -60,6 +60,7 @@ public record Go(Go.ICommand[] Commands) : ICommand {
                 }
                 unknown++;
             }
+            if (unknown != 0) commands.Add(new Unknown(args[^unknown..^0]));
 
             return new Go(commands.ToArray());
         }
