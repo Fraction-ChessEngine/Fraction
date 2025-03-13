@@ -8,7 +8,17 @@ public abstract class Engine {
     private TextReader @in;
     private TextWriter @out;
 
-    protected IReadOnlyDictionary<string, ICommandParser> Commands { get; init; } = new Dictionary<string, ICommandParser>();
+    protected IReadOnlyDictionary<string, ICommandParser> Commands { get; init; } = new Dictionary<string, ICommandParser>() {
+        { Uci.arg0, new Uci.Parser() },
+        { Debug.arg0, new Debug.Parser() },
+        { IsReady.arg0, new IsReady.Parser() },
+        { SetOption.arg0, new SetOption.Parser() },
+        { UciNewGame.arg0, new UciNewGame.Parser() },
+        { Go.arg0, new Go.Parser() },
+        { Stop.arg0, new Stop.Parser() },
+        { PonderHit.arg0, new PonderHit.Parser() },
+        { Quit.arg0, new Quit.Parser() },
+    };
 
     protected LogLevel MinLogLevel { get; set; } = LogLevel.Info;
 
