@@ -103,6 +103,7 @@ public class Fraction : UciEngine {
                 if (c.Fen is not null) {
                     if (FEN.TryParse(c.Fen, out FEN fen)) {
                         this.board = new(fen);
+                        this.WhitesTurn = fen.WhitesTurn;
                     } else goto default;
                 } else this.board = new();
 
