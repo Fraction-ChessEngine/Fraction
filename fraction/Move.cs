@@ -12,8 +12,8 @@ public readonly struct Move {
         this.End = to;
     }
 
-    public Move(int from, int to, Piece promotion) : this(from, to) {
-        this.Promotion = promotion == Piece.wKing ? null : promotion;
+    public Move(int from, int to, Piece? promotion) : this(from, to) {
+        this.Promotion = promotion;
     }
 
     public static bool TryParse(string s, out Move m) {

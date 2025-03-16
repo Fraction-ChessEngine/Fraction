@@ -501,7 +501,7 @@ public class Chessboard {
 
 
 
-    public void MakeMove(int start, int end, Piece type, Piece promotion = Piece.wQueen) {
+    public void MakeMove(int start, int end, Piece type, Piece? promotion = Piece.wQueen) {
 
         AfterCapturePly = BlackPiecesBB[end] || WhitePiecesBB[end];
 
@@ -520,7 +520,7 @@ public class Chessboard {
             case Piece.wPawn:
                 wPawnBB[start] = false;
                 wPawnBB[end] = true;
-                //auto queen
+                //promotion
                 if (end > 55) {
                     PromoteTo(end, promotion);
                 }
@@ -553,7 +553,7 @@ public class Chessboard {
         }
     }
 
-    private void PromoteTo(int end, Piece type) {
+    private void PromoteTo(int end, Piece? type) {
         switch (type) {
             case Piece.wBishop:
                 wPawnBB[end] = false;
@@ -675,7 +675,7 @@ public class Chessboard {
     /// </summary>
     /// <param name="startIndex"></param>
     /// <param name="endIndex"></param>
-    public Chessboard GenerateBoardWithMove(int startIndex, int endIndex, Piece type, Piece promotion = Piece.wKing) {
+    public Chessboard GenerateBoardWithMove(int startIndex, int endIndex, Piece type, Piece? promotion = null) {
         Chessboard board = Clone();
         board.MakeMove(startIndex, endIndex, type, promotion);
 
