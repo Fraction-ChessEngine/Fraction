@@ -675,7 +675,7 @@ public class Chessboard {
     /// </summary>
     /// <param name="startIndex"></param>
     /// <param name="endIndex"></param>
-    public Chessboard GenerateBoardWithMove(int startIndex, int endIndex, Piece type, Piece promotion = Piece.wQueen) {
+    public Chessboard GenerateBoardWithMove(int startIndex, int endIndex, Piece type, Piece promotion = Piece.wKing) {
         Chessboard board = Clone();
         board.MakeMove(startIndex, endIndex, type, promotion);
 

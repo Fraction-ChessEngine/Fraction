@@ -2,9 +2,11 @@
 using System.IO;
 
 namespace fraction;
-public class Program {
+public class Program
+{
 
-    public static void Main() {
+    public static void Main()
+    {
         Engine.Run();
     }
 }
