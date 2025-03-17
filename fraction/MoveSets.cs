@@ -44,7 +44,7 @@ public static class MoveSets {
                     BitBoard enemyPiecesBB = allPiecesBB & ~sameColorPieces;
 
                     //en passant is also a valid attack sqr
-                    enemyPiecesBB |= board.enPassantSqr > 0 ? 1ul << board.enPassantSqr : 0;
+                    enemyPiecesBB |= board.EnPassantSqr > 0 ? 1ul << board.EnPassantSqr : 0;
 
                     //debug
                     BitBoard targetSqrs = attackSqrs;
@@ -70,7 +70,7 @@ public static class MoveSets {
                     BitBoard enemyPiecesBB = allPiecesBB & ~sameColorPieces;
 
                     //en passant is also a valid attack sqr
-                    enemyPiecesBB |= board.enPassantSqr > 0 ? 1ul << board.enPassantSqr : 0;
+                    enemyPiecesBB |= board.EnPassantSqr > 0 ? 1ul << board.EnPassantSqr : 0;
 
                     //debug
                     BitBoard targetSqrs = attackSqrs;

@@ -19,6 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="ethereal.txt" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

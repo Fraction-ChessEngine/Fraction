@@ -11,7 +11,7 @@ public class MiniMaxBenchmark {
     [Params(0, 1, 2, 3, 4)]
     public int Depth { get; set; }
 
-    private readonly Chessboard[] boards = MoveGen.GenerateBoards(new(), true);
+    private readonly Chessboard[] boards = MoveGen.GenerateBoards(new(), true).ToArray();
     private Minimax normal = new() {
         AlphaBetaPruning = false,
         MaxQuiescenceSearchPlies = 0,
