@@ -56,6 +56,9 @@ public sealed class Minimax {
         //no legal moves, therefore draw, should be null values
         if (moves.Length == 0) return 0;
 
+        //fifty move rule is enforced
+        if (pos.FiftyMovePlys >= 50) return 0;
+
         Chessboard copy = pos.Clone();
 
         if (whitesTurn) {

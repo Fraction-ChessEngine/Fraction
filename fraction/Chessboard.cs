@@ -12,6 +12,7 @@ public class Chessboard {
     public const int BKingSide = 2;
     public const int BQueenSide = 3;
     public static int BoardCount { get; private set; } = 0;
+    public int FiftyMovePlys { get; private set; } = 0;
 
     //dient dem tracken einzelner boards im perft tree beim debuggen
     public int BoardIndex { get; private set; }
@@ -543,6 +544,12 @@ public class Chessboard {
 
         this.LastMove = new(start, end, promotion);
 
+        bool isCapture = type.IsWhite() ? BlackPiecesBB[end] : WhitePiecesBB[end];
+        if (isCapture) {
+            FiftyMovePlys = 0;
+        } else {
+            FiftyMovePlys++;
+        }
 
         this.SetCastlingRightsNullAt(GetSideOfRook(end));
 
@@ -578,6 +585,7 @@ public class Chessboard {
 
             case Piece.wPawn:
             case Piece.bPawn:
+                FiftyMovePlys = 0;//gets reset after pawn moves
 
                 if (IsDoubleMove(start, end)) {
                     //if king is separated from a horizontal slider by only this pawn and an enemy pawn
