@@ -25,9 +25,9 @@ public class Fraction : UciEngine {
     public bool Debug { get; private set; } = false;
 
     private void HandleUci() {
-        base.Send(new Id(Id.Type.Name, name));
-        base.Send(new Id(Id.Type.Author, author));
-        base.Send(new UciOk());
+        this.Send(new Id(Id.Type.Name, name));
+        this.Send(new Id(Id.Type.Author, author));
+        this.Send(new UciOk());
     }
 
     private void HandleDebug(String[] args) {
@@ -56,16 +56,16 @@ public class Fraction : UciEngine {
                 cts = new();
             }
         }
-        base.Send(new ReadyOk());
+        this.Send(new ReadyOk());
     }
 
     private void HandleGo() {
         if (bestMove is null) {
-            bestMove = Minimax.BestMoveAsync(new(), true, -1, cts.Token)
+            bestMove = Minimax.BestMoveAsync(this.board, this.WhitesTurn, -1, cts.Token)
                 .ContinueWith((t) => {
                     Move result = t.GetAwaiter().GetResult();
                     this.bestMove = null;
-                    base.Send(new BestMove(result.ToString()));
+                    this.Send(new BestMove(result.ToString()));
                 });
         }
     }
@@ -84,10 +84,10 @@ public class Fraction : UciEngine {
 
             case UCI.Debug c:
                 if (c.State) {
-                    base.MinLogLevel = LogLevel.Debug;
+                    this.MinLogLevel = LogLevel.Debug;
                     Debug = true;
                 } else {
-                    base.MinLogLevel = LogLevel.Warning;
+                    this.MinLogLevel = LogLevel.Warning;
                     Debug = false;
                 }
                 break;
@@ -105,14 +105,18 @@ public class Fraction : UciEngine {
                         this.board = new(fen);
                         this.WhitesTurn = fen.WhitesTurn;
                     } else goto default;
-                } else this.board = new();
+                } else {
+                    this.board = new();
+                    this.WhitesTurn = true;
+                }
 
                 foreach (var move in c.moves) {
                     if (Move.TryParse(move, out Move m)) {
                         this.board.MakeMove(m);
+                        this.WhitesTurn ^= true;
                         continue;
                     }
-                    base.Log(LogLevel.Warning, $"Invalid Move '{move}' in command '{c.Serialize()}'");
+                    this.Log(LogLevel.Warning, $"Invalid Move '{move}' in command '{c.Serialize()}'");
                 }
 
                 break;
@@ -129,11 +133,11 @@ public class Fraction : UciEngine {
                 break;
 
             case Unknown:
-                base.Log(LogLevel.Warning, $"Received unknown command '{command.Serialize()}'");
+                this.Log(LogLevel.Warning, $"Received unknown command '{command.Serialize()}'");
                 break;
 
             default:
-                base.Log(LogLevel.Warning, $"Not handling command '{command.Serialize()}'");
+                this.Log(LogLevel.Warning, $"Not handling command '{command.Serialize()}'");
                 break;
         }
     }
