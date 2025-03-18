@@ -450,8 +450,9 @@ public class Chessboard {
     private static int _canary = typeof(Chessboard).GetRuntimeFields().Count();
     public void Copy(Chessboard board) {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 30)
+        if (_canary != 31)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
+        this.FiftyMovePlys = board.FiftyMovePlys;
         this.BoardIndex = board.BoardIndex;
         this.rights = board.rights;
         this.bKingBB = board.bKingBB;
@@ -476,7 +477,7 @@ public class Chessboard {
 
     public Chessboard Clone() {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 30)
+        if (_canary != 31)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         Chessboard board = (Chessboard)this.MemberwiseClone();
         board.BoardIndex = BoardCount++;
