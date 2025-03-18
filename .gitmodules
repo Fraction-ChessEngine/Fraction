@@ -1,0 +1,3 @@
+[submodule "Fraction.UCI"]
+	path = Fraction.UCI
+	url = https://github.com/Fraction-ChessEngine/Fraction.UCI.git

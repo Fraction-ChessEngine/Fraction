@@ -6,8 +6,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using fraction.UCI;
-using UciEngine = fraction.UCI.Engine;
+using Fraction.UCI;
+using UciEngine = Fraction.UCI.Engine;
 
 namespace fraction;
 public class Fraction : UciEngine {
@@ -82,7 +82,7 @@ public class Fraction : UciEngine {
                 this.HandleUci();
                 break;
 
-            case UCI.Debug c:
+            case Debug c:
                 if (c.State) {
                     this.MinLogLevel = LogLevel.Debug;
                     Debug = true;

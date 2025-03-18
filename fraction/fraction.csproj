@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="3.0.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Fraction.UCI\Fraction.UCI\Fraction.UCI.csproj" />
+  </ItemGroup>
+
 </Project>
