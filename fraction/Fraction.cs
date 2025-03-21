@@ -76,6 +76,11 @@ public class Fraction : UciEngine {
         }
     }
 
+    private void HandleGetBoard() {
+        string s = this.board.GetVisual();
+        Console.WriteLine(s);
+    }
+
     protected override void Handle(ICommand command) {
         switch (command) {
             case Uci:
@@ -118,7 +123,6 @@ public class Fraction : UciEngine {
                     }
                     this.Log(LogLevel.Warning, $"Invalid Move '{move}' in command '{c.Serialize()}'");
                 }
-
                 break;
 
             case Go c:
@@ -130,6 +134,14 @@ public class Fraction : UciEngine {
 
             case Stop:
                 this.HandleStop();
+                break;
+
+            case Quit:
+                System.Environment.Exit(0);
+                break;
+
+            case GetBoard:
+                HandleGetBoard();
                 break;
 
             case Unknown:
