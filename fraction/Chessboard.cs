@@ -655,29 +655,7 @@ public class Chessboard {
         }
     }
 
-    /// <summary>
-    /// Barebone visual, as simplified as possible
-    /// </summary>
-    /// <returns></returns>
-    public string GetVisual() {
-        char?[] symbols = new char?[64];
 
-        for (int i = 0; i < 64; i++) {
-            symbols[i] = HasPieceAt(i) ? GetPieceAt(i).GetSymbol()[0] : null;
-        }
-
-        string res = "";
-
-        for (int i1 = 0; i1 < 8; i1++) {
-            for (int i2 = 0; i2 < 8; i2++) {
-                int n = (7 - i1) * 8 + i2;
-                res += symbols[n];
-                if ((n + 1) % 8 == 0) res += "\n";
-            }
-        }
-
-        return res;
-    }
 
     //doesnt change the BB, only nullifies if necessary
     private static BitBoard ValidatePin(BitBoard sightLine, BitBoard sameColorPieces, BitBoard enemyBlockers, int kingIndex) {
