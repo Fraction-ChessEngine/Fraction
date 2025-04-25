@@ -52,8 +52,9 @@ public record FEN(
             int k = 0;
             for (int j = 0; j < pos[i].Length; j++) {
                 if (k >= 8) return false;
+                if (pos[i][j] == '8') continue;
                 if (pos[i][j] is > '1' and < '8') {
-                    k += pos[i][j] - '0';
+                    k += pos[i][j] - '1';
                 }
 
                 if (PieceUtil.TryParse(parts[i][j], out Piece piece)) {

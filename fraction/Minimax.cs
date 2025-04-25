@@ -95,10 +95,10 @@ public sealed class Minimax {
     }
 
     public static Move BestMove(Chessboard cb, bool whitesTurn, int depth, CancellationToken cancellationToken = new()) {
-        Move currBestMove = new(-1, -1, Piece.wKing);
+        Move currBestMove = Move.Null;
         float currBestEval = whitesTurn ? int.MinValue : int.MaxValue;
 
-        Span<Chessboard> children = MoveGen.GenerateBoards(cb, whitesTurn);
+        Chessboard[] children = MoveGen.GenerateBoards(cb, whitesTurn);
 
         foreach (Chessboard currCB in children) {
             Minimax m = new(cancellationToken);
@@ -122,7 +122,7 @@ public sealed class Minimax {
 
     public static Task<Move> BestMoveAsync(Chessboard cb, bool whitesTurn, int depth, CancellationToken ct) {
         return Task<Move>.Run(() => {
-            Move bestMove = BestMove(cb, whitesTurn, 1);
+            Move bestMove = Move.Null;
 
             for (int i = 1; !ct.IsCancellationRequested && (depth == -1 || i < depth); i++) {
                 try {

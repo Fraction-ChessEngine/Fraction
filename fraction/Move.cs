@@ -3,6 +3,7 @@ using System;
 namespace fraction;
 
 public readonly struct Move {
+    public static Move Null = new(0, 0, null);
     public readonly int Start { get; }
     public readonly int End { get; }
     public readonly Piece? Promotion { get; } = null;
@@ -34,6 +35,7 @@ public readonly struct Move {
     }
 
     public override string ToString() {
+        if (this is Move{ Start: 0, End: 0, Promotion: null}) return "0000";
         return $"{(char)((Start % 8) + 'a')}{(char)((Start / 8) + '1')}{(char)((End % 8) + 'a')}{(char)((End / 8) + '1')}{Promotion?.GetSymbol() ?? ""}";
         //return "{" + Start + " -> " + End + ", Promotion?: " + Promotion + "}";
     }

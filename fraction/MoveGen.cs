@@ -312,7 +312,17 @@ public static class MoveGen {
         return ret[0..index];
     }
 
-    public static Span<Chessboard> GenerateBoards(Chessboard b, bool whitesTurn, bool perft = false) {
+    public static Chessboard[] GenerateBoards(Chessboard b, bool whitesTurn, bool perft = false) {
+        Span<Move> moves = GenerateMoves(b, whitesTurn, perft);
+        Chessboard[] ret = new Chessboard[moves.Length];
+        for (int i = 0; i < ret.Length; i++) {
+            ret[i] = b.Clone();
+            ret[i].MakeMove(moves[i]);
+        }
+        return ret;
+    }
+
+    public static Span<Chessboard> _GenerateBoards(Chessboard b, bool whitesTurn, bool perft = false) {
 
         //provisorische lösung
         Span<Vision> attackVisions = GenerateVisions(b, !whitesTurn, true);

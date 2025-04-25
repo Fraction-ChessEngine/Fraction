@@ -50,23 +50,59 @@ public class Fraction : UciEngine {
             bestMove?.Wait();
             bestMove = null;
         }
-        if (bestMove is null) {
-            if (!cts.TryReset()) {
-                cts.Dispose();
-                cts = new();
-            }
-        }
         this.Send(new ReadyOk());
     }
 
-    private void HandleGo() {
+    private void HandleGo(IEnumerable<Go.ICommand> args) {
+        bool infinite = false;
+        int? moves = null;
+        int? depth = null;
+        int? time = null;
+        int? etime = null;
+        foreach (var arg in args) {
+            switch (arg) {
+                case Infinite:
+                    infinite = true;
+                    break;
+                case MovesToGo a:
+                    moves = moves ?? a.X;
+                    break;
+                case Depth a:
+                    depth = depth ?? a.X;
+                    break;
+                case Time a:
+                    if (a.Turn == (this.WhitesTurn ? Color.White : Color.Black))
+                        time = time ?? a.TimeLeft;
+                    else etime = etime ?? a.TimeLeft;
+                    break;
+                default:
+                    this.Log(LogLevel.Warning, $"Not Handling {arg.Serialize()}");
+                    break;
+            }
+        }
+
         if (bestMove is null) {
-            bestMove = Minimax.BestMoveAsync(this.board, this.WhitesTurn, -1, cts.Token)
+            bestMove = Minimax.BestMoveAsync(this.board, this.WhitesTurn, depth ?? -1, cts.Token)
                 .ContinueWith((t) => {
                     Move result = t.GetAwaiter().GetResult();
                     this.bestMove = null;
                     this.Send(new BestMove(result.ToString()));
+                    if (!cts.TryReset()) {
+                        cts.Dispose();
+                        cts = new();
+                    }
                 });
+
+            if (!infinite && time is not null) {
+                int x = time.Value;
+                if (moves is not null) {
+                    x /= moves.Value;
+                }else if (etime is not null) {
+                    x -= etime.Value;
+                } else x = -1;
+                if (x <= 0) x = 200;
+                this.cts.CancelAfter(x);
+            }
         }
     }
 
@@ -101,10 +137,13 @@ public class Fraction : UciEngine {
 
             case Position c:
                 if (c.Fen is not null) {
-                    if (FEN.TryParse(c.Fen, out FEN fen)) {
+                    if (FEN.TryParse(c.Fen, out FEN? fen)) {
                         this.board = new(fen);
                         this.WhitesTurn = fen.WhitesTurn;
-                    } else goto default;
+                    } else {
+                        this.Log(LogLevel.Warning, $"fenparsing failed. Fen: {c.Fen}");
+                        goto default;
+                    }
                 } else {
                     this.board = new();
                     this.WhitesTurn = true;
@@ -122,14 +161,15 @@ public class Fraction : UciEngine {
                 break;
 
             case Go c:
-                if (c.Commands.Length > 1) goto default;
-                if (c.Commands.Length > 0 && c.Commands[0] is not Infinite) goto default;
-
-                this.HandleGo();
+                this.HandleGo(c.Commands);
                 break;
 
             case Stop:
                 this.HandleStop();
+                break;
+
+            case Quit:
+                Environment.Exit(0);
                 break;
 
             case Unknown:
