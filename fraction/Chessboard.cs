@@ -161,10 +161,10 @@ public class Chessboard {
 
         EnPassantSqr = fen.EnPassant ?? -1;
 
-        if (fen.CastleRights.WK) SetCastlingRightsNullAt(WKingSide);
-        if (fen.CastleRights.WQ) SetCastlingRightsNullAt(WQueenSide);
-        if (fen.CastleRights.BK) SetCastlingRightsNullAt(BKingSide);
-        if (fen.CastleRights.BQ) SetCastlingRightsNullAt(BQueenSide);
+        if (!fen.CastleRights.WK) SetCastlingRightsNullAt(WKingSide);
+        if (!fen.CastleRights.WQ) SetCastlingRightsNullAt(WQueenSide);
+        if (!fen.CastleRights.BK) SetCastlingRightsNullAt(BKingSide);
+        if (!fen.CastleRights.BQ) SetCastlingRightsNullAt(BQueenSide);
     }
 
     /// <summary>

@@ -140,6 +140,7 @@ public class Fraction : UciEngine {
                     if (FEN.TryParse(c.Fen, out FEN? fen)) {
                         this.board = new(fen);
                         this.WhitesTurn = fen.WhitesTurn;
+                        Console.WriteLine(fen.CastleRights);
                     } else {
                         this.Log(LogLevel.Warning, $"fenparsing failed. Fen: {c.Fen}");
                         goto default;
