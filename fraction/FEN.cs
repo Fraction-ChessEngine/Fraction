@@ -27,7 +27,7 @@ public record FEN(
         out FEN fen
     ) {
         fen = default;
-        var parts = fenString.Split(' ');
+        var parts = fenString.Trim(' ').Split(' ');
         if (parts.Length != 6) return false;
 
         var pos = parts[0].Split('/');
@@ -48,18 +48,20 @@ public record FEN(
             { Piece.bQueen, new List<int>()},
         };
 
+
         for (int i = 0; i < 8; i++) {
             int k = 0;
             for (int j = 0; j < pos[i].Length; j++) {
                 if (k >= 8) return false;
-                if (pos[i][j] == '8') continue;
-                if (pos[i][j] is > '1' and < '8') {
-                    k += pos[i][j] - '1';
+                if (pos[i][j] is >= '1' and <= '8') {
+                    k += pos[i][j] - '0';
+                    continue;
                 }
 
-                if (PieceUtil.TryParse(parts[i][j], out Piece piece)) {
-                    var y = i - 7;
+                if (PieceUtil.TryParse(pos[i][j], out Piece piece)) {
+                    var y = 7 - i;
                     pieces[piece].Add((y * 8) + k);
+                    k++;
                 } else return false;
             }
             if (k != 8) return false;
@@ -77,7 +79,7 @@ public record FEN(
         var castleRights = new bool[4];
         if (parts[2] != "-") {
             const string lut = "KQkq";
-            for (int i = 0, j = 0; i >= parts[2].Length; j++) {
+            for (int i = 0, j = 0; i < parts[2].Length; j++) {
                 if (j >= lut.Length) return false;
                 if (lut[j] == parts[2][i]) {
                     castleRights[j] = true;
