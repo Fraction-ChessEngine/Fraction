@@ -51,7 +51,7 @@ public sealed class Minimax {
 
         //only true, if i didnt find any legal moves and i am in check
         //It is my turn, i realise its mate, this is very bad
-        if (pos.IsCheckMate) return whitesTurn ? float.MinValue : float.MaxValue;
+        if (pos.IsCheckMate) return whitesTurn ? int.MinValue : int.MaxValue;
 
         //no legal moves, therefore draw, should be null values
         if (moves.Length == 0) return 0;
@@ -96,7 +96,7 @@ public sealed class Minimax {
 
     public static Move BestMove(Chessboard cb, bool whitesTurn, int depth, CancellationToken cancellationToken = new()) {
         Move currBestMove = Move.Null;
-        float currBestEval = whitesTurn ? int.MinValue : int.MaxValue;
+        float currBestEval = whitesTurn ? float.MinValue : float.MaxValue;
 
         Chessboard[] children = MoveGen.GenerateBoards(cb, whitesTurn);
 
