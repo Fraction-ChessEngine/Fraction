@@ -19,7 +19,7 @@ public readonly struct Move {
 
     public static bool TryParse(string s, out Move m) {
         m = new(0, 0);
-        if (s.Length is not 4 or 5) return false;
+        if (s.Length is not (4 or 5)) return false;
         if (int.Max(s[0], s[2]) > 'h') return false;
         if (int.Min(s[0], s[2]) < 'a') return false;
         if (!char.IsDigit(s[1])) return false;

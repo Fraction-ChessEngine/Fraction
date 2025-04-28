@@ -97,7 +97,7 @@ public class Fraction : UciEngine {
                 int x = time.Value;
                 if (moves is not null) {
                     x /= moves.Value;
-                }else if (etime is not null) {
+                } else if (etime is not null) {
                     x -= etime.Value;
                 } else x = -1;
                 if (x <= 0) x = 200;

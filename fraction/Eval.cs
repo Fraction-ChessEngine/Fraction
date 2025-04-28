@@ -5,11 +5,9 @@ using System.Runtime.CompilerServices;
 using fraction;
 
 namespace fraction;
-static class Eval
-{
+static class Eval {
     //31 mio iterations /second, dh kein bottleneck
-    public static float BasicStaticEval(Chessboard b)
-    {
+    public static float BasicStaticEval(Chessboard b) {
         float white = 0;
         white += b.WKingBB.PopCount * 10000f;
         white += b.WRookBB.PopCount * 5f;
@@ -24,19 +22,23 @@ static class Eval
         white += RelativeValue(b.WKnightBB, Piece.wKnight);
         white += RelativeValue(b.WQueenBB, Piece.wQueen);
 
+        white += PawnQuality(true, b.WPawnBB, b.BPawnBB, 0.3f, 0.1f, -0.2f, -0.3f);//random ass values, need to be optimised
+
         float black = 0;
         black += b.BKingBB.PopCount * 10000f;
         black += b.BRookBB.PopCount * 5f;
         black += b.BBishopBB.PopCount * 3f;
         black += b.BKnightBB.PopCount * 2.8f;
         black += b.BQueenBB.PopCount * 9f;
-        black +=b.BPawnBB.PopCount;
+        black += b.BPawnBB.PopCount;
         black += RelativeValue(b.BPawnBB, Piece.bPawn);
         black += RelativeValue(b.BRookBB, Piece.bRook);
         black += RelativeValue(b.BBishopBB, Piece.bBishop);
         black += RelativeValue(b.BKingBB, Piece.bKing);
         black += RelativeValue(b.BKnightBB, Piece.bKnight);
         black += RelativeValue(b.BQueenBB, Piece.bQueen);
+
+        black += PawnQuality(false, b.BPawnBB, b.WPawnBB, 0.3f, 0.1f, -0.2f, -0.3f);//random ass values, need to be optimised
 
         return white - black;
     }
@@ -103,8 +105,7 @@ static class Eval
     };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static float RelativeValue(BitBoard bb, Piece type)
-    {
+    static float RelativeValue(BitBoard bb, Piece type) {
         float value = (bb & pieceMasks1[(int)type]).PopCount * pieceFightValue[(int)type] * 0.1f;
 
         // branchless durch lut
@@ -112,4 +113,92 @@ static class Eval
 
         return value;
     }
+
+
+
+    public static float PawnQuality(bool forWhite, BitBoard pawnBB, BitBoard enemyPawnBB,
+    float passedPWeight, float pChainWeight, float doubledPWeight, float isolatedPWeight) {
+        /* 
+        gut: connected pawns, passed pawns
+        schlecht: isoliert, doubled
+        */
+        float qualityNum = 0;
+        int pawnCount = pawnBB.PopCount;
+        Console.WriteLine(pawnCount);
+        Span<int> pawnArr = stackalloc int[pawnCount];
+        _ = pawnBB.FindOnes(pawnArr);
+
+        int passedPawnCount = 0;
+        int pawnChain = 0;
+        int doubledPawns = 0;
+        int isolatedPawns = 0;
+
+        for (int i = 0; i < pawnCount; i++) {
+            int currP = pawnArr[i];
+            int x = currP % 8;
+            int y = currP >> 3;
+
+            BitBoard passedPawnMask;
+            if (forWhite) {
+                if (x == 0) {
+                    passedPawnMask = BitBoard.VerticalLines(0b11) << (currP + 8);
+                    if (((1ul << (currP + 9)) & pawnBB) != 0) pawnChain++;
+                    if ((BitBoard.VerticalLine(1) & pawnBB) == 0) isolatedPawns++;
+
+                } else if (x == 7) {
+                    passedPawnMask = BitBoard.VerticalLines(0b11) << (currP - 1 + 8);
+                    if (((1ul << (currP + 7)) & pawnBB) != 0) pawnChain++;
+                    if ((BitBoard.VerticalLine(6) & pawnBB) == 0) isolatedPawns++;
+
+                } else {
+                    passedPawnMask = BitBoard.VerticalLines(0b111) << (currP - 1 + 8);
+                    if (((1ul << (currP + 7)) & pawnBB) != 0) pawnChain++;
+                    if (((1ul << (currP + 9)) & pawnBB) != 0) pawnChain++;
+                    if ((BitBoard.VerticalLines(0b101) << (x - 1) & pawnBB) == 0) isolatedPawns++;
+                }
+            } else {
+                if (x == 0) {
+                    passedPawnMask = BitBoard.VerticalLines(0b11) & ((1ul << (y * 8)) - 1);
+                    if (((1ul << (currP - 7)) & pawnBB) != 0) pawnChain++;
+                    if ((BitBoard.VerticalLine(1) & pawnBB) == 0) isolatedPawns++;
+
+                } else if (x == 7) {
+                    passedPawnMask = BitBoard.VerticalLines(0b11) << 6 & ((1ul << (y * 8)) - 1);
+                    if (((1ul << (currP - 9)) & pawnBB) != 0) pawnChain++;
+                    if ((BitBoard.VerticalLine(6) & pawnBB) == 0) isolatedPawns++;
+
+                } else {
+                    passedPawnMask = BitBoard.VerticalLines(0b111) << (x - 1) & ((1ul << (y * 8)) - 1);
+                    if (((1ul << (currP - 9)) & pawnBB) != 0) pawnChain++;
+                    if (((1ul << (currP - 7)) & pawnBB) != 0) pawnChain++;
+                    if ((BitBoard.VerticalLines(0b101) << (x - 1) & pawnBB) == 0) isolatedPawns++;
+                }
+            }
+
+            if ((passedPawnMask & enemyPawnBB) == 0) passedPawnCount++;
+            doubledPawns += (BitBoard.VerticalLine(x) & (~(1ul << currP)) & pawnBB).PopCount;
+        }
+
+        qualityNum += passedPawnCount * passedPWeight + pawnChain * pChainWeight + doubledPawns * doubledPWeight + isolatedPawns * isolatedPWeight;
+
+        return qualityNum;
+    }
+
+
+
+    /* 
+    faktoren für eval:
+
+    Dinge die in der moveGen generiert werden und gecached werden können:
+        -anzahl der kontrollierten sqrs (je zentraler desto relevanter) 
+        -pins
+
+
+    Dinge die hier isoliert berechnen werden müssen
+        -connected pawns 
+        -past pawns 
+        -king safety (king ist möglichst weit weg von center, nicht auf lines von slidern)
+        -isolated pawns
+    
+     */
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 
 using static System.Numerics.BitOperations;
@@ -146,6 +147,8 @@ public struct BitBoard {
     public static BitBoard VerticalLines(byte files)
         => 0x101010101010101ul * files;
 
+
+
     public static implicit operator BitBoard(ulong val) => new() { _value = val };
     public static implicit operator ulong(BitBoard val) => val._value;
     public static BitBoard operator ~(BitBoard bb) => ~(ulong)bb;
@@ -165,18 +168,33 @@ public struct BitBoard {
     // use Console.WriteLine(bb.ToString());
     public override string ToString() {
         StringBuilder sb = new();
-        for (int i = 0; i < 8; i++) {
+        for (int i = 7; i >= 0; i--) {
             for (int j = 0; j < 8; j++)
                 sb.Append((this[(8 - i) * 8 + j]) ? '1' : '0').Append(' ');
             sb.AppendLine();
         }
 
         sb.Remove(sb.Length - 1, 1);
-
         return sb.ToString();
     }
 
     public void Print() {
         Console.WriteLine(ToString());
+    }
+
+    public void Print(int highlight) {
+        StringBuilder sb = new();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                int index = (7 - i) * 8 + j;
+                char c = (highlight == index) ? 'X' : ((this[index]) ? '1' : '0');
+                sb.Append(c).Append(' ');
+            }
+
+            sb.AppendLine();
+        }
+
+        sb.Remove(sb.Length - 1, 1);
+        Console.WriteLine(sb.ToString());
     }
 }
