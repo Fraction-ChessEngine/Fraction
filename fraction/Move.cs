@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace fraction;
 
@@ -17,7 +19,11 @@ public readonly struct Move {
         this.Promotion = promotion;
     }
 
-    public static bool TryParse(string s, out Move m) {
+    public static bool TryParse(
+            string s,
+            [MaybeNullWhen(false)]
+            out Move m
+        ) {
         m = new(0, 0);
         if (s.Length is not (4 or 5)) return false;
         if (int.Max(s[0], s[2]) > 'h') return false;
@@ -36,8 +42,16 @@ public readonly struct Move {
 
     public override string ToString() {
         if (this is Move { Start: 0, End: 0, Promotion: null }) return "0000";
-        return $"{(char)((Start % 8) + 'a')}{(char)((Start / 8) + '1')}{(char)((End % 8) + 'a')}{(char)((End / 8) + '1')}{Promotion?.GetSymbol() ?? ""}";
-        //return "{" + Start + " -> " + End + ", Promotion?: " + Promotion + "}";
+        StringBuilder sb = new();
+        sb.Append((char)((this.Start % 8) + 'a'))
+            .Append((char)((this.Start / 8) + '1'))
+            .Append((char)((this.End % 8) + 'a'))
+            .Append((char)((this.End / 8) + '1'));
+
+        if (this.Promotion is not null)
+            sb.Append(Promotion?.GetSymbol());
+
+        return sb.ToString();
     }
 
 }
