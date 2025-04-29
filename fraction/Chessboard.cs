@@ -504,8 +504,8 @@ public class Chessboard {
                 wPawnBB[start] = false;
                 wPawnBB[end] = true;
                 //promotion
-                if (end > 55) {
-                    PromoteTo(end, promotion ?? Piece.wQueen);
+                if (end >= 56) {
+                    PromoteTo(end, (promotion & (Piece)~8) ?? Piece.wQueen);
                 }
                 break;
 
@@ -514,7 +514,7 @@ public class Chessboard {
                 bPawnBB[end] = true;
 
                 if (end < 8) {
-                    PromoteTo(end, promotion ?? Piece.bQueen);
+                    PromoteTo(end, (promotion | (Piece) 8)?? Piece.bQueen);
                 }
                 break;
 
@@ -791,12 +791,12 @@ public class Chessboard {
         return endIndex switch {
             (>= 16) and (<= 23) => endIndex + 8,
             (>= 40) and (<= 47) => endIndex - 8,
-            _ => throw new ArgumentException("No valid Index for capturing en passant", nameof(endIndex)),
+            _ => throw new ArgumentOutOfRangeException(nameof(endIndex), endIndex, "No valid Index for capturing en passant"),
         };
     }
 
     private static bool IsDoubleMove(int start, int end) {
-        return (end == start + 16) || (end == start - 16);
+        return (end == start + 16) || (end == start - 16); // 16 == Math.Abs(start - end);
     }
 
     //if the move is castling, if yes where the rooks supposed be go

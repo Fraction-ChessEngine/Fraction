@@ -85,6 +85,7 @@ public class Fraction : UciEngine {
             bestMove = Minimax.BestMoveAsync(this.board, this.WhitesTurn, depth ?? -1, cts.Token)
                 .ContinueWith((t) => {
                     Move result = t.GetAwaiter().GetResult();
+                    result = result with { Promotion = result.Promotion | (Piece)8 };
                     this.bestMove = null;
                     this.Send(new BestMove(result.ToString()));
                     if (!cts.TryReset()) {
