@@ -116,6 +116,7 @@ static class Eval {
 
 
 
+    //kann theoretisch mit BB_Lookup.getpawnattacksqrs verbessert werden
     public static float PawnQuality(bool forWhite, BitBoard pawnBB, BitBoard enemyPawnBB,
     float passedPWeight, float pChainWeight, float doubledPWeight, float isolatedPWeight) {
         /* 
@@ -124,7 +125,6 @@ static class Eval {
         */
         float qualityNum = 0;
         int pawnCount = pawnBB.PopCount;
-        Console.WriteLine(pawnCount);
         Span<int> pawnArr = stackalloc int[pawnCount];
         _ = pawnBB.FindOnes(pawnArr);
 
