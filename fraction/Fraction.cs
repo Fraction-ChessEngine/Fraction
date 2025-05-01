@@ -54,6 +54,7 @@ public class Fraction : UciEngine {
     }
 
     private void HandleGo(IEnumerable<Go.ICommand> args) {
+
         bool infinite = false;
         int? moves = null;
         int? depth = null;

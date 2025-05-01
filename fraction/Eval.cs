@@ -23,6 +23,7 @@ static class Eval {
         white += RelativeValue(b.WQueenBB, Piece.wQueen);
 
         white += PawnQuality(true, b.WPawnBB, b.BPawnBB, 0.3f, 0.1f, -0.2f, -0.3f);//random ass values, need to be optimised
+        white += Agression(true, b, 0.25f, 0.2f, 0.2f, 0.2f, 0.2f);
 
         float black = 0;
         black += b.BKingBB.PopCount * 10000f;
@@ -39,6 +40,7 @@ static class Eval {
         black += RelativeValue(b.BQueenBB, Piece.bQueen);
 
         black += PawnQuality(false, b.BPawnBB, b.WPawnBB, 0.3f, 0.1f, -0.2f, -0.3f);//random ass values, need to be optimised
+        black += Agression(false, b, 0.25f, 0.2f, 0.2f, 0.2f, 0.2f);
 
         return white - black;
     }
@@ -185,6 +187,62 @@ static class Eval {
     }
 
 
+    //kann theoretisch mit caching der BBs optimiert werden
+    public static float Agression(bool forWhite, Chessboard cb, float queenW, float rookW, float bishopW, float knightW, float pawnW) {
+        /* 
+        bishop, knight,rook bekommen kleinen bonus wenn sie 4 haben, nochmal für 3
+        pawn bekommt bonus für 2
+        queen bekommt bonus für 4,3,2,1
+         */
+        float queen = 0, rook = 0, pawn = 0, bishop = 0, knight = 0;
+        int enemyKing;
+
+        if (forWhite) {
+            enemyKing = cb.BKingBB.HighestOne;
+
+            for (int i = 1; i <= 4; i++) {
+                queen += (cb.WQueenBB & BB_Lookup.chebyshevDistanceBB(i, enemyKing)).PopCount;
+            }
+
+            pawn += (cb.WPawnBB & BB_Lookup.chebyshevDistanceBB(2, enemyKing)).PopCount;
+
+            for (int i = 3; i <= 4; i++) {
+                rook += (cb.WRookBB & BB_Lookup.chebyshevDistanceBB(i, enemyKing)).PopCount;
+                knight += (cb.WKnightBB & BB_Lookup.chebyshevDistanceBB(i, enemyKing)).PopCount;
+                bishop += (cb.WBishopBB & BB_Lookup.chebyshevDistanceBB(i, enemyKing)).PopCount;
+            }
+
+        } else {
+            enemyKing = cb.WKingBB.HighestOne;
+
+            for (int i = 1; i <= 4; i++) {
+                queen += (cb.BQueenBB & BB_Lookup.chebyshevDistanceBB(i, enemyKing)).PopCount;
+            }
+
+            pawn += (cb.BPawnBB & BB_Lookup.chebyshevDistanceBB(2, enemyKing)).PopCount;
+
+            for (int i = 3; i <= 4; i++) {
+                rook += (cb.BRookBB & BB_Lookup.chebyshevDistanceBB(i, enemyKing)).PopCount;
+                knight += (cb.BKnightBB & BB_Lookup.chebyshevDistanceBB(i, enemyKing)).PopCount;
+                bishop += (cb.BBishopBB & BB_Lookup.chebyshevDistanceBB(i, enemyKing)).PopCount;
+            }
+        }
+
+
+        return queen * queenW + knight * knightW + bishop * bishopW + rook * rookW + pawn * pawnW;
+    }
+
+
+
+    static int chebyshevDistance(int a, int b) {
+        int x1 = a % 8;
+        int y1 = a >> 3;
+
+        int x2 = b % 8;
+        int y2 = b >> 3;
+
+        return Math.Max(Math.Abs(x1 - x2), Math.Abs(y1 - y2));
+    }
 
     /* 
     faktoren für eval:
@@ -199,6 +257,7 @@ static class Eval {
         -past pawns 
         -king safety (king ist möglichst weit weg von center, nicht auf lines von slidern)
         -isolated pawns
+        -aggressivität (pieces in der nähe des gegner kings bekommen pluspunkte)
     
      */
 }

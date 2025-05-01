@@ -178,11 +178,12 @@ public struct BitBoard {
         return sb.ToString();
     }
 
-    public void Print() {
+    //ist fehlerhaft
+    /* public void Print() {
         Console.WriteLine(ToString());
-    }
+    } */
 
-    public void Print(int highlight) {
+    public void Print(int highlight = -1) {
         StringBuilder sb = new();
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
