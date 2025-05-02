@@ -6,7 +6,7 @@ public class MoveGen {
     private BitBoard enemyControl = 0;
     private BitBoard[] checkPieces = []; // tmp
 
-    private bool isCheck => this.Board.IsInCheck(this.WhitesTurn, this.checkPieces);
+    private bool isCheck => IsInCheck(this.WhitesTurn, this.checkPieces);
 
     public Chessboard Board { get; init; }
     public bool WhitesTurn { get; init; }
@@ -16,7 +16,195 @@ public class MoveGen {
         this.WhitesTurn = whitesTurn;
     }
 
-    public static BitBoard GetAttackedSqrBB(Span<Vision> visions, bool forWhite) {
+    //doesnt change the BB, only nullifies if necessary
+    private static BitBoard ValidatePin(BitBoard sightLine, BitBoard sameColorPieces, BitBoard enemyBlockers, int kingIndex) {
+        sameColorPieces[kingIndex] = false;
+
+        if ((sightLine & enemyBlockers) != 0) return 0;//enemy steht auf der pinLine
+
+        return (sightLine & sameColorPieces).PopCount == 1 ? sightLine : 0;
+    }
+
+    //forWhite = white is in check
+    private static bool IsInCheck(bool forWhite, BitBoard[] checkPieces) {
+        foreach (var checkPiece in checkPieces) {
+            if (checkPiece != 0) return true;
+        }
+        return false;
+    }
+
+    private static BitBoard[] CheckPieces(Chessboard board, bool forWhite) {
+        BitBoard[] checkPieces = new BitBoard[5];
+
+        BitBoard knightBB, queenBB, rookBB, bishopBB, pawnBB, sameColorPieces;
+        BitBoard pawnDoub;//einzigen beiden bits wo pawns checken können
+        int kingIndex;
+
+        if (forWhite) {
+            sameColorPieces = board.WhitePiecesBB;
+            knightBB = board.BKnightBB;
+            queenBB = board.BQueenBB;
+            rookBB = board.BRookBB;
+            bishopBB = board.BBishopBB;
+            pawnBB = board.BPawnBB;
+
+            kingIndex = board.WKingBB.LowestOne;
+
+            int x = kingIndex & 7;
+            int y = kingIndex >> 3;
+
+            pawnDoub = BitBoard.HorizontalLine(y + 1) & (0b101ul << (kingIndex + 7)) & board.BPawnBB;
+        } else {
+            sameColorPieces = board.BlackPiecesBB;
+            knightBB = board.WKnightBB;
+            queenBB = board.WQueenBB;
+            rookBB = board.WRookBB;
+            bishopBB = board.WBishopBB;
+            pawnBB = board.WPawnBB;
+
+            kingIndex = board.BKingBB.LowestOne;
+
+            int x = kingIndex & 7;
+            int y = kingIndex >> 3;
+
+            pawnDoub = BitBoard.HorizontalLine(y - 1) & (0b101ul << (kingIndex - 9)) & board.WPawnBB;
+        }
+
+
+        //king perspective 
+        BitBoard kingPersKnight = BB_Lookup.GetBBforPieceAtSqr(Piece.wKnight, kingIndex);
+        /* MoveSets.GetPseudoTargetSqrsRook(BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex), kingIndex) */
+        BitBoard kingPersRook = MoveSets.GetSliderPseudoLegalMoves(board, kingIndex, sameColorPieces, Piece.wRook);
+        BitBoard kingPersBishop = MoveSets.GetSliderPseudoLegalMoves(board, kingIndex, sameColorPieces, Piece.wBishop);
+        BitBoard kingPersQueen = kingPersBishop | kingPersRook;
+
+
+        //hier sind bits gesetzt wo pieces stehen die check geben
+        //wenn leer gibt kein piece check
+        checkPieces[1] = knightBB & kingPersKnight;
+        checkPieces[4] = queenBB & kingPersQueen;
+        checkPieces[3] = rookBB & kingPersRook;
+        checkPieces[2] = bishopBB & kingPersBishop;
+
+        checkPieces[0] = pawnBB & pawnDoub;
+
+        return checkPieces;
+    }
+
+    private static BitBoard GetPinLineBB(BitBoard bb, BitBoard[] pinLines) {
+        for (int i = 0; i < 8; i++) {
+            BitBoard line = pinLines[i];
+            if ((line & bb) != 0) return line;
+        }
+
+        throw new Exception("Pinned piece was not found on any generated pinLines");
+    }
+
+    private static BitBoard GetPinnedPieceBB(Chessboard board, BitBoard[] pinLines) {
+        BitBoard ret = 0;
+        foreach (var p in pinLines) ret |= p;
+        return ret & ~board.WKingBB & ~board.BKingBB;
+    }
+
+    public static BitBoard[] GetPinLines(Chessboard board, bool forWhite) {
+        BitBoard[] pinLines = new BitBoard[8];
+        int kingIndex;
+
+        BitBoard rookSightlines;
+        BitBoard bishopSightlines;
+
+        //enemy pieces with sightlines at king, aka intersections of sightlines with pieces
+        BitBoard intersectionsStraight;
+        BitBoard intersectionDiags;
+
+
+        if (forWhite) {
+            kingIndex = board.WKingBB.LowestOne;
+
+            rookSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex);
+            bishopSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wBishop, kingIndex);
+
+            intersectionsStraight = rookSightlines & (board.BRookBB | board.BQueenBB);
+            intersectionDiags = bishopSightlines & (board.BBishopBB | board.BQueenBB);
+        } else {
+            kingIndex = board.BKingBB.LowestOne;
+
+            rookSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex);
+            bishopSightlines = BB_Lookup.GetBBforPieceAtSqr(Piece.wBishop, kingIndex);
+
+            intersectionsStraight = rookSightlines & (board.WRookBB | board.WQueenBB);
+            intersectionDiags = bishopSightlines & (board.WBishopBB | board.WQueenBB);
+        }
+
+        int y = kingIndex >> 3;
+        int x = kingIndex & 7;
+
+        BitBoard sameColorPieces = forWhite ? board.WhitePiecesBB : board.BlackPiecesBB;
+        BitBoard enemyBlockers; //muss in funktion angepasst werden da auch bRook bBishop blocken kann
+
+
+        if (intersectionsStraight != 0) {
+            //pieces of the other color that block this pin
+            enemyBlockers = forWhite ? board.BKnightBB | board.BBishopBB | board.BPawnBB | board.BKingBB : board.WKnightBB | board.WBishopBB | board.WPawnBB | board.WKingBB;
+
+            BitBoard intersectionHoriWest = intersectionsStraight & MoveSets.InterpolateHorizontal(kingIndex, kingIndex - x);
+            intersectionHoriWest = intersectionHoriWest == 0 ? 0 : MoveSets.InterpolateHorizontal(kingIndex, intersectionHoriWest.BitScanReverse);
+            intersectionHoriWest = ValidatePin(intersectionHoriWest, sameColorPieces, enemyBlockers, kingIndex);
+
+            BitBoard intersectionHoriEast = intersectionsStraight & MoveSets.InterpolateHorizontal(kingIndex + (7 - x), kingIndex);
+            intersectionHoriEast = intersectionHoriEast == 0 ? 0 : MoveSets.InterpolateHorizontal(intersectionHoriEast.LowestOne, kingIndex);
+            intersectionHoriEast = ValidatePin(intersectionHoriEast, sameColorPieces, enemyBlockers, kingIndex);
+
+            BitBoard intersectionVertiBottom = intersectionsStraight & MoveSets.InterpolateVertical(kingIndex, kingIndex - y * 8);
+            intersectionVertiBottom = intersectionVertiBottom == 0 ? 0 : MoveSets.InterpolateVertical(kingIndex, intersectionVertiBottom.BitScanReverse);
+            intersectionVertiBottom = ValidatePin(intersectionVertiBottom, sameColorPieces, enemyBlockers, kingIndex);
+
+
+            BitBoard intersectionVertiTop = intersectionsStraight & MoveSets.InterpolateVertical(kingIndex + (7 - y) * 8, kingIndex);
+            intersectionVertiTop = intersectionVertiTop == 0 ? 0 : MoveSets.InterpolateVertical(intersectionVertiTop.LowestOne, kingIndex);
+            intersectionVertiTop = ValidatePin(intersectionVertiTop, sameColorPieces, enemyBlockers, kingIndex);
+
+            pinLines[0] = intersectionVertiTop;
+            pinLines[2] = intersectionHoriEast;
+            pinLines[4] = intersectionVertiBottom;
+            pinLines[6] = intersectionHoriWest;
+        }
+
+        if (intersectionDiags != 0) {
+            enemyBlockers = forWhite ? board.BKnightBB | board.BRookBB | board.BPawnBB : board.WKnightBB | board.WRookBB | board.WPawnBB;
+
+            BitBoard antiDiag = BitBoard.AntiDiagonal(x, y);
+            int nw = antiDiag.BitScanReverse;
+            BitBoard intersectionDiagNW = intersectionDiags & MoveSets.InterpolateAntiDiagonal(nw, kingIndex);
+            intersectionDiagNW = intersectionDiagNW == 0 ? 0 : MoveSets.InterpolateAntiDiagonal(intersectionDiagNW.LowestOne, kingIndex);
+            intersectionDiagNW = ValidatePin(intersectionDiagNW, sameColorPieces, enemyBlockers, kingIndex);
+
+            int se = antiDiag.LowestOne;
+            BitBoard intersectionDiagSE = intersectionDiags & MoveSets.InterpolateAntiDiagonal(kingIndex, se);
+            intersectionDiagSE = intersectionDiagSE == 0 ? 0 : MoveSets.InterpolateAntiDiagonal(kingIndex, intersectionDiagSE.BitScanReverse);
+            intersectionDiagSE = ValidatePin(intersectionDiagSE, sameColorPieces, enemyBlockers, kingIndex);
+
+            BitBoard diag = BitBoard.Diagonal(x, y);
+            int ne = diag.BitScanReverse;
+            BitBoard intersectionDiagNE = intersectionDiags & MoveSets.InterpolateDiagonal(ne, kingIndex);
+            intersectionDiagNE = intersectionDiagNE == 0 ? 0 : MoveSets.InterpolateDiagonal(intersectionDiagNE.LowestOne, kingIndex);
+            intersectionDiagNE = ValidatePin(intersectionDiagNE, sameColorPieces, enemyBlockers, kingIndex);
+
+            int sw = diag.LowestOne;
+            BitBoard intersectionDiagSW = intersectionDiags & MoveSets.InterpolateDiagonal(kingIndex, sw);
+            intersectionDiagSW = intersectionDiagSW == 0 ? 0 : MoveSets.InterpolateDiagonal(kingIndex, intersectionDiagSW.BitScanReverse);
+            intersectionDiagSW = ValidatePin(intersectionDiagSW, sameColorPieces, enemyBlockers, kingIndex);
+
+            pinLines[1] = intersectionDiagNE;
+            pinLines[3] = intersectionDiagSE;
+            pinLines[5] = intersectionDiagSW;
+            pinLines[7] = intersectionDiagNW;
+        }
+
+        return pinLines;
+    }
+
+    private static BitBoard GetAttackedSqrBB(Span<Vision> visions, bool forWhite) {
         BitBoard attackSqrBB = 0;
 
         for (int i = 0; i < visions.Length; i++) {
@@ -66,7 +254,7 @@ public class MoveGen {
     }
 
     private void GenerateMovesForKing(BitBoard kingBB, ref Vision[] possibleMoves,
-            ref int currIndex, Piece king,  bool includeCoverage = false) {
+            ref int currIndex, Piece king, bool includeCoverage = false) {
         int kingIndex = kingBB.LowestOne;
 
         Vision vKing = this.GetVisionForPieceAt(kingIndex, king, includeCoverage);
@@ -286,7 +474,7 @@ public class MoveGen {
         Span<Vision> attackVisions = GenerateVisions(!this.WhitesTurn, true);
         this.enemyControl = GetAttackedSqrBB(attackVisions, !this.WhitesTurn);
 
-        this.checkPieces = this.Board.CheckPieces(this.WhitesTurn);
+        this.checkPieces = CheckPieces(this.Board, this.WhitesTurn);
 
         Span<Vision> visions = this.isCheck ? this.GenerateMovesForCheck() : GenerateVisions(this.WhitesTurn);
 
@@ -349,11 +537,11 @@ public class MoveGen {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Vision GetVisionForPieceAt(int i, Piece type, bool includeCoverage = false) {
         BitBoard bb = MoveSets.GetPseudoLegalMoves(this.Board, i, type, this.enemyControl, this.isCheck, includeCoverage);
-        var pinLines = this.Board.GetPinLines(type.IsWhite());
+        var pinLines = GetPinLines(this.Board,type.IsWhite());
 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
-        if (this.Board.GetPinnedPieceBB(pinLines)[i] && !includeCoverage) {
-            BitBoard pinLine = this.Board.GetPinLineBB(1ul << i, pinLines);
+        if (GetPinnedPieceBB(this.Board, pinLines)[i] && !includeCoverage) {
+            BitBoard pinLine = GetPinLineBB(1ul << i, pinLines);
             bb &= pinLine;
         }
 
