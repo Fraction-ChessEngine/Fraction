@@ -26,7 +26,7 @@ public static class MoveGen {
         return attackSqrBB;
     }
 
-    public static Span<Vision> GenerateVisions(Chessboard b, bool forWhite, BitBoard enemyControlSqrs, bool isCheck = false, bool includeCoverage = false) {
+    private static Span<Vision> GenerateVisions(Chessboard b, bool forWhite, BitBoard enemyControlSqrs, bool isCheck = false, bool includeCoverage = false) {
         //weil maximal 16 pieces die je ein "Moves" bekommen
         Vision[] possibleMoves = new Vision[16];
 
@@ -109,7 +109,7 @@ public static class MoveGen {
     /// <param name="b"></param>
     /// <param name="forWhite"></param>
     /// <returns></returns>
-    public static Span<Vision> GenerateMovesForCheck(Chessboard b, bool forWhite, BitBoard enemyControlSqrs, BitBoard[] checkPieces) {
+    private static Span<Vision> GenerateMovesForCheck(Chessboard b, bool forWhite, BitBoard enemyControlSqrs, BitBoard[] checkPieces) {
         /* 
         Algo: rausfinden ob doubleCheck
         Wenn doubleCheck:
@@ -246,7 +246,7 @@ public static class MoveGen {
     /// <param name="c"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public static BitBoard GetCheckLine(int k, int c) {
+    private static BitBoard GetCheckLine(int k, int c) {
         int yKing = k >> 3;
         int xKing = k & 7;
 
@@ -346,7 +346,7 @@ public static class MoveGen {
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vision GetVisionForPieceAt(Chessboard b, int i, Piece type, BitBoard enemyControlSqrs, bool isCheck, bool includeCoverage = false) {
+    private static Vision GetVisionForPieceAt(Chessboard b, int i, Piece type, BitBoard enemyControlSqrs, bool isCheck, bool includeCoverage = false) {
         BitBoard bb = MoveSets.GetPseudoLegalMoves(b, i, type, enemyControlSqrs, isCheck, includeCoverage);
         var pinLines = b.GetPinLines(type.IsWhite());
 
