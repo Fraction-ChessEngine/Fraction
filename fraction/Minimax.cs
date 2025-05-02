@@ -33,8 +33,10 @@ public sealed class Minimax {
 
         CancellationToken.ThrowIfCancellationRequested();
 
+        Span<Move> moves = MoveGen.GenerateMoves(pos, whitesTurn);
+
         //quiescence search, 3 as hard limit for depth increase
-        if (pos.AfterCapturePly && quiescenceSearchPlies < MaxQuiescenceSearchPlies) {
+        if (!pos.getCheckPiecesEmpty() || (pos.AfterCapturePly && quiescenceSearchPlies < MaxQuiescenceSearchPlies)) {
             NonQuietEndNodes++;
             quiescenceSearchPlies++;
             depth++;
@@ -42,12 +44,17 @@ public sealed class Minimax {
 
         float staticEval = Eval.BasicStaticEval(pos);
 
+        //erst in generateMoves wird die info generiert ob wir im check stehen
+        if (!pos.getCheckPiecesEmpty()) {
+            NonQuietEndNodes++;
+            quiescenceSearchPlies++;
+            depth++;
+        }
+
         if (depth == 0) {
             Positions++;
             return staticEval;
         }
-
-        Span<Move> moves = MoveGen.GenerateMoves(pos, whitesTurn);
 
         //only true, if i didnt find any legal moves and i am in check
         //It is my turn, i realise its mate, this is very bad

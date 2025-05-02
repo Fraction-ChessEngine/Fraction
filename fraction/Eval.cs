@@ -6,7 +6,7 @@ using fraction;
 
 namespace fraction;
 static class Eval {
-    //31 mio iterations /second, dh kein bottleneck
+    //basic: 31 mio/s
     public static float BasicStaticEval(Chessboard b) {
         float white = 0;
         white += b.WKingBB.PopCount * 10000f;
@@ -22,8 +22,8 @@ static class Eval {
         white += RelativeValue(b.WKnightBB, Piece.wKnight);
         white += RelativeValue(b.WQueenBB, Piece.wQueen);
 
-        white += PawnQuality(true, b.WPawnBB, b.BPawnBB, 0.3f, 0.1f, -0.2f, -0.3f);//random ass values, need to be optimised
-        white += Agression(true, b, 0.25f, 0.2f, 0.2f, 0.2f, 0.2f);
+        white += PawnQuality(true, b.WPawnBB, b.BPawnBB, 0.2f, 0.1f, -0.2f, -0.2f);//random ass values, need to be optimised
+        white += Agression(true, b, 0.25f, 0.2f, 0.2f, 0.1f, 0.1f);
 
         float black = 0;
         black += b.BKingBB.PopCount * 10000f;
@@ -39,11 +39,12 @@ static class Eval {
         black += RelativeValue(b.BKnightBB, Piece.bKnight);
         black += RelativeValue(b.BQueenBB, Piece.bQueen);
 
-        black += PawnQuality(false, b.BPawnBB, b.WPawnBB, 0.3f, 0.1f, -0.2f, -0.3f);//random ass values, need to be optimised
-        black += Agression(false, b, 0.25f, 0.2f, 0.2f, 0.2f, 0.2f);
+        black += PawnQuality(false, b.BPawnBB, b.WPawnBB, 0.2f, 0.1f, -0.2f, -0.2f);//random ass values, need to be optimised
+        black += Agression(false, b, 0.25f, 0.2f, 0.2f, 0.1f, 0.1f);
 
         return white - black;
     }
+
 
     /*private static Dictionary<Piece, BitBoard> pieceMasks1 = new Dictionary<Piece, BitBoard>{
                     {Piece.wPawn,0b1111111111111111111111111111111100000000000000000000000000000000},
@@ -228,7 +229,6 @@ static class Eval {
             }
         }
 
-
         return queen * queenW + knight * knightW + bishop * bishopW + rook * rookW + pawn * pawnW;
     }
 
@@ -250,14 +250,15 @@ static class Eval {
     Dinge die in der moveGen generiert werden und gecached werden können:
         -anzahl der kontrollierten sqrs (je zentraler desto relevanter) 
         -pins
-
+        -intelligenter designte pieceSqrTables, die incremental geupdated werden (mehr präzision obwohl weniger operationen)
+        -check extension
 
     Dinge die hier isoliert berechnen werden müssen
-        -connected pawns 
-        -past pawns 
+        -connected pawns DONE
+        -past pawns DONE
         -king safety (king ist möglichst weit weg von center, nicht auf lines von slidern)
-        -isolated pawns
-        -aggressivität (pieces in der nähe des gegner kings bekommen pluspunkte)
+        -isolated pawns DONE
+        -aggressivität (pieces in der nähe des gegner kings bekommen pluspunkte) DONE
     
      */
 }

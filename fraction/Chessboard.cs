@@ -514,7 +514,7 @@ public class Chessboard {
                 bPawnBB[end] = true;
 
                 if (end < 8) {
-                    PromoteTo(end, (promotion | (Piece) 8)?? Piece.bQueen);
+                    PromoteTo(end, (promotion | (Piece)8) ?? Piece.bQueen);
                 }
                 break;
 
@@ -728,6 +728,12 @@ public class Chessboard {
 
         return (CheckPieceBBs[0] | CheckPieceBBs[1] | CheckPieceBBs[2] | CheckPieceBBs[3] | CheckPieceBBs[4]) != 0;
     }
+
+    public bool getCheckPiecesEmpty() {
+        return (CheckPieceBBs[0] | CheckPieceBBs[1] | CheckPieceBBs[2] | CheckPieceBBs[3] | CheckPieceBBs[4]) == 0;
+    }
+
+
 
 
     /// <summary>
