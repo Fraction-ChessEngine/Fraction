@@ -29,7 +29,6 @@ public static class MoveGen {
     public static Span<Vision> GenerateVisions(Chessboard b, bool forWhite, BitBoard enemyControlSqrs, bool includeCoverage = false) {
         //weil maximal 16 pieces die je ein "Moves" bekommen
         Vision[] possibleMoves = new Vision[16];
-        b.GetPinnedPieceBB(forWhite);
 
         int currIndex = 0;
 
@@ -140,9 +139,6 @@ public static class MoveGen {
             );
 
         bool kingMobile = kingVision.MoveBB != 0;//wenn 0: kingVision darf nicht returnt werden
-
-
-        b.GetPinnedPieceBB(forWhite);
 
         //double check, king muss bewegt werden
         if (amount > 1) {
@@ -321,11 +317,6 @@ public static class MoveGen {
                 } else {
                     ret[index++] = new(v.PosIndex, end);
                 }
-
-                //frisst hoffentlich nicht zu viel performance
-                if (perft) {
-                    Testing.perftmoves[index - 1] = new Move(v.PosIndex, end).ToString();
-                }
             }
         }
 #pragma warning restore CA2014
@@ -357,10 +348,11 @@ public static class MoveGen {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vision GetVisionForPieceAt(Chessboard b, int i, Piece type, BitBoard enemyControlSqrs, bool includeCoverage = false) {
         BitBoard bb = MoveSets.GetPseudoLegalMoves(b, i, type, enemyControlSqrs, includeCoverage);
+        var pinLines = b.GetPinLines(type.IsWhite());
 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
-        if (b.GetPinnedPieceBB(type.IsWhite())[i] && !includeCoverage) {
-            BitBoard pinLine = b.GetPinLineBB(1ul << i);
+        if (b.GetPinnedPieceBB(pinLines)[i] && !includeCoverage) {
+            BitBoard pinLine = b.GetPinLineBB(1ul << i, pinLines);
             bb &= pinLine;
         }
 

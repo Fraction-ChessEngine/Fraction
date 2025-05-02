@@ -163,17 +163,6 @@ public class Chessboard {
         if (!fen.CastleRights.BQ) SetCastlingRightsNullAt(BQueenSide);
     }
 
-    /// <summary>
-    /// Hiermit kann durch FENtoPos funktionen ein board gebaut werden
-    /// </summary>
-    /// <param name="pieces_"></param>
-    public Chessboard(Dictionary<int, Piece> pieces_) {
-        //bitboards müssen generiert werden
-
-        //whitePiecesBB = wPawnBB | wBishopBB | wKingBB | wKnightBB | wRookBB | wQueenBB;
-        //blackPiecesBB = bPawnBB | bBishopBB | bKingBB | bKnightBB | bRookBB | bQueenBB;
-    }
-
     public Chessboard() { }
 
     static bool hasCastl(string data) {
@@ -184,50 +173,6 @@ public class Chessboard {
     static bool hasNumber(string data) {
         return data.Contains("1") || data.Contains("2") || data.Contains("3") || data.Contains("4") ||
         data.Contains("5") || data.Contains("6") || data.Contains("7") || data.Contains("8");
-    }
-
-    public static (Chessboard, bool) FromFEN(string fen) {
-        string[] data = fen.Split(' ');
-        data = data[0..(data.Length - 2)];//removes the plys necessary for 50move rule
-
-        bool forWhite = true;
-
-        Chessboard cb = new Chessboard(Utility.FENtoPosition(data[0]));
-
-        bool[] castl = [false, false, false, false];
-
-        for (int i = 1; i < data.Length; i++) {
-            string s = data[i];
-
-            if (s == "w") {
-                forWhite = true;
-            } else if (s == "b") {
-                forWhite = false;
-            } else if (hasCastl(s)) {
-
-                if (s.Contains("K")) castl[Chessboard.WKingSide] = true;
-                if (s.Contains("Q")) castl[Chessboard.WQueenSide] = true;
-                if (s.Contains("k")) castl[Chessboard.BKingSide] = true;
-                if (s.Contains("q")) castl[Chessboard.BQueenSide] = true;
-            } else if (hasNumber(s)) {
-                cb.EnPassantSqr = Utility.ANtoPos(s);
-            }
-        }
-
-        //if there are no rooks, castlingrights need to be revoked for the given side
-        if (!cb.wRookBB[0]) castl[Chessboard.WQueenSide] = false;
-        if (!cb.wRookBB[7]) castl[Chessboard.WKingSide] = false;
-        if (!cb.bRookBB[56]) castl[Chessboard.BQueenSide] = false;
-        if (!cb.bRookBB[63]) castl[Chessboard.BKingSide] = false;
-
-        for (int i = 0; i < castl.Length; i++) {
-            bool b = castl[i];
-            if (!b) cb.SetCastlingRightsNullAt(i);
-        }
-
-
-
-        return (cb, forWhite);
     }
 
     /// <summary>
@@ -280,18 +225,13 @@ public class Chessboard {
         return WhitePiecesBB[index];
     }
 
-    //Contains every line between possible pinSliders, and the king (both exclusive)
-    //Order: Clockwise, starting with VertiTop
-    //Updates when GeneratePinnedPieceBB() is called
-    private readonly BitBoard[] pinLines = new BitBoard[8];
-
     /// <summary>
     /// 
     /// </summary>
     /// <param name="bb">BitBoard with only the pinnedPiece set  </param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public BitBoard GetPinLineBB(BitBoard bb) {
+    public BitBoard GetPinLineBB(BitBoard bb, BitBoard[] pinLines) {
         for (int i = 0; i < 8; i++) {
             BitBoard line = pinLines[i];
             if ((line & bb) != 0) return line;
@@ -305,12 +245,14 @@ public class Chessboard {
     /// forWhite = white is pinned
     /// </summary>
     /// <param name="forWhite"></param>
-    public BitBoard GetPinnedPieceBB(bool forWhite) {
-        //needs to be reset for edgy edge cases
-        for (int i = 0; i < 8; i++) {
-            pinLines[i] = 0;
-        }
+    public BitBoard GetPinnedPieceBB(BitBoard[] pinLines) {
+        BitBoard ret = 0;
+        foreach (var p in pinLines) ret |= p;
+        return ret & ~this.WKingBB & ~this.BKingBB;
+    }
 
+    public BitBoard[] GetPinLines(bool forWhite) {
+        BitBoard[] pinLines = new BitBoard[8];
         int kingIndex;
 
         BitBoard rookSightlines;
@@ -339,7 +281,6 @@ public class Chessboard {
             intersectionDiags = bishopSightlines & (WBishopBB | WQueenBB);
         }
 
-        BitBoard friendsInSightlines = 0;
         int y = kingIndex >> 3;
         int x = kingIndex & 7;
 
@@ -368,15 +309,11 @@ public class Chessboard {
             intersectionVertiTop = intersectionVertiTop == 0 ? 0 : MoveSets.InterpolateVertical(intersectionVertiTop.LowestOne, kingIndex);
             intersectionVertiTop = ValidatePin(intersectionVertiTop, sameColorPieces, enemyBlockers, kingIndex);
 
-            //if there are more or less than one piece of the own color on the pinLine -> no valid pin
-
-            friendsInSightlines |= sameColorPieces & (intersectionHoriEast | intersectionHoriWest | intersectionVertiBottom | intersectionVertiTop);
             pinLines[0] = intersectionVertiTop;
             pinLines[2] = intersectionHoriEast;
             pinLines[4] = intersectionVertiBottom;
             pinLines[6] = intersectionHoriWest;
         }
-
 
         if (intersectionDiags != 0) {
             enemyBlockers = forWhite ? BKnightBB | BRookBB | BPawnBB : WKnightBB | WRookBB | WPawnBB;
@@ -403,22 +340,19 @@ public class Chessboard {
             intersectionDiagSW = intersectionDiagSW == 0 ? 0 : MoveSets.InterpolateDiagonal(kingIndex, intersectionDiagSW.BitScanReverse);
             intersectionDiagSW = ValidatePin(intersectionDiagSW, sameColorPieces, enemyBlockers, kingIndex);
 
-            friendsInSightlines |= intersectionDiagNE | intersectionDiagNW | intersectionDiagSE | intersectionDiagSW;
-
             pinLines[1] = intersectionDiagNE;
             pinLines[3] = intersectionDiagSE;
             pinLines[5] = intersectionDiagSW;
             pinLines[7] = intersectionDiagNW;
         }
 
-
-        return friendsInSightlines & ~WKingBB & ~BKingBB;//damit niemand auf die idee kommt, dass der king gepinnt ist
+        return pinLines;
     }
 
     private static int _canary = typeof(Chessboard).GetRuntimeFields().Count();
     public void Copy(Chessboard board) {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 29)
+        if (_canary != 28)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         this.FiftyMovePlys = board.FiftyMovePlys;
         this.BoardIndex = board.BoardIndex;
@@ -443,7 +377,7 @@ public class Chessboard {
 
     public Chessboard Clone() {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 29)
+        if (_canary != 28)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         Chessboard board = (Chessboard)this.MemberwiseClone();
         board.BoardIndex = BoardCount++;
@@ -731,12 +665,12 @@ public class Chessboard {
 
         //is the enemy now pinned without the doubleMovePawn?
         //then they cannot capture
-        cb.GetPinnedPieceBB(!forWhite);
+        var pinLines = cb.GetPinLines(!forWhite);
 
         for (int i = 0; i < 2; i++) {
             //contains the whole line between king and slider
             //set to zero if more than one piece on this line
-            BitBoard pinLine = cb.pinLines[i * 4 + 2];
+            BitBoard pinLine = pinLines[i * 4 + 2];
             //there is a intersection, so without the doubleMovepawn, there would be a pinned pawn
             //the doubleMovePawn also needs be on the pinLine
             if ((pinLine & enemyPawnBB) != 0 && ((1ul << endIndexPawn) & pinLine) != 0) {
