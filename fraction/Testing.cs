@@ -214,7 +214,7 @@ public static class Testing {
 
                     BitBoard bb = MoveSets.GetPseudoLegalMoves(
                         new Chessboard(pos),
-                        index, currPiece
+                        index, currPiece, 0
                     );
                     if (bb[endPos])
                         return index;
@@ -248,7 +248,7 @@ public static class Testing {
 
                     BitBoard bb = MoveSets.GetPseudoLegalMoves(
                         new Chessboard(pos),
-                        i, currPiece
+                        i, currPiece, 0
                     );
 
                     if (bb[endPos])

@@ -31,8 +31,6 @@ public class Chessboard {
     private BitBoard wKingBB = 0b00010000ul;
     private BitBoard bPawnBB = 0b11111111ul << 48;
     private BitBoard wPawnBB = 0b11111111ul << 8;
-    private BitBoard wControlledSqrBB = 0;// 0b11111111ul << 16;
-    private BitBoard bControlledSqrBB = 0;//0b11111111ul << 40;
     private int rights = 0b1111;//only the 4 lsb contain data
 
     public int EnPassantSqr { get; private set; } = -1;
@@ -66,8 +64,6 @@ public class Chessboard {
     public BitBoard BKingBB { get => bKingBB; set => bKingBB = value; }
     public BitBoard WPawnBB { get => wPawnBB; set => wPawnBB = value; }
     public BitBoard BPawnBB { get => bPawnBB; set => bPawnBB = value; }
-    public BitBoard WControlledSqrBB { get => wControlledSqrBB; set => wControlledSqrBB = value; }
-    public BitBoard BControlledSqrBB { get => bControlledSqrBB; set => bControlledSqrBB = value; }
 
     public BitBoard WhitePiecesBB => wPawnBB | wBishopBB | wRookBB | wKnightBB | wKingBB | wQueenBB;
     public BitBoard BlackPiecesBB => bPawnBB | bBishopBB | bRookBB | bKnightBB | bKingBB | bQueenBB;
@@ -179,34 +175,6 @@ public class Chessboard {
     }
 
     public Chessboard() { }
-
-    //calculates new BBs for the controlled sqrs of the given color
-    public void UpdateAttackedSqrBB(Span<Vision> visions, bool forWhite) {
-        BitBoard attackSqrBB = 0;
-
-        for (int i = 0; i < visions.Length; i++) {
-            Vision v = visions[i];
-            BitBoard bb = v.MoveBB;
-
-            //pawns müssen gesondert berechnet werden wegen des unterschieds zwischen bewegung und schlagzug
-            if (v.PieceType == Piece.wPawn || v.PieceType == Piece.bPawn) {
-                bb &= ~BitBoard.VerticalLine(v.PosIndex % 8);
-
-                int y = v.PosIndex >> 3;
-                int x = v.PosIndex & 7;
-                bb |= BB_Lookup.GetPawnAttackSqrs(x, y, forWhite);
-            }
-
-            //a piece cannot cover itself
-            attackSqrBB |= bb & ~(1ul << v.PosIndex);
-        }
-
-        if (forWhite) {
-            WControlledSqrBB = attackSqrBB;
-        } else {
-            BControlledSqrBB = attackSqrBB;
-        }
-    }
 
     static bool hasCastl(string data) {
         return (data.Contains("k")) || (data.Contains("q"))
@@ -450,7 +418,7 @@ public class Chessboard {
     private static int _canary = typeof(Chessboard).GetRuntimeFields().Count();
     public void Copy(Chessboard board) {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 31)
+        if (_canary != 29)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         this.FiftyMovePlys = board.FiftyMovePlys;
         this.BoardIndex = board.BoardIndex;
@@ -471,13 +439,11 @@ public class Chessboard {
         this.IsCheckMate = board.IsCheckMate;
         this.ParentIndex = board.ParentIndex;
         this.EnPassantSqr = board.EnPassantSqr;
-        this.bControlledSqrBB = board.bControlledSqrBB;
-        this.wControlledSqrBB = board.wControlledSqrBB;
     }
 
     public Chessboard Clone() {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 31)
+        if (_canary != 29)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         Chessboard board = (Chessboard)this.MemberwiseClone();
         board.BoardIndex = BoardCount++;

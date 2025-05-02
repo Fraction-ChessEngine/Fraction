@@ -15,6 +15,7 @@ public static class MoveSets {
         Chessboard board,
         int posIndex,
         Piece pieceType,
+        BitBoard enemyControlSqrs,
         bool includeCoverage = false
     ) {
         /*
@@ -30,7 +31,6 @@ public static class MoveSets {
 
         bool isWhite = board.WhitePiecesBB[posIndex];
         BitBoard sameColorPieces = includeCoverage ? 0 : isWhite ? board.WhitePiecesBB : board.BlackPiecesBB;
-        BitBoard enemyControlSqrs = isWhite ? board.BControlledSqrBB : board.WControlledSqrBB;
 
         switch (pieceType) {
             case Piece.wPawn: {
