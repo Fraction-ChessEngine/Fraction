@@ -9,22 +9,25 @@ public class MoveGenTest {
     [InlineData(5, 4865609ul)]
     [InlineData(6, 119060324ul)]
     //[InlineData(7, 3195901860ul)]
-    public void perft(int depth, ulong expectedSum) {
-        Span<Chessboard> boards = MoveGen.GenerateBoards(new(), true, true);
-        ulong sum = 0;
-        foreach (Chessboard board in boards) {
-            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
-            _ = minimax.Run(board, depth - 1, false);
-            sum += (ulong)minimax.Positions;
-        }
+    public void perft(int depth, long expectedSum) {
+        Assert.Equal(expectedSum, perftSum(new(), depth, true));
+    }
 
-        Assert.Equal(expectedSum, sum);
+    public static long perftSum(Chessboard board, int depth, bool whitesTurn) {
+        Span<Chessboard> boards = MoveGen.GenerateBoards(board, whitesTurn, true);
+        long sum = 0;
+        foreach (Chessboard cb in boards) {
+            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
+            _ = minimax.Run(cb, depth - 1, !whitesTurn);
+            sum += (long)minimax.Positions;
+        }
+        return sum;
     }
 
     [Theory]
     [ClassData(typeof(Ethereal))]
     public void ethereal(string fen, int depth, long expectedSum) {
         Assert.True(FEN.TryParse(fen, out var f));
-        Assert.Equal(expectedSum, Testing.perftSum(new(f), depth, f.WhitesTurn));
+        Assert.Equal(expectedSum, perftSum(new(f), depth, f.WhitesTurn));
     }
 }
