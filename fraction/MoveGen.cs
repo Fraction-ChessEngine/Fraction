@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 namespace fraction;
 public class MoveGen {
     private BitBoard enemyControl = 0;
+    private (BitBoard[] white, BitBoard[] black) pinLines;
     private BitBoard[] checkPieces = []; // tmp
 
     private bool isCheck => IsInCheck(this.WhitesTurn, this.checkPieces);
@@ -11,9 +12,10 @@ public class MoveGen {
     public Chessboard Board { get; init; }
     public bool WhitesTurn { get; init; }
 
-    public MoveGen(Chessboard Board, bool whitesTurn) {
-        this.Board = Board;
+    public MoveGen(Chessboard board, bool whitesTurn) {
+        this.Board = board;
         this.WhitesTurn = whitesTurn;
+        this.pinLines = (GetPinLines(board, true), GetPinLines(board, false));
     }
 
     //doesnt change the BB, only nullifies if necessary
@@ -33,49 +35,49 @@ public class MoveGen {
         return false;
     }
 
-    private static BitBoard[] CheckPieces(Chessboard board, bool forWhite) {
+    private BitBoard[] CheckPieces() {
         BitBoard[] checkPieces = new BitBoard[5];
 
         BitBoard knightBB, queenBB, rookBB, bishopBB, pawnBB, sameColorPieces;
         BitBoard pawnDoub;//einzigen beiden bits wo pawns checken können
         int kingIndex;
 
-        if (forWhite) {
-            sameColorPieces = board.WhitePiecesBB;
-            knightBB = board.BKnightBB;
-            queenBB = board.BQueenBB;
-            rookBB = board.BRookBB;
-            bishopBB = board.BBishopBB;
-            pawnBB = board.BPawnBB;
+        if (this.WhitesTurn) {
+            sameColorPieces = this.Board.WhitePiecesBB;
+            knightBB = this.Board.BKnightBB;
+            queenBB = this.Board.BQueenBB;
+            rookBB = this.Board.BRookBB;
+            bishopBB = this.Board.BBishopBB;
+            pawnBB = this.Board.BPawnBB;
 
-            kingIndex = board.WKingBB.LowestOne;
+            kingIndex = this.Board.WKingBB.LowestOne;
 
             int x = kingIndex & 7;
             int y = kingIndex >> 3;
 
-            pawnDoub = BitBoard.HorizontalLine(y + 1) & (0b101ul << (kingIndex + 7)) & board.BPawnBB;
+            pawnDoub = BitBoard.HorizontalLine(y + 1) & (0b101ul << (kingIndex + 7)) & this.Board.BPawnBB;
         } else {
-            sameColorPieces = board.BlackPiecesBB;
-            knightBB = board.WKnightBB;
-            queenBB = board.WQueenBB;
-            rookBB = board.WRookBB;
-            bishopBB = board.WBishopBB;
-            pawnBB = board.WPawnBB;
+            sameColorPieces = this.Board.BlackPiecesBB;
+            knightBB = this.Board.WKnightBB;
+            queenBB = this.Board.WQueenBB;
+            rookBB = this.Board.WRookBB;
+            bishopBB = this.Board.WBishopBB;
+            pawnBB = this.Board.WPawnBB;
 
-            kingIndex = board.BKingBB.LowestOne;
+            kingIndex = this.Board.BKingBB.LowestOne;
 
             int x = kingIndex & 7;
             int y = kingIndex >> 3;
 
-            pawnDoub = BitBoard.HorizontalLine(y - 1) & (0b101ul << (kingIndex - 9)) & board.WPawnBB;
+            pawnDoub = BitBoard.HorizontalLine(y - 1) & (0b101ul << (kingIndex - 9)) & this.Board.WPawnBB;
         }
 
 
         //king perspective 
         BitBoard kingPersKnight = BB_Lookup.GetBBforPieceAtSqr(Piece.wKnight, kingIndex);
         /* MoveSets.GetPseudoTargetSqrsRook(BB_Lookup.GetBBforPieceAtSqr(Piece.wRook, kingIndex), kingIndex) */
-        BitBoard kingPersRook = MoveSets.GetSliderPseudoLegalMoves(board, kingIndex, sameColorPieces, Piece.wRook);
-        BitBoard kingPersBishop = MoveSets.GetSliderPseudoLegalMoves(board, kingIndex, sameColorPieces, Piece.wBishop);
+        BitBoard kingPersRook = MoveSets.GetSliderPseudoLegalMoves(this.Board, kingIndex, sameColorPieces, Piece.wRook);
+        BitBoard kingPersBishop = MoveSets.GetSliderPseudoLegalMoves(this.Board, kingIndex, sameColorPieces, Piece.wBishop);
         BitBoard kingPersQueen = kingPersBishop | kingPersRook;
 
 
@@ -474,7 +476,7 @@ public class MoveGen {
         Span<Vision> attackVisions = GenerateVisions(!this.WhitesTurn, true);
         this.enemyControl = GetAttackedSqrBB(attackVisions, !this.WhitesTurn);
 
-        this.checkPieces = CheckPieces(this.Board, this.WhitesTurn);
+        this.checkPieces = CheckPieces();
 
         Span<Vision> visions = this.isCheck ? this.GenerateMovesForCheck() : GenerateVisions(this.WhitesTurn);
 
@@ -537,7 +539,7 @@ public class MoveGen {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Vision GetVisionForPieceAt(int i, Piece type, bool includeCoverage = false) {
         BitBoard bb = MoveSets.GetPseudoLegalMoves(this.Board, i, type, this.enemyControl, this.isCheck, includeCoverage);
-        var pinLines = GetPinLines(this.Board,type.IsWhite());
+        var pinLines = type.IsWhite() ? this.pinLines.white : this.pinLines.black;
 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
         if (GetPinnedPieceBB(this.Board, pinLines)[i] && !includeCoverage) {
