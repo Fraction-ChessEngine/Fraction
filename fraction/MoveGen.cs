@@ -2,7 +2,20 @@ using System;
 using System.Runtime.CompilerServices;
 
 namespace fraction;
-public static class MoveGen {
+public class MoveGen {
+    private BitBoard enemyControl = 0;
+    private BitBoard[] checkPieces = []; // tmp
+
+    private bool isCheck => this.Board.IsInCheck(this.WhitesTurn, this.checkPieces);
+
+    public Chessboard Board { get; init; }
+    public bool WhitesTurn { get; init; }
+
+    public MoveGen(Chessboard Board, bool whitesTurn) {
+        this.Board = Board;
+        this.WhitesTurn = whitesTurn;
+    }
+
     public static BitBoard GetAttackedSqrBB(Span<Vision> visions, bool forWhite) {
         BitBoard attackSqrBB = 0;
 
@@ -26,39 +39,37 @@ public static class MoveGen {
         return attackSqrBB;
     }
 
-    private static Span<Vision> GenerateVisions(Chessboard b, bool forWhite, BitBoard enemyControlSqrs, bool isCheck = false, bool includeCoverage = false) {
+    private Span<Vision> GenerateVisions(bool forWhite, bool includeCoverage = false) {
         //weil maximal 16 pieces die je ein "Moves" bekommen
         Vision[] possibleMoves = new Vision[16];
 
         int currIndex = 0;
 
         if (forWhite) {
-            GenerateMovesForPiece(b, b.WRookBB, ref possibleMoves, ref currIndex, Piece.wRook, enemyControlSqrs, isCheck, includeCoverage);
-            GenerateMovesForPiece(b, b.WKnightBB, ref possibleMoves, ref currIndex, Piece.wKnight, enemyControlSqrs, isCheck, includeCoverage);
-            GenerateMovesForPiece(b, b.WBishopBB, ref possibleMoves, ref currIndex, Piece.wBishop, enemyControlSqrs, isCheck, includeCoverage);
-            GenerateMovesForPiece(b, b.WQueenBB, ref possibleMoves, ref currIndex, Piece.wQueen, enemyControlSqrs, isCheck, includeCoverage);
-
-            GenerateMovesForPawns(b, b.WPawnBB, ref possibleMoves, ref currIndex, Piece.wPawn, enemyControlSqrs, isCheck, includeCoverage);
-            GenerateMovesForKing(b, b.WKingBB, ref possibleMoves, ref currIndex, Piece.wKing, enemyControlSqrs, isCheck, includeCoverage);
+            this.GenerateMovesForPiece(this.Board.WRookBB, ref possibleMoves, ref currIndex, Piece.wRook, includeCoverage);
+            this.GenerateMovesForPiece(this.Board.WKnightBB, ref possibleMoves, ref currIndex, Piece.wKnight, includeCoverage);
+            this.GenerateMovesForPiece(this.Board.WBishopBB, ref possibleMoves, ref currIndex, Piece.wBishop, includeCoverage);
+            this.GenerateMovesForPiece(this.Board.WQueenBB, ref possibleMoves, ref currIndex, Piece.wQueen, includeCoverage);
+            this.GenerateMovesForPawns(this.Board.WPawnBB, ref possibleMoves, ref currIndex, Piece.wPawn, includeCoverage);
+            this.GenerateMovesForKing(this.Board.WKingBB, ref possibleMoves, ref currIndex, Piece.wKing, includeCoverage);
 
         } else {
-            GenerateMovesForPiece(b, b.BRookBB, ref possibleMoves, ref currIndex, Piece.bRook, enemyControlSqrs, isCheck, includeCoverage);
-            GenerateMovesForPiece(b, b.BKnightBB, ref possibleMoves, ref currIndex, Piece.bKnight, enemyControlSqrs, isCheck, includeCoverage);
-            GenerateMovesForPiece(b, b.BBishopBB, ref possibleMoves, ref currIndex, Piece.bBishop, enemyControlSqrs, isCheck, includeCoverage);
-            GenerateMovesForPiece(b, b.BQueenBB, ref possibleMoves, ref currIndex, Piece.bQueen, enemyControlSqrs, isCheck, includeCoverage);
-
-            GenerateMovesForPawns(b, b.BPawnBB, ref possibleMoves, ref currIndex, Piece.bPawn, enemyControlSqrs, isCheck, includeCoverage);
-            GenerateMovesForKing(b, b.BKingBB, ref possibleMoves, ref currIndex, Piece.bKing, enemyControlSqrs, isCheck, includeCoverage);
+            this.GenerateMovesForPiece(this.Board.BRookBB, ref possibleMoves, ref currIndex, Piece.bRook, includeCoverage);
+            this.GenerateMovesForPiece(this.Board.BKnightBB, ref possibleMoves, ref currIndex, Piece.bKnight, includeCoverage);
+            this.GenerateMovesForPiece(this.Board.BBishopBB, ref possibleMoves, ref currIndex, Piece.bBishop, includeCoverage);
+            this.GenerateMovesForPiece(this.Board.BQueenBB, ref possibleMoves, ref currIndex, Piece.bQueen, includeCoverage);
+            this.GenerateMovesForPawns(this.Board.BPawnBB, ref possibleMoves, ref currIndex, Piece.bPawn, includeCoverage);
+            this.GenerateMovesForKing(this.Board.BKingBB, ref possibleMoves, ref currIndex, Piece.bKing, includeCoverage);
         }
 
         return possibleMoves.AsSpan(0..currIndex);
     }
 
-    private static void GenerateMovesForKing(Chessboard b, BitBoard kingBB, ref Vision[] possibleMoves,
-            ref int currIndex, Piece king, BitBoard enemyControlSqrs, bool isCheck, bool includeCoverage = false) {
+    private void GenerateMovesForKing(BitBoard kingBB, ref Vision[] possibleMoves,
+            ref int currIndex, Piece king,  bool includeCoverage = false) {
         int kingIndex = kingBB.LowestOne;
 
-        Vision vKing = GetVisionForPieceAt(b, kingIndex, king, enemyControlSqrs, isCheck, includeCoverage);
+        Vision vKing = this.GetVisionForPieceAt(kingIndex, king, includeCoverage);
 
         if (vKing.MoveBB != 0) {
             possibleMoves[currIndex] = vKing;
@@ -66,16 +77,13 @@ public static class MoveGen {
         }
     }
 
-    private static void GenerateMovesForPawns(
-            Chessboard b, BitBoard pawnBB, ref Vision[] possibleMoves,
-            ref int currIndex, Piece pawn, BitBoard enemyControlSqrs, bool isCheck = false, bool includeCoverage = false) {
-
+    private void GenerateMovesForPawns(BitBoard pawnBB, ref Vision[] possibleMoves, ref int currIndex, Piece pawn, bool includeCoverage = false) {
         Span<int> pawns = stackalloc int[pawnBB.PopCount];
         _ = pawnBB.FindOnes(pawns);
 
         for (int i = 0; i < pawns.Length; i++) {
             int posIndex = pawns[i];
-            Vision v = GetVisionForPieceAt(b, posIndex, pawn, enemyControlSqrs, isCheck, includeCoverage);
+            Vision v = this.GetVisionForPieceAt(posIndex, pawn, includeCoverage);
 
             if (v.MoveBB == 0) {
                 continue;
@@ -86,14 +94,13 @@ public static class MoveGen {
     }
 
 
-    private static void GenerateMovesForPiece(Chessboard b, BitBoard pieceBB,
-            ref Vision[] possibleMoves, ref int currIndex, Piece type, BitBoard enemyControlSqrs, bool isCheck, bool includeCoverage = false) {
+    private void GenerateMovesForPiece(BitBoard pieceBB, ref Vision[] possibleMoves, ref int currIndex, Piece type, bool includeCoverage = false) {
 
         Span<int> pieces = stackalloc int[pieceBB.PopCount];
         _ = pieceBB.FindOnes(pieces);
 
         for (int i = 0; i < pieces.Length; i++) {
-            Vision v = GetVisionForPieceAt(b, pieces[i], type, enemyControlSqrs, isCheck, includeCoverage);
+            Vision v = this.GetVisionForPieceAt(pieces[i], type, includeCoverage);
 
             if (v.MoveBB == 0) continue;
 
@@ -109,7 +116,7 @@ public static class MoveGen {
     /// <param name="b"></param>
     /// <param name="forWhite"></param>
     /// <returns></returns>
-    private static Span<Vision> GenerateMovesForCheck(Chessboard b, bool forWhite, BitBoard enemyControlSqrs, BitBoard[] checkPieces) {
+    private Span<Vision> GenerateMovesForCheck() {
         /* 
         Algo: rausfinden ob doubleCheck
         Wenn doubleCheck:
@@ -123,17 +130,17 @@ public static class MoveGen {
 
         */
         BitBoard combined = 0;
-        foreach (BitBoard bb in checkPieces) combined |= bb;
+        foreach (BitBoard bb in this.checkPieces) combined |= bb;
         int amount = combined.PopCount;
 
-        int posIndex = (forWhite ? b.WKingBB : b.BKingBB).LowestOne;
-        BitBoard sameColorPieces = forWhite ? b.WhitePiecesBB : b.BlackPiecesBB;
-        Piece king = forWhite ? Piece.wKing : Piece.bKing;
+        int posIndex = (this.WhitesTurn ? this.Board.WKingBB : this.Board.BKingBB).LowestOne;
+        BitBoard sameColorPieces = this.WhitesTurn ? this.Board.WhitePiecesBB : this.Board.BlackPiecesBB;
+        Piece king = this.WhitesTurn ? Piece.wKing : Piece.bKing;
 
         //weil ein kingmove immer ein valider ausweg ist, castleSqrs=0 weil eh nicht gecastled werden darf
         Vision kingVision = new(
             posIndex,
-            MoveSets.GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, 0),
+            MoveSets.GetKingPseudoLegalMoves(posIndex, sameColorPieces, this.enemyControl, 0),
             king
             );
 
@@ -142,11 +149,11 @@ public static class MoveGen {
         //double check, king muss bewegt werden
         if (amount > 1) {
             if (kingMobile) return new Vision[] { kingVision };
-            b.IsCheckMate = true;
+            this.Board.IsCheckMate = true;
             return null;//entspricht checkmate
 
         } else {//nur ein piece checkt den king
-            return GenerateMovesForSingleCheck(b, forWhite, combined, posIndex, enemyControlSqrs, checkPieces);
+            return GenerateMovesForSingleCheck(combined, posIndex);
         }
     }
 
@@ -155,13 +162,13 @@ public static class MoveGen {
     /// Wird in GenerateMovesForCheck gecalled wenn es nur ein Piece check gibt
     /// </summary>
     /// <returns></returns>
-    private static Span<Vision> GenerateMovesForSingleCheck(Chessboard b, bool forWhite, BitBoard combined, int kingIndex, BitBoard enemyControlSqrs, BitBoard[] checkPieces) {
-        Span<Vision> pseudoLegal = GenerateVisions(b, forWhite, enemyControlSqrs, true);
+    private Span<Vision> GenerateMovesForSingleCheck(BitBoard combined, int kingIndex) {
+        Span<Vision> pseudoLegal = GenerateVisions(this.WhitesTurn);
 
         Vision[] legal = new Vision[16];
         int currIndex = 0;
 
-        if ((checkPieces[0] | checkPieces[1]) != 0) {//es ist ein knight oder pawn, dh kein piece kann blocken
+        if ((this.checkPieces[0] | this.checkPieces[1]) != 0) {//es ist ein knight oder pawn, dh kein piece kann blocken
 
             //überprüfen ob knight/pawn genommen werden kann
             for (int i = 0; i < pseudoLegal.Length; i++) {
@@ -174,20 +181,20 @@ public static class MoveGen {
                      combined is just a bitboard the checkPieceBit set 
                      */
                     bool enPassantPawnGivesCheckAndCanBeCapturedByCurrentPawn =
-                    checkPieces[0] != 0 && (v.PieceType == Piece.wPawn || v.PieceType == Piece.bPawn)
-                    && b.EnPassantSqr > 0
-                    && v.MoveBB[b.EnPassantSqr];
+                    this.checkPieces[0] != 0 && (v.PieceType == Piece.wPawn || v.PieceType == Piece.bPawn)
+                    && this.Board.EnPassantSqr > 0
+                    && v.MoveBB[this.Board.EnPassantSqr];
 
                     if (enPassantPawnGivesCheckAndCanBeCapturedByCurrentPawn) {//confirmed pawn
 
                         //possible EP is on the board
                         int checkPieceIndex = combined.HighestOne;
-                        int EPpawnIndex = Chessboard.GetEnPassantPawn(b.EnPassantSqr);
+                        int EPpawnIndex = Chessboard.GetEnPassantPawn(this.Board.EnPassantSqr);
 
                         //en passant pawn gave check
                         if (EPpawnIndex == checkPieceIndex) {
                             v.MoveBB &= combined;
-                            v.MoveBB |= 1ul << b.EnPassantSqr;
+                            v.MoveBB |= 1ul << this.Board.EnPassantSqr;
                         } else {
                             v.MoveBB &= combined;//nur moves die das checkPiece capturen werden zugelassen
                         }
@@ -205,7 +212,7 @@ public static class MoveGen {
             }
             //no legal moves found in check, therefore checkmate
             if (currIndex == 0) {
-                b.IsCheckMate = true;
+                this.Board.IsCheckMate = true;
                 return null;
             }
 
@@ -230,7 +237,7 @@ public static class MoveGen {
             }
             //no legal moves found in check, therefore checkmate
             if (currIndex == 0) {
-                b.IsCheckMate = true;
+                this.Board.IsCheckMate = true;
                 return null;
             }
             return legal.AsSpan(0..currIndex);
@@ -274,21 +281,18 @@ public static class MoveGen {
     }
 
 
-    public static Span<Move> GenerateMoves(Chessboard b, bool whitesTurn, bool perft = false) {
+    public Span<Move> GenerateMoves() {
 
-        Span<Vision> attackVisions = GenerateVisions(b, !whitesTurn, 0, false, true);
-        BitBoard enemyControlSqrs = GetAttackedSqrBB(attackVisions, !whitesTurn);
+        Span<Vision> attackVisions = GenerateVisions(!this.WhitesTurn, true);
+        this.enemyControl = GetAttackedSqrBB(attackVisions, !this.WhitesTurn);
 
-        BitBoard[] checkPieces = b.CheckPieces(whitesTurn);
-        bool isCheck = b.IsInCheck(whitesTurn, checkPieces);
+        this.checkPieces = this.Board.CheckPieces(this.WhitesTurn);
 
-        Span<Vision> visions = isCheck ? GenerateMovesForCheck(b, whitesTurn, enemyControlSqrs, checkPieces) : GenerateVisions(b, whitesTurn, enemyControlSqrs, false);
-
-        Move[] ret = new Move[96];
-        int index = 0;
-
+        Span<Vision> visions = this.isCheck ? this.GenerateMovesForCheck() : GenerateVisions(this.WhitesTurn);
 
 #pragma warning disable CA2014
+        Move[] ret = new Move[96];
+        int index = 0;
 
         for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
@@ -300,7 +304,7 @@ public static class MoveGen {
 
                 if (IsPromoting(end, v.PieceType)) {
 
-                    if (whitesTurn) {
+                    if (this.WhitesTurn) {
                         ret[index] = new(v.PosIndex, end, Piece.wQueen);
                         ret[index + 1] = new(v.PosIndex, end, Piece.wRook);
                         ret[index + 2] = new(v.PosIndex, end, Piece.wBishop);
@@ -324,11 +328,11 @@ public static class MoveGen {
         return ret[0..index];
     }
 
-    public static Chessboard[] GenerateBoards(Chessboard b, bool whitesTurn, bool perft = false) {
-        Span<Move> moves = GenerateMoves(b, whitesTurn, perft);
+    public Chessboard[] GenerateBoards() {
+        Span<Move> moves = this.GenerateMoves();
         Chessboard[] ret = new Chessboard[moves.Length];
         for (int i = 0; i < ret.Length; i++) {
-            ret[i] = b.Clone();
+            ret[i] = this.Board.Clone();
             ret[i].MakeMove(moves[i]);
         }
         return ret;
@@ -342,17 +346,14 @@ public static class MoveGen {
         };
     }
 
-
-
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vision GetVisionForPieceAt(Chessboard b, int i, Piece type, BitBoard enemyControlSqrs, bool isCheck, bool includeCoverage = false) {
-        BitBoard bb = MoveSets.GetPseudoLegalMoves(b, i, type, enemyControlSqrs, isCheck, includeCoverage);
-        var pinLines = b.GetPinLines(type.IsWhite());
+    private Vision GetVisionForPieceAt(int i, Piece type, bool includeCoverage = false) {
+        BitBoard bb = MoveSets.GetPseudoLegalMoves(this.Board, i, type, this.enemyControl, this.isCheck, includeCoverage);
+        var pinLines = this.Board.GetPinLines(type.IsWhite());
 
         //wenn das piece auf dem pinBB liegt, dh es ist gepinnt
-        if (b.GetPinnedPieceBB(pinLines)[i] && !includeCoverage) {
-            BitBoard pinLine = b.GetPinLineBB(1ul << i, pinLines);
+        if (this.Board.GetPinnedPieceBB(pinLines)[i] && !includeCoverage) {
+            BitBoard pinLine = this.Board.GetPinLineBB(1ul << i, pinLines);
             bb &= pinLine;
         }
 

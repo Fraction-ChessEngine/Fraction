@@ -14,7 +14,7 @@ public class MoveGenTest {
     }
 
     public static long perftSum(Chessboard board, int depth, bool whitesTurn) {
-        Span<Chessboard> boards = MoveGen.GenerateBoards(board, whitesTurn, true);
+        Span<Chessboard> boards = (new MoveGen(board, whitesTurn)).GenerateBoards();
         long sum = 0;
         foreach (Chessboard cb in boards) {
             Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };

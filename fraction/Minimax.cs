@@ -47,7 +47,7 @@ public sealed class Minimax {
             return staticEval;
         }
 
-        Span<Move> moves = MoveGen.GenerateMoves(pos, whitesTurn);
+        Span<Move> moves = (new MoveGen(pos, whitesTurn)).GenerateMoves();
 
         //only true, if i didnt find any legal moves and i am in check
         //It is my turn, i realise its mate, this is very bad
@@ -98,7 +98,7 @@ public sealed class Minimax {
         Move currBestMove = Move.Null;
         float currBestEval = whitesTurn ? float.MinValue : float.MaxValue;
 
-        Chessboard[] children = MoveGen.GenerateBoards(cb, whitesTurn);
+        Chessboard[] children = (new MoveGen(cb, whitesTurn)).GenerateBoards();
 
         foreach (Chessboard currCB in children) {
             Minimax m = new(cancellationToken);
