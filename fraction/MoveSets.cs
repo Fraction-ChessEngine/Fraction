@@ -16,6 +16,7 @@ public static class MoveSets {
         int posIndex,
         Piece pieceType,
         BitBoard enemyControlSqrs,
+        bool isCheck,
         bool includeCoverage = false
     ) {
         /*
@@ -106,7 +107,7 @@ public static class MoveSets {
                 ulong castleSqrs = 0;
 
                 //king cannot castle out of check
-                if (board.IsInCheck(isWhite)) return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, castleSqrs, includeCoverage);
+                if (isCheck) return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, castleSqrs, includeCoverage);
 
                 if (isWhite) {
                     ulong kingSide = board.GetCastlingRights(Chessboard.WKingSide) ? Chessboard.CastleSqrs[Chessboard.WKingSide] : 0;

@@ -352,7 +352,7 @@ public class Chessboard {
     private static int _canary = typeof(Chessboard).GetRuntimeFields().Count();
     public void Copy(Chessboard board) {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 28)
+        if (_canary != 27)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         this.FiftyMovePlys = board.FiftyMovePlys;
         this.BoardIndex = board.BoardIndex;
@@ -377,7 +377,7 @@ public class Chessboard {
 
     public Chessboard Clone() {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 28)
+        if (_canary != 27)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         Chessboard board = (Chessboard)this.MemberwiseClone();
         board.BoardIndex = BoardCount++;
@@ -414,7 +414,7 @@ public class Chessboard {
                 bPawnBB[end] = true;
 
                 if (end < 8) {
-                    PromoteTo(end, (promotion | (Piece) 8)?? Piece.bQueen);
+                    PromoteTo(end, (promotion | (Piece)8) ?? Piece.bQueen);
                 }
                 break;
 
@@ -566,13 +566,16 @@ public class Chessboard {
         return (sightLine & sameColorPieces).PopCount == 1 ? sightLine : 0;
     }
 
-    /// <summary>
-    /// Reihenfolge (nach Wert sortiert, aufsteigend): Pawn, Knight, Bishop, Rook, Queen
-    /// </summary>
-    public BitBoard[] CheckPieceBBs { get; } = new BitBoard[5];
-
     //forWhite = white is in check
-    public bool IsInCheck(bool forWhite) {
+    public bool IsInCheck(bool forWhite, BitBoard[] checkPieces) {
+        foreach (var checkPiece in checkPieces) {
+            if (checkPiece != 0) return true;
+        }
+        return false;
+    }
+
+    public BitBoard[] CheckPieces(bool forWhite) {
+        BitBoard[] checkPieces = new BitBoard[5];
 
         BitBoard knightBB, queenBB, rookBB, bishopBB, pawnBB, sameColorPieces;
         BitBoard pawnDoub;//einzigen beiden bits wo pawns checken können
@@ -619,14 +622,14 @@ public class Chessboard {
 
         //hier sind bits gesetzt wo pieces stehen die check geben
         //wenn leer gibt kein piece check
-        CheckPieceBBs[1] = knightBB & kingPersKnight;
-        CheckPieceBBs[4] = queenBB & kingPersQueen;
-        CheckPieceBBs[3] = rookBB & kingPersRook;
-        CheckPieceBBs[2] = bishopBB & kingPersBishop;
+        checkPieces[1] = knightBB & kingPersKnight;
+        checkPieces[4] = queenBB & kingPersQueen;
+        checkPieces[3] = rookBB & kingPersRook;
+        checkPieces[2] = bishopBB & kingPersBishop;
 
-        CheckPieceBBs[0] = pawnBB & pawnDoub;
+        checkPieces[0] = pawnBB & pawnDoub;
 
-        return (CheckPieceBBs[0] | CheckPieceBBs[1] | CheckPieceBBs[2] | CheckPieceBBs[3] | CheckPieceBBs[4]) != 0;
+        return checkPieces;
     }
 
 
