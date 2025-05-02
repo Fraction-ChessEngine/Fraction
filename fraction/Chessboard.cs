@@ -165,16 +165,6 @@ public class Chessboard {
 
     public Chessboard() { }
 
-    static bool hasCastl(string data) {
-        return (data.Contains("k")) || (data.Contains("q"))
-           || (data.Contains("K")) || (data.Contains("Q"));
-    }
-
-    static bool hasNumber(string data) {
-        return data.Contains("1") || data.Contains("2") || data.Contains("3") || data.Contains("4") ||
-        data.Contains("5") || data.Contains("6") || data.Contains("7") || data.Contains("8");
-    }
-
     /// <summary>
     /// Returnt immer ein Piece, dh davor muss überprüft werden ob hier überhaupt ein Piece existiert
     /// | Sehr ineffiziente Funktion
@@ -213,24 +203,6 @@ public class Chessboard {
         return 0;
     }
 
-    public bool HasPieceAt(int posIndex) {
-        return WhitePiecesBB[posIndex] || BlackPiecesBB[posIndex];
-    }
-
-    /// <summary>
-    /// Kann benutzt werden um die Farbe eines Pieces auf einem Sqr zu checken, Davor muss überprüft werden ob hier überhaupt ein Piece existiert !!!
-    /// </summary>
-    /// <returns></returns>
-    public bool HasWhitePieceAt(int index) {
-        return WhitePiecesBB[index];
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="bb">BitBoard with only the pinnedPiece set  </param>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
     public BitBoard GetPinLineBB(BitBoard bb, BitBoard[] pinLines) {
         for (int i = 0; i < 8; i++) {
             BitBoard line = pinLines[i];
@@ -240,11 +212,6 @@ public class Chessboard {
         throw new Exception("Pinned piece was not found on any generated pinLines");
     }
 
-    //kein unterschied zwischen weißen und schwarzen pins, weil sowieso nach jedem zug das BB aktualisiert werden muss
-    /// <summary>
-    /// forWhite = white is pinned
-    /// </summary>
-    /// <param name="forWhite"></param>
     public BitBoard GetPinnedPieceBB(BitBoard[] pinLines) {
         BitBoard ret = 0;
         foreach (var p in pinLines) ret |= p;
