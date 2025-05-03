@@ -7,14 +7,26 @@ public readonly struct Move {
     public int Start { get; init; }
     public int End { get; init; }
     public Piece? Promotion { get; init; } = null;
+    public bool IsCapture { get; init; } = false;
 
     public Move(int from, int to) {
         this.Start = from;
         this.End = to;
     }
 
+    public Move(int from, int to, bool isCapture) {
+        this.Start = from;
+        this.End = to;
+        this.IsCapture = isCapture;
+    }
+
     public Move(int from, int to, Piece? promotion) : this(from, to) {
         this.Promotion = promotion;
+    }
+
+    public Move(int from, int to, Piece? promotion, bool isCapture) : this(from, to) {
+        this.Promotion = promotion;
+        this.IsCapture = isCapture;
     }
 
     public static bool TryParse(string s, out Move m) {

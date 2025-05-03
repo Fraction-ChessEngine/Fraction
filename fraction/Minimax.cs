@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +15,8 @@ public sealed class Minimax {
     public int Positions { get; private set; } = 0;
     public int NonQuietEndNodes { get; private set; } = 0;
     public CancellationToken CancellationToken { get; set; }
+
+    // HashSet<Chessboard>
 
     public Minimax() { }
     public Minimax(CancellationToken ct) {
@@ -43,13 +47,6 @@ public sealed class Minimax {
         }
 
         float staticEval = Eval.BasicStaticEval(pos);
-
-        //erst in generateMoves wird die info generiert ob wir im check stehen
-        if (!pos.getCheckPiecesEmpty()) {
-            NonQuietEndNodes++;
-            quiescenceSearchPlies++;
-            depth++;
-        }
 
         if (depth == 0) {
             Positions++;

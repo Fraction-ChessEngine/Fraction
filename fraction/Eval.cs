@@ -8,6 +8,8 @@ namespace fraction;
 static class Eval {
     //basic: 31 mio/s
     public static float BasicStaticEval(Chessboard b) {
+        bool isEG = IsEndGame(b);
+
         float white = 0;
         white += b.WKingBB.PopCount * 10000f;
         white += b.WRookBB.PopCount * 5f;
@@ -43,6 +45,22 @@ static class Eval {
         black += Agression(false, b, 0.25f, 0.2f, 0.2f, 0.1f, 0.1f);
 
         return white - black;
+    }
+
+    static bool IsEndGame(Chessboard b) {
+        /* 
+        The question, "what is an endgame?", has many different answers by different experts, this function 
+        considers two opinions by Jon Speelman and Nikolay Minev 
+        */
+        int pieceCount = (b.WBishopBB | b.WRookBB | b.WQueenBB | b.WKnightBB
+        | b.BBishopBB | b.BRookBB | b.BQueenBB | b.BKnightBB).PopCount;
+
+        float material = (b.WPawnBB | b.WPawnBB).PopCount + (b.WBishopBB | b.BBishopBB).PopCount * 3 +
+        (b.WRookBB | b.BRookBB).PopCount * 5 + (b.WQueenBB | b.BQueenBB).PopCount * 9 +
+        (b.WKnightBB | b.BKnightBB).PopCount * 2.7f;
+
+        //inspired by Speelman and Minev
+        return (material <= 26) || (pieceCount <= 6);
     }
 
 
@@ -251,7 +269,7 @@ static class Eval {
         -anzahl der kontrollierten sqrs (je zentraler desto relevanter) 
         -pins
         -intelligenter designte pieceSqrTables, die incremental geupdated werden (mehr präzision obwohl weniger operationen)
-        -check extension
+        -check extension DONE 
 
     Dinge die hier isoliert berechnen werden müssen
         -connected pawns DONE
@@ -260,5 +278,14 @@ static class Eval {
         -isolated pawns DONE
         -aggressivität (pieces in der nähe des gegner kings bekommen pluspunkte) DONE
     
+
+
+    Mehr todos:
+        -null move pruning
+        -move ordering !!! (am besten mit principal variation)
+        -transpos table
+        -aspiration window
+        -late move reduction (aka reducing search depth for moves that look stupid)
+        -time management
      */
 }

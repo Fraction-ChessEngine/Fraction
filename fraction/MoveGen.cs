@@ -281,24 +281,13 @@ public static class MoveGen {
             for (int j = 0; j < v.MoveBB.PopCount; j++) {
                 int end = moves[j];
 
-                if (IsPromoting(end, v.PieceType)) {
+                bool promo = IsPromoting(end, v.PieceType);
+                bool isCapture;
 
-                    if (whitesTurn) {
-                        ret[index] = new(v.PosIndex, end, Piece.wQueen);
-                        ret[index + 1] = new(v.PosIndex, end, Piece.wRook);
-                        ret[index + 2] = new(v.PosIndex, end, Piece.wBishop);
-                        ret[index + 3] = new(v.PosIndex, end, Piece.wKnight);
-                        index += 4;
-                    } else {
-                        ret[index] = new(v.PosIndex, end, Piece.bQueen);
-                        ret[index + 1] = new(v.PosIndex, end, Piece.bRook);
-                        ret[index + 2] = new(v.PosIndex, end, Piece.bBishop);
-                        ret[index + 3] = new(v.PosIndex, end, Piece.bKnight);
-                        index += 4;
-                    }
-
+                if (whitesTurn) {
+                    isCapture = HandleMoveBuilding(ret, end, Piece.wQueen, Piece.wRook, Piece.wBishop, Piece.wKnight, promo, b, index, v);
                 } else {
-                    ret[index++] = new(v.PosIndex, end);
+                    isCapture = HandleMoveBuilding(ret, end, Piece.bQueen, Piece.bRook, Piece.bBishop, Piece.bKnight, promo, b, index, v);
                 }
 
                 //frisst hoffentlich nicht zu viel performance
@@ -312,6 +301,24 @@ public static class MoveGen {
         return ret[0..index];
     }
 
+    static bool HandleMoveBuilding(Move[] moves, int end, Piece queen, Piece rook,
+        Piece bishop, Piece knight, bool promo, Chessboard b, int index, Vision v) {
+
+        bool isCapture = ((1ul << end) & b.BlackPiecesBB) == 1;
+
+        if (promo) {
+            moves[index] = new(v.PosIndex, end, queen, isCapture);
+            moves[index + 1] = new(v.PosIndex, end, rook, isCapture);
+            moves[index + 2] = new(v.PosIndex, end, bishop, isCapture);
+            moves[index + 3] = new(v.PosIndex, end, knight, isCapture);
+            index += 4;
+        } else {
+            moves[index++] = new(v.PosIndex, end, isCapture);
+        }
+
+        return isCapture;
+    }
+
     public static Chessboard[] GenerateBoards(Chessboard b, bool whitesTurn, bool perft = false) {
         Span<Move> moves = GenerateMoves(b, whitesTurn, perft);
         Chessboard[] ret = new Chessboard[moves.Length];
@@ -322,76 +329,76 @@ public static class MoveGen {
         return ret;
     }
 
-    public static Span<Chessboard> _GenerateBoards(Chessboard b, bool whitesTurn, bool perft = false) {
+    /*  public static Span<Chessboard> _GenerateBoards(Chessboard b, bool whitesTurn, bool perft = false) {
 
-        //provisorische lösung
-        Span<Vision> attackVisions = GenerateVisions(b, !whitesTurn, true);
-        b.UpdateAttackedSqrBB(attackVisions, !whitesTurn);
+         //provisorische lösung
+         Span<Vision> attackVisions = GenerateVisions(b, !whitesTurn, true);
+         b.UpdateAttackedSqrBB(attackVisions, !whitesTurn);
 
-        bool isCheck = b.IsInCheck(whitesTurn);
-        Span<Vision> visions = isCheck ? GenerateMovesForCheck(b, whitesTurn) : GenerateVisions(b, whitesTurn);
+         bool isCheck = b.IsInCheck(whitesTurn);
+         Span<Vision> visions = isCheck ? GenerateMovesForCheck(b, whitesTurn) : GenerateVisions(b, whitesTurn);
 
-        Chessboard[] boards = new Chessboard[96];
-        int index = 0;
+         Chessboard[] boards = new Chessboard[96];
+         int index = 0;
 
 
-#pragma warning disable CA2014
+ #pragma warning disable CA2014
 
-        for (int i = 0; i < visions.Length; i++) {
-            Vision v = visions[i];
-            Span<int> moves = stackalloc int[v.MoveBB.PopCount];
-            _ = v.MoveBB.FindOnes(moves);
+         for (int i = 0; i < visions.Length; i++) {
+             Vision v = visions[i];
+             Span<int> moves = stackalloc int[v.MoveBB.PopCount];
+             _ = v.MoveBB.FindOnes(moves);
 
-            for (int j = 0; j < v.MoveBB.PopCount; j++) {
-                int end = moves[j];
+             for (int j = 0; j < v.MoveBB.PopCount; j++) {
+                 int end = moves[j];
 
-                if (IsPromoting(end, v.PieceType)) {
+                 if (IsPromoting(end, v.PieceType)) {
 
-                    if (whitesTurn) {
-                        Chessboard cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.wQueen);
-                        boards[index] = cb;
+                     if (whitesTurn) {
+                         Chessboard cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.wQueen);
+                         boards[index] = cb;
 
-                        cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.wRook);
-                        boards[index + 1] = cb;
+                         cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.wRook);
+                         boards[index + 1] = cb;
 
-                        cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.wBishop);
-                        boards[index + 2] = cb;
+                         cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.wBishop);
+                         boards[index + 2] = cb;
 
-                        cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.wKnight);
-                        boards[index + 3] = cb;
-                        index += 4;
-                    } else {
-                        Chessboard cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.bQueen);
-                        boards[index] = cb;
+                         cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.wKnight);
+                         boards[index + 3] = cb;
+                         index += 4;
+                     } else {
+                         Chessboard cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.bQueen);
+                         boards[index] = cb;
 
-                        cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.bRook);
-                        boards[index + 1] = cb;
+                         cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.bRook);
+                         boards[index + 1] = cb;
 
-                        cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.bBishop);
-                        boards[index + 2] = cb;
+                         cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.bBishop);
+                         boards[index + 2] = cb;
 
-                        cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.bKnight);
-                        boards[index + 3] = cb;
-                        index += 4;
-                    }
+                         cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType, Piece.bKnight);
+                         boards[index + 3] = cb;
+                         index += 4;
+                     }
 
-                } else {
-                    Chessboard cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType);
-                    boards[index] = cb;
-                    index++;
-                }
+                 } else {
+                     Chessboard cb = b.GenerateBoardWithMove(v.PosIndex, end, v.PieceType);
+                     boards[index] = cb;
+                     index++;
+                 }
 
-                //frisst hoffentlich nicht zu viel performance
-                if (perft) {
-                    Testing.perftmoves[index - 1] = new Move(v.PosIndex, end).ToString();
-                }
-            }
-        }
-#pragma warning restore CA2014
+                 //frisst hoffentlich nicht zu viel performance
+                 if (perft) {
+                     Testing.perftmoves[index - 1] = new Move(v.PosIndex, end).ToString();
+                 }
+             }
+         }
+ #pragma warning restore CA2014
 
-        return boards.AsSpan(0..index);
-    }
-
+         return boards.AsSpan(0..index);
+     }
+  */
     private static bool IsPromoting(int end, Piece type) {
         return type switch {
             Piece.wPawn => end > 55,
@@ -399,8 +406,6 @@ public static class MoveGen {
             _ => false,
         };
     }
-
-
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
