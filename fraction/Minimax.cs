@@ -98,21 +98,23 @@ public sealed class Minimax {
         Move currBestMove = Move.Null;
         float currBestEval = whitesTurn ? float.MinValue : float.MaxValue;
 
-        Chessboard[] children = (new MoveGen(cb, whitesTurn)).GenerateBoards();
+        Span<Move> children = (new MoveGen(cb, whitesTurn)).GenerateMoves();
 
-        foreach (Chessboard currCB in children) {
+        foreach (Move currMove in children) {
+            Chessboard nextPos = cb.Clone();
+            nextPos.MakeMove(currMove);
             Minimax m = new(cancellationToken);
-            float eval = m.Run(currCB, depth - 1, !whitesTurn);
+            float eval = m.Run(nextPos, depth - 1, !whitesTurn);
 
             if (whitesTurn) {//we want to maximize eval
                 if (eval > currBestEval) {
                     currBestEval = eval;
-                    currBestMove = currCB.LastMove;
+                    currBestMove = currMove;
                 }
             } else {//we want to minimize eval
                 if (eval < currBestEval) {
                     currBestEval = eval;
-                    currBestMove = currCB.LastMove;
+                    currBestMove = currMove;
                 }
             }
         }

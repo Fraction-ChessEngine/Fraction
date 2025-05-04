@@ -11,13 +11,7 @@ public class Chessboard {
     public const int WQueenSide = 1;
     public const int BKingSide = 2;
     public const int BQueenSide = 3;
-    public static int BoardCount { get; private set; } = 0;
     public int FiftyMovePlys { get; private set; } = 0;
-
-    //dient dem tracken einzelner boards im perft tree beim debuggen
-    public int BoardIndex { get; private set; }
-    public int ParentIndex { get; private set; }
-    public Move LastMove { get; private set; }
 
     private BitBoard bRookBB = 0b10000001ul << 56;
     private BitBoard wRookBB = 0b10000001ul;
@@ -206,10 +200,9 @@ public class Chessboard {
     private static int _canary = typeof(Chessboard).GetRuntimeFields().Count();
     public void Copy(Chessboard board) {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 27)
+        if (_canary != 24)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         this.FiftyMovePlys = board.FiftyMovePlys;
-        this.BoardIndex = board.BoardIndex;
         this.rights = board.rights;
         this.bKingBB = board.bKingBB;
         this.bPawnBB = board.bPawnBB;
@@ -218,23 +211,20 @@ public class Chessboard {
         this.wPawnBB = board.wPawnBB;
         this.wRookBB = board.wRookBB;
         this.bQueenBB = board.bQueenBB;
-        this.LastMove = board.LastMove;
         this.wQueenBB = board.wQueenBB;
         this.bBishopBB = board.bBishopBB;
         this.bKnightBB = board.bKnightBB;
         this.wBishopBB = board.wBishopBB;
         this.wKnightBB = board.wKnightBB;
         this.IsCheckMate = board.IsCheckMate;
-        this.ParentIndex = board.ParentIndex;
         this.EnPassantSqr = board.EnPassantSqr;
     }
 
     public Chessboard Clone() {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 27)
+        if (_canary != 24)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         Chessboard board = (Chessboard)this.MemberwiseClone();
-        board.BoardIndex = BoardCount++;
         return board;
     }
 
@@ -296,8 +286,6 @@ public class Chessboard {
         var enPassantSqr = this.EnPassantSqr;
 
         this.MakeSimpleMove(start, end, type, promotion);
-
-        this.LastMove = new(start, end, promotion);
 
         bool isCapture = type.IsWhite() ? BlackPiecesBB[end] : WhitePiecesBB[end];
         if (isCapture) {
