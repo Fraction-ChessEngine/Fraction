@@ -28,7 +28,6 @@ public class Chessboard {
     private int rights = 0b1111;//only the 4 lsb contain data
 
     public int EnPassantSqr { get; private set; } = -1;
-    public bool IsCheckMate { get; set; } = false;
 
     public bool GetCastlingRights(int side) {
         return ((1 << side) & rights) != 0;
@@ -198,7 +197,7 @@ public class Chessboard {
     private static int _canary = typeof(Chessboard).GetRuntimeFields().Count();
     public void Copy(Chessboard board) {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 22)
+        if (_canary != 21)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         this.FiftyMovePlys = board.FiftyMovePlys;
         this.rights = board.rights;
@@ -214,13 +213,12 @@ public class Chessboard {
         this.bKnightBB = board.bKnightBB;
         this.wBishopBB = board.wBishopBB;
         this.wKnightBB = board.wKnightBB;
-        this.IsCheckMate = board.IsCheckMate;
         this.EnPassantSqr = board.EnPassantSqr;
     }
 
     public Chessboard Clone() {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 22)
+        if (_canary != 21)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         Chessboard board = (Chessboard)this.MemberwiseClone();
         return board;

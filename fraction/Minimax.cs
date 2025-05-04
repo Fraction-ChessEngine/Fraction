@@ -48,11 +48,12 @@ public sealed class Minimax {
             return staticEval;
         }
 
-        Span<Move> moves = (new MoveGen(pos, whitesTurn)).GenerateMoves();
+        MoveGen moveGen = new(pos, whitesTurn);
+        Span<Move> moves = moveGen.GenerateMoves();
 
         //only true, if i didnt find any legal moves and i am in check
         //It is my turn, i realise its mate, this is very bad
-        if (pos.IsCheckMate) return whitesTurn ? int.MinValue : int.MaxValue;
+        if (moveGen.IsCheckMate) return whitesTurn ? int.MinValue : int.MaxValue;
 
         //no legal moves, therefore draw, should be null values
         if (moves.Length == 0) return 0;

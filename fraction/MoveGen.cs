@@ -11,6 +11,7 @@ public class MoveGen {
 
     public Chessboard Board { get; init; }
     public bool WhitesTurn { get; init; }
+    public bool IsCheckMate { get; private set; }
 
     public MoveGen(Chessboard board, bool whitesTurn) {
         this.Board = board;
@@ -333,14 +334,14 @@ public class MoveGen {
             MoveSets.GetKingPseudoLegalMoves(posIndex, sameColorPieces, this.enemyControl, 0),
             king
             );
-
+        // kingMobile - der neue anbieter fuer Mobilfunk auf dem Schachbrett
         bool kingMobile = kingVision.MoveBB != 0;//wenn 0: kingVision darf nicht returnt werden
 
         //double check, king muss bewegt werden
         if (amount > 1) {
             if (kingMobile) return new Vision[] { kingVision };
-            this.Board.IsCheckMate = true;
-            return null;//entspricht checkmate
+            this.IsCheckMate = true;
+            return [];//entspricht checkmate
 
         } else {//nur ein piece checkt den king
             return GenerateMovesForSingleCheck(combined, posIndex);
@@ -402,8 +403,8 @@ public class MoveGen {
             }
             //no legal moves found in check, therefore checkmate
             if (currIndex == 0) {
-                this.Board.IsCheckMate = true;
-                return null;
+                this.IsCheckMate = true;
+                return [];
             }
 
             return legal.AsSpan(0..currIndex);
@@ -427,8 +428,8 @@ public class MoveGen {
             }
             //no legal moves found in check, therefore checkmate
             if (currIndex == 0) {
-                this.Board.IsCheckMate = true;
-                return null;
+                this.IsCheckMate = true;
+                return [];
             }
             return legal.AsSpan(0..currIndex);
         }
