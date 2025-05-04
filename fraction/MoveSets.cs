@@ -110,30 +110,30 @@ public static class MoveSets {
                 if (isCheck) return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, castleSqrs, includeCoverage);
 
                 if (isWhite) {
-                    ulong kingSide = board.GetCastlingRights(Chessboard.WKingSide) ? Chessboard.CastleSqrs[Chessboard.WKingSide] : 0;
-                    ulong queenSide = board.GetCastlingRights(Chessboard.WQueenSide) ? Chessboard.CastleSqrs[Chessboard.WQueenSide] : 0;
+                    ulong kingSide = CastleSquares.Get(CastleRights.WKingSide & board.Rights);
+                    ulong queenSide = CastleSquares.Get(CastleRights.WQueenSide & board.Rights);
 
-                    if ((CastlePathPieces[Chessboard.WKingSide] & castleBlockerPiece) != 0
-                    || (CastlePathAttack[Chessboard.WKingSide] & castleBlockerAttack) != 0) {
+                    if ((CastlePathPieces[0] & castleBlockerPiece) != 0
+                    || (CastlePathAttack[0] & castleBlockerAttack) != 0) {
                         kingSide = 0;
                     }
-                    if ((CastlePathPieces[Chessboard.WQueenSide] & castleBlockerPiece) != 0
-                    || (CastlePathAttack[Chessboard.WQueenSide] & castleBlockerAttack) != 0) {
+                    if ((CastlePathPieces[1] & castleBlockerPiece) != 0
+                    || (CastlePathAttack[1] & castleBlockerAttack) != 0) {
                         queenSide = 0;
                     }
 
                     castleSqrs = kingSide | queenSide;
 
                 } else {
-                    ulong kingSide = board.GetCastlingRights(Chessboard.BKingSide) ? Chessboard.CastleSqrs[Chessboard.BKingSide] : 0;
-                    ulong queenSide = board.GetCastlingRights(Chessboard.BQueenSide) ? Chessboard.CastleSqrs[Chessboard.BQueenSide] : 0;
+                    ulong kingSide = CastleSquares.Get(CastleRights.BKingSide & board.Rights);
+                    ulong queenSide = CastleSquares.Get(CastleRights.BQueenSide & board.Rights);
 
-                    if ((CastlePathPieces[Chessboard.BKingSide] & castleBlockerPiece) != 0
-                    || (CastlePathAttack[Chessboard.BKingSide] & castleBlockerAttack) != 0) {
+                    if ((CastlePathPieces[2] & castleBlockerPiece) != 0
+                    || (CastlePathAttack[2] & castleBlockerAttack) != 0) {
                         kingSide = 0;
                     }
-                    if ((CastlePathPieces[Chessboard.BQueenSide] & castleBlockerPiece) != 0
-                    || (CastlePathAttack[Chessboard.BQueenSide] & castleBlockerAttack) != 0) {
+                    if ((CastlePathPieces[3] & castleBlockerPiece) != 0
+                    || (CastlePathAttack[3] & castleBlockerAttack) != 0) {
                         queenSide = 0;
                     }
 

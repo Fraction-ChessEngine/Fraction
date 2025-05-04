@@ -7,10 +7,6 @@ using System.Reflection;
 namespace fraction;
 
 public class Chessboard {
-    public const int WKingSide = 0;
-    public const int WQueenSide = 1;
-    public const int BKingSide = 2;
-    public const int BQueenSide = 3;
     public int FiftyMovePlys { get; private set; } = 0;
 
     private BitBoard bRookBB = 0b10000001ul << 56;
@@ -25,22 +21,16 @@ public class Chessboard {
     private BitBoard wKingBB = 0b00010000ul;
     private BitBoard bPawnBB = 0b11111111ul << 48;
     private BitBoard wPawnBB = 0b11111111ul << 8;
-    private int rights = 0b1111;//only the 4 lsb contain data
 
     public int EnPassantSqr { get; private set; } = -1;
 
-    public bool GetCastlingRights(int side) {
-        return ((1 << side) & rights) != 0;
+    public CastleRights Rights { get; private set; } = CastleRights.All;
+
+    public void SetCastlingRightsNullAt(CastleRights side) {
+        Rights &= ~(side);
     }
 
-    public void SetCastlingRightsNullAt(int side) {
-        rights &= ~(1 << side);
-    }
 
-
-    public static readonly ulong[] CastleSqrs = {
-        0b01000000ul,0b100ul,0b01000000ul << 56, 0b100ul << 56, 0//null wert für optimisation
-    };
     //private BitBoard whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
     //private BitBoard blackPiecesBB = 0b1111111111111111000000000000000000000000000000000000000000000000;
 
@@ -148,10 +138,10 @@ public class Chessboard {
 
         EnPassantSqr = fen.EnPassant ?? -1;
 
-        if (!fen.CastleRights.WK) SetCastlingRightsNullAt(WKingSide);
-        if (!fen.CastleRights.WQ) SetCastlingRightsNullAt(WQueenSide);
-        if (!fen.CastleRights.BK) SetCastlingRightsNullAt(BKingSide);
-        if (!fen.CastleRights.BQ) SetCastlingRightsNullAt(BQueenSide);
+        if (!fen.CastleRights.WK) SetCastlingRightsNullAt(CastleRights.WKingSide);
+        if (!fen.CastleRights.WQ) SetCastlingRightsNullAt(CastleRights.WQueenSide);
+        if (!fen.CastleRights.BK) SetCastlingRightsNullAt(CastleRights.BKingSide);
+        if (!fen.CastleRights.BQ) SetCastlingRightsNullAt(CastleRights.BQueenSide);
     }
 
     public Chessboard() { }
@@ -197,10 +187,10 @@ public class Chessboard {
     private static int _canary = typeof(Chessboard).GetRuntimeFields().Count();
     public void Copy(Chessboard board) {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 21)
+        if (_canary != 16)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         this.FiftyMovePlys = board.FiftyMovePlys;
-        this.rights = board.rights;
+        this.Rights = board.Rights;
         this.bKingBB = board.bKingBB;
         this.bPawnBB = board.bPawnBB;
         this.bRookBB = board.bRookBB;
@@ -218,7 +208,7 @@ public class Chessboard {
 
     public Chessboard Clone() {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 21)
+        if (_canary != 16)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         Chessboard board = (Chessboard)this.MemberwiseClone();
         return board;
@@ -299,11 +289,9 @@ public class Chessboard {
                     = GetCastleRookData(start, end);
 
                 if (type.IsWhite()) {
-                    this.SetCastlingRightsNullAt(0);
-                    this.SetCastlingRightsNullAt(1);
+                    this.SetCastlingRightsNullAt(CastleRights.White);
                 } else {
-                    this.SetCastlingRightsNullAt(2);
-                    this.SetCastlingRightsNullAt(3);
+                    this.SetCastlingRightsNullAt(CastleRights.Black);
                 }
 
                 if (!isCastling) return isCapture;
@@ -315,7 +303,7 @@ public class Chessboard {
             case Piece.wRook:
             case Piece.bRook:
 
-                int side = GetSideOfRook(start);
+                CastleRights side = GetSideOfRook(start);
                 this.SetCastlingRightsNullAt(side);
                 break;
 
@@ -471,13 +459,13 @@ public class Chessboard {
         };
     }
     //to deny castlingRights on this side
-    private static int GetSideOfRook(int posIndex) {
+    private static CastleRights GetSideOfRook(int posIndex) {
         return posIndex switch {
-            0 => WQueenSide,
-            7 => WKingSide,
-            56 => BQueenSide,
-            63 => BKingSide,
-            _ => 4,
+            0 => CastleRights.WQueenSide,
+            7 => CastleRights.WKingSide,
+            56 => CastleRights.BQueenSide,
+            63 => CastleRights.BKingSide,
+            _ => CastleRights.None,
         };
     }
 }
