@@ -19,8 +19,8 @@ public sealed class Minimax {
         CancellationToken = ct;
     }
 
-    public float Run(Chessboard pos, int depth, bool whitesTurn)
-        => Run(pos, depth, float.MinValue, float.MaxValue, whitesTurn, 0);
+    public float Run(Chessboard pos, int depth, bool whitesTurn, bool afterCapture)
+        => Run(pos, depth, float.MinValue, float.MaxValue, whitesTurn, afterCapture, 0);
 
     private float Run(
         Chessboard pos,
@@ -28,13 +28,14 @@ public sealed class Minimax {
         float alpha,
         float beta,
         bool whitesTurn,
+        bool afterCapture,
         int quiescenceSearchPlies
     ) {
 
         CancellationToken.ThrowIfCancellationRequested();
 
         //quiescence search, 3 as hard limit for depth increase
-        if (pos.AfterCapturePly && quiescenceSearchPlies < MaxQuiescenceSearchPlies) {
+        if (afterCapture && quiescenceSearchPlies < MaxQuiescenceSearchPlies) {
             NonQuietEndNodes++;
             quiescenceSearchPlies++;
             depth++;
@@ -65,8 +66,8 @@ public sealed class Minimax {
             float maxEval = float.MinValue;
             foreach (var move in moves) {
                 copy.Copy(pos);
-                copy.MakeMove(move);
-                float eval = Run(copy, depth - 1, alpha, beta, false, quiescenceSearchPlies);
+                bool isCapture = copy.MakeMove(move);
+                float eval = Run(copy, depth - 1, alpha, beta, false, isCapture, quiescenceSearchPlies);
                 maxEval = Math.Max(maxEval, eval);
 
                 if (AlphaBetaPruning) {
@@ -80,8 +81,8 @@ public sealed class Minimax {
             float minEval = float.MaxValue;
             foreach (var move in moves) {
                 copy.Copy(pos);
-                copy.MakeMove(move);
-                float eval = Run(copy, depth - 1, alpha, beta, true, quiescenceSearchPlies);
+                bool isCapture = copy.MakeMove(move);
+                float eval = Run(copy, depth - 1, alpha, beta, true, isCapture, quiescenceSearchPlies);
                 minEval = Math.Min(minEval, eval);
 
                 if (AlphaBetaPruning) {
@@ -102,9 +103,9 @@ public sealed class Minimax {
 
         foreach (Move currMove in children) {
             Chessboard nextPos = cb.Clone();
-            nextPos.MakeMove(currMove);
+            bool isCapture = nextPos.MakeMove(currMove);
             Minimax m = new(cancellationToken);
-            float eval = m.Run(nextPos, depth - 1, !whitesTurn);
+            float eval = m.Run(nextPos, depth - 1, !whitesTurn, isCapture);
 
             if (whitesTurn) {//we want to maximize eval
                 if (eval > currBestEval) {

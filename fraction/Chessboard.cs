@@ -62,8 +62,6 @@ public class Chessboard {
     public BitBoard WhitePiecesBB => wPawnBB | wBishopBB | wRookBB | wKnightBB | wKingBB | wQueenBB;
     public BitBoard BlackPiecesBB => bPawnBB | bBishopBB | bRookBB | bKnightBB | bKingBB | bQueenBB;
 
-    public bool AfterCapturePly { get; set; } = false;
-
     public BitBoard this[Piece type] {
         get => type switch {
             Piece.wPawn => wPawnBB,
@@ -200,7 +198,7 @@ public class Chessboard {
     private static int _canary = typeof(Chessboard).GetRuntimeFields().Count();
     public void Copy(Chessboard board) {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 24)
+        if (_canary != 22)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         this.FiftyMovePlys = board.FiftyMovePlys;
         this.rights = board.rights;
@@ -222,16 +220,13 @@ public class Chessboard {
 
     public Chessboard Clone() {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 24)
+        if (_canary != 22)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         Chessboard board = (Chessboard)this.MemberwiseClone();
         return board;
     }
 
     public void MakeSimpleMove(int start, int end, Piece type, Piece? promotion = null) {
-
-        AfterCapturePly = BlackPiecesBB[end] || WhitePiecesBB[end];
-
         wKnightBB[end] = false;
         bKnightBB[end] = false;
         wQueenBB[end] = false;
@@ -280,9 +275,9 @@ public class Chessboard {
         }
     }
 
-    public void MakeMove(Move move)
+    public bool MakeMove(Move move)
         => MakeMove(move.Start, move.End, this.GetPieceAt(move.Start), move.Promotion);
-    public void MakeMove(int start, int end, Piece type, Piece? promotion = null) {
+    public bool MakeMove(int start, int end, Piece type, Piece? promotion = null) {
         var enPassantSqr = this.EnPassantSqr;
 
         this.MakeSimpleMove(start, end, type, promotion);
@@ -313,7 +308,7 @@ public class Chessboard {
                     this.SetCastlingRightsNullAt(3);
                 }
 
-                if (!isCastling) return;
+                if (!isCastling) return isCapture;
 
 
                 this.MakeSimpleMove(rookStartIndex, rookEndIndex, rook);
@@ -353,6 +348,7 @@ public class Chessboard {
             default:
                 break;
         }
+        return isCapture;
     }
 
     private void PromoteTo(int end, Piece type) {

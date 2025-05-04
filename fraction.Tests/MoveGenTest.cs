@@ -14,11 +14,13 @@ public class MoveGenTest {
     }
 
     public static long perftSum(Chessboard board, int depth, bool whitesTurn) {
-        Span<Chessboard> boards = (new MoveGen(board, whitesTurn)).GenerateBoards();
+        Span<Move> moves = (new MoveGen(board, whitesTurn)).GenerateMoves();
         long sum = 0;
-        foreach (Chessboard cb in boards) {
+        foreach (Move m in moves) {
+            var b = board.Clone();
+            var isCapture = b.MakeMove(m);
             Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
-            _ = minimax.Run(cb, depth - 1, !whitesTurn);
+            _ = minimax.Run(b, depth - 1, !whitesTurn, isCapture);
             sum += (long)minimax.Positions;
         }
         return sum;
