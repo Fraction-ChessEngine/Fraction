@@ -10,17 +10,17 @@ public class MoveGenTest {
     [InlineData(6, 119060324ul)]
     //[InlineData(7, 3195901860ul)]
     public void perft(int depth, long expectedSum) {
-        Assert.Equal(expectedSum, perftSum(new(Chessboard.Startpos), depth, true));
+        Assert.Equal(expectedSum, perftSum(new(Position.Startpos), depth));
     }
 
-    public static long perftSum(Chessboard board, int depth, bool whitesTurn) {
-        Span<Move> moves = (new MoveGen(board, whitesTurn)).GenerateMoves();
+    public static long perftSum(Position pos, int depth) {
+        Span<Move> moves = (new MoveGen(pos)).GenerateMoves();
         long sum = 0;
         foreach (Move m in moves) {
-            Chessboard b = new(board);
+            Position b = new(pos);
             var isCapture = b.MakeMove(m);
             Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
-            _ = minimax.Run(b, depth - 1, !whitesTurn, isCapture);
+            _ = minimax.Run(b, depth - 1, isCapture);
             sum += (long)minimax.Positions;
         }
         return sum;
@@ -30,6 +30,6 @@ public class MoveGenTest {
     [ClassData(typeof(Ethereal))]
     public void ethereal(string fen, int depth, long expectedSum) {
         Assert.True(FEN.TryParse(fen, out var f));
-        Assert.Equal(expectedSum, perftSum(new(f), depth, f.WhitesTurn));
+        Assert.Equal(expectedSum, perftSum(new(f), depth));
     }
 }

@@ -16,6 +16,8 @@ public static class MoveSets {
         int posIndex,
         Piece pieceType,
         BitBoard enemyControlSqrs,
+        int enPassantSqr,
+        CastleRights rights,
         bool isCheck,
         bool includeCoverage = false
     ) {
@@ -45,7 +47,7 @@ public static class MoveSets {
                     BitBoard enemyPiecesBB = allPiecesBB & ~sameColorPieces;
 
                     //en passant is also a valid attack sqr
-                    enemyPiecesBB |= board.EnPassantSqr > 0 ? 1ul << board.EnPassantSqr : 0;
+                    enemyPiecesBB |= enPassantSqr > 0 ? 1ul << enPassantSqr : 0;
 
                     //debug
                     BitBoard targetSqrs = attackSqrs;
@@ -71,7 +73,7 @@ public static class MoveSets {
                     BitBoard enemyPiecesBB = allPiecesBB & ~sameColorPieces;
 
                     //en passant is also a valid attack sqr
-                    enemyPiecesBB |= board.EnPassantSqr > 0 ? 1ul << board.EnPassantSqr : 0;
+                    enemyPiecesBB |= enPassantSqr > 0 ? 1ul << enPassantSqr : 0;
 
                     //debug
                     BitBoard targetSqrs = attackSqrs;
@@ -110,8 +112,8 @@ public static class MoveSets {
                 if (isCheck) return GetKingPseudoLegalMoves(posIndex, sameColorPieces, enemyControlSqrs, castleSqrs, includeCoverage);
 
                 if (isWhite) {
-                    ulong kingSide = CastleSquares.Get(CastleRights.WKingSide & board.Rights);
-                    ulong queenSide = CastleSquares.Get(CastleRights.WQueenSide & board.Rights);
+                    ulong kingSide = CastleSquares.Get(CastleRights.WKingSide & rights);
+                    ulong queenSide = CastleSquares.Get(CastleRights.WQueenSide & rights);
 
                     if ((CastlePathPieces[0] & castleBlockerPiece) != 0
                     || (CastlePathAttack[0] & castleBlockerAttack) != 0) {
@@ -125,8 +127,8 @@ public static class MoveSets {
                     castleSqrs = kingSide | queenSide;
 
                 } else {
-                    ulong kingSide = CastleSquares.Get(CastleRights.BKingSide & board.Rights);
-                    ulong queenSide = CastleSquares.Get(CastleRights.BQueenSide & board.Rights);
+                    ulong kingSide = CastleSquares.Get(CastleRights.BKingSide & rights);
+                    ulong queenSide = CastleSquares.Get(CastleRights.BQueenSide & rights);
 
                     if ((CastlePathPieces[2] & castleBlockerPiece) != 0
                     || (CastlePathAttack[2] & castleBlockerAttack) != 0) {

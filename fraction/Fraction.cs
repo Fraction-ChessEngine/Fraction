@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using Fraction.UCI;
 using UciEngine = Fraction.UCI.Engine;
+using PositionCommand = Fraction.UCI.Position;
 
 namespace fraction;
 public class Fraction : UciEngine {
@@ -17,8 +18,7 @@ public class Fraction : UciEngine {
     private CancellationTokenSource cts = new();
     private Task? bestMove = null;
 
-    private Chessboard board = new(Chessboard.Startpos);
-    private bool WhitesTurn = true;
+    private Position pos = new(Position.Startpos);
 
     public Fraction() : base() { }
 
@@ -71,7 +71,7 @@ public class Fraction : UciEngine {
                     depth = depth ?? a.X;
                     break;
                 case Time a:
-                    if (a.Turn == (this.WhitesTurn ? Color.White : Color.Black))
+                    if (a.Turn == (this.pos.WhitesTurn ? Color.White : Color.Black))
                         time = time ?? a.TimeLeft;
                     else etime = etime ?? a.TimeLeft;
                     break;
@@ -82,7 +82,7 @@ public class Fraction : UciEngine {
         }
 
         if (bestMove is null) {
-            bestMove = Minimax.BestMoveAsync(this.board, this.WhitesTurn, depth ?? -1, cts.Token)
+            bestMove = Minimax.BestMoveAsync(this.pos, depth ?? -1, cts.Token)
                 .ContinueWith((t) => {
                     Move result = t.GetAwaiter().GetResult();
                     result = result with { Promotion = result.Promotion | (Piece)8 };
@@ -136,24 +136,21 @@ public class Fraction : UciEngine {
             case UciNewGame:
                 break;
 
-            case Position c:
+            case PositionCommand c:
                 if (c.Fen is not null) {
                     if (FEN.TryParse(c.Fen, out FEN? fen)) {
-                        this.board = new(fen);
-                        this.WhitesTurn = fen.WhitesTurn;
+                        this.pos = new(fen);
                     } else {
                         this.Log(LogLevel.Warning, $"fenparsing failed. Fen: {c.Fen}");
                         goto default;
                     }
                 } else {
-                    this.board = new(Chessboard.Startpos);
-                    this.WhitesTurn = true;
+                    this.pos = new(Position.Startpos);
                 }
 
                 foreach (var move in c.moves) {
                     if (Move.TryParse(move, out Move m)) {
-                        this.board.MakeMove(m);
-                        this.WhitesTurn ^= true;
+                        this.pos.MakeMove(m);
                         continue;
                     }
                     this.Log(LogLevel.Warning, $"Invalid Move '{move}' in command '{c.Serialize()}'");

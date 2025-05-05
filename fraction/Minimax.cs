@@ -1,9 +1,6 @@
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
-using System.Windows;
 
 
 namespace fraction;
@@ -19,15 +16,14 @@ public sealed class Minimax {
         CancellationToken = ct;
     }
 
-    public float Run(Chessboard pos, int depth, bool whitesTurn, bool afterCapture)
-        => Run(pos, depth, float.MinValue, float.MaxValue, whitesTurn, afterCapture, 0);
+    public float Run(Position pos, int depth, bool afterCapture)
+        => Run(pos, depth, float.MinValue, float.MaxValue, afterCapture, 0);
 
     private float Run(
-        Chessboard pos,
+        Position pos,
         int depth,
         float alpha,
         float beta,
-        bool whitesTurn,
         bool afterCapture,
         int quiescenceSearchPlies
     ) {
@@ -41,19 +37,19 @@ public sealed class Minimax {
             depth++;
         }
 
-        float staticEval = Eval.BasicStaticEval(pos);
+        float staticEval = Eval.BasicStaticEval(pos.Board);
 
         if (depth == 0) {
             Positions++;
             return staticEval;
         }
 
-        MoveGen moveGen = new(pos, whitesTurn);
+        MoveGen moveGen = new(pos);
         Span<Move> moves = moveGen.GenerateMoves();
 
         //only true, if i didnt find any legal moves and i am in check
         //It is my turn, i realise its mate, this is very bad
-        if (moveGen.IsCheckMate) return whitesTurn ? int.MinValue : int.MaxValue;
+        if (moveGen.IsCheckMate) return pos.WhitesTurn ? int.MinValue : int.MaxValue;
 
         //no legal moves, therefore draw, should be null values
         if (moves.Length == 0) return 0;
@@ -62,12 +58,12 @@ public sealed class Minimax {
         if (pos.FiftyMovePlys >= 50) return 0;
 
 
-        if (whitesTurn) {
+        if (pos.WhitesTurn) {
             float maxEval = float.MinValue;
             foreach (var move in moves) {
-                Chessboard copy = new(pos);
+                Position copy = new(pos);
                 bool isCapture = copy.MakeMove(move);
-                float eval = Run(copy, depth - 1, alpha, beta, false, isCapture, quiescenceSearchPlies);
+                float eval = Run(copy, depth - 1, alpha, beta, isCapture, quiescenceSearchPlies);
                 maxEval = Math.Max(maxEval, eval);
 
                 if (AlphaBetaPruning) {
@@ -80,9 +76,9 @@ public sealed class Minimax {
         } else {
             float minEval = float.MaxValue;
             foreach (var move in moves) {
-                Chessboard copy = new(pos);
+                Position copy = new(pos);
                 bool isCapture = copy.MakeMove(move);
-                float eval = Run(copy, depth - 1, alpha, beta, true, isCapture, quiescenceSearchPlies);
+                float eval = Run(copy, depth - 1, alpha, beta, isCapture, quiescenceSearchPlies);
                 minEval = Math.Min(minEval, eval);
 
                 if (AlphaBetaPruning) {
@@ -95,19 +91,19 @@ public sealed class Minimax {
         }
     }
 
-    public static Move BestMove(Chessboard cb, bool whitesTurn, int depth, CancellationToken cancellationToken = new()) {
+    public static Move BestMove(Position pos, int depth, CancellationToken cancellationToken = new()) {
         Move currBestMove = Move.Null;
-        float currBestEval = whitesTurn ? float.MinValue : float.MaxValue;
+        float currBestEval = pos.WhitesTurn ? float.MinValue : float.MaxValue;
 
-        Span<Move> children = (new MoveGen(cb, whitesTurn)).GenerateMoves();
+        Span<Move> children = (new MoveGen(pos)).GenerateMoves();
 
         foreach (Move currMove in children) {
-            Chessboard nextPos = new(cb);
+            Position nextPos = new(pos);
             bool isCapture = nextPos.MakeMove(currMove);
             Minimax m = new(cancellationToken);
-            float eval = m.Run(nextPos, depth - 1, !whitesTurn, isCapture);
+            float eval = m.Run(nextPos, depth - 1, isCapture);
 
-            if (whitesTurn) {//we want to maximize eval
+            if (pos.WhitesTurn) {//we want to maximize eval
                 if (eval > currBestEval) {
                     currBestEval = eval;
                     currBestMove = currMove;
@@ -123,13 +119,13 @@ public sealed class Minimax {
         return currBestMove;
     }
 
-    public static Task<Move> BestMoveAsync(Chessboard cb, bool whitesTurn, int depth, CancellationToken ct) {
+    public static Task<Move> BestMoveAsync(Position pos, int depth, CancellationToken ct) {
         return Task<Move>.Run(() => {
             Move bestMove = Move.Null;
 
             for (int i = 1; !ct.IsCancellationRequested && (depth == -1 || i < depth); i++) {
                 try {
-                    bestMove = BestMove(cb, whitesTurn, i, ct);
+                    bestMove = BestMove(pos, i, ct);
                 } catch (OperationCanceledException) { }
             }
             return bestMove;
