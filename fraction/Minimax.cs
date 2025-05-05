@@ -16,14 +16,14 @@ public sealed class Minimax {
         CancellationToken = ct;
     }
 
-    public float Run(Position pos, int depth, bool afterCapture)
-        => Run(pos, depth, float.MinValue, float.MaxValue, afterCapture, 0);
+    public Score Run(Position pos, int depth, bool afterCapture)
+        => Run(pos, depth, Score.MinValue, Score.MaxValue, afterCapture, 0);
 
-    private float Run(
+    private Score Run(
         Position pos,
         int depth,
-        float alpha,
-        float beta,
+        Score alpha,
+        Score beta,
         bool afterCapture,
         int quiescenceSearchPlies
     ) {
@@ -37,7 +37,7 @@ public sealed class Minimax {
             depth++;
         }
 
-        float staticEval = Eval.BasicStaticEval(pos.Board);
+        Score staticEval = Eval.BasicStaticEval(pos.Board);
 
         if (depth == 0) {
             Positions++;
@@ -49,42 +49,54 @@ public sealed class Minimax {
 
         //only true, if i didnt find any legal moves and i am in check
         //It is my turn, i realise its mate, this is very bad
-        if (moveGen.IsCheckMate) return pos.WhitesTurn ? int.MinValue : int.MaxValue;
+        if (moveGen.IsCheckMate) return new Score(ScoreType.Mate, 0);
 
         //no legal moves, therefore draw, should be null values
-        if (moves.Length == 0) return 0;
+        if (moves.Length == 0) return new Score(ScoreType.Centipawns, 0);
 
         //fifty move rule is enforced
-        if (pos.FiftyMovePlys >= 50) return 0;
+        if (pos.FiftyMovePlys >= 50) return new Score(ScoreType.Centipawns, 0);
 
 
         if (pos.WhitesTurn) {
-            float maxEval = float.MinValue;
+            Score maxEval = Score.MinValue;
             foreach (var move in moves) {
                 Position copy = new(pos);
                 bool isCapture = copy.MakeMove(move);
-                float eval = Run(copy, depth - 1, alpha, beta, isCapture, quiescenceSearchPlies);
-                maxEval = Math.Max(maxEval, eval);
+                Score eval = Run(copy, depth - 1, alpha, beta, isCapture, quiescenceSearchPlies);
+
+                if (eval.IsMate)
+                    eval = eval.Value >= 0 ?
+                        eval with { Value = eval.Value + 1 } :
+                        eval with { Value = eval.Value - 1 };
+
+                maxEval = Score.Max(maxEval, eval);
 
                 if (AlphaBetaPruning) {
-                    alpha = Math.Max(alpha, eval);
+                    alpha = Score.Max(alpha, eval);
 
-                    if (beta <= alpha) break;
+                    if (!(beta > alpha)) break;
                 }
             }
             return maxEval;
         } else {
-            float minEval = float.MaxValue;
+            Score minEval = Score.MaxValue;
             foreach (var move in moves) {
                 Position copy = new(pos);
                 bool isCapture = copy.MakeMove(move);
-                float eval = Run(copy, depth - 1, alpha, beta, isCapture, quiescenceSearchPlies);
-                minEval = Math.Min(minEval, eval);
+                Score eval = Run(copy, depth - 1, alpha, beta, isCapture, quiescenceSearchPlies);
+
+                if (eval.IsMate)
+                    eval = eval.Value <= 0 ?
+                        eval with { Value = eval.Value - 1 } :
+                        eval with { Value = eval.Value + 1 };
+
+                minEval = Score.Min(minEval, eval);
 
                 if (AlphaBetaPruning) {
-                    beta = Math.Min(beta, eval);
+                    beta = Score.Min(beta, eval);
 
-                    if (beta <= alpha) break;
+                    if (!(beta > alpha)) break;
                 }
             }
             return minEval;
@@ -93,7 +105,7 @@ public sealed class Minimax {
 
     public static Move BestMove(Position pos, int depth, CancellationToken cancellationToken = new()) {
         Move currBestMove = Move.Null;
-        float currBestEval = pos.WhitesTurn ? float.MinValue : float.MaxValue;
+        Score currBestEval = pos.WhitesTurn ? Score.MinValue : Score.MaxValue;
 
         Span<Move> children = (new MoveGen(pos)).GenerateMoves();
 
@@ -101,7 +113,7 @@ public sealed class Minimax {
             Position nextPos = new(pos);
             bool isCapture = nextPos.MakeMove(currMove);
             Minimax m = new(cancellationToken);
-            float eval = m.Run(nextPos, depth - 1, isCapture);
+            Score eval = m.Run(nextPos, depth - 1, isCapture);
 
             if (pos.WhitesTurn) {//we want to maximize eval
                 if (eval > currBestEval) {

@@ -8,14 +8,14 @@ namespace fraction;
 static class Eval
 {
     //31 mio iterations /second, dh kein bottleneck
-    public static float BasicStaticEval(Chessboard b)
+    public static Score BasicStaticEval(Chessboard b)
     {
-        float white = 0;
-        white += b.WKingBB.PopCount * 10000f;
-        white += b.WRookBB.PopCount * 5f;
-        white += b.WBishopBB.PopCount * 3f;
-        white += b.WKnightBB.PopCount * 2.8f;
-        white += b.WQueenBB.PopCount * 9f;
+        int white = 0;
+        white += b.WKingBB.PopCount * 1_000_000;
+        white += b.WRookBB.PopCount * 500;
+        white += b.WBishopBB.PopCount * 300;
+        white += b.WKnightBB.PopCount * 280;
+        white += b.WQueenBB.PopCount * 900;
         white += b.WPawnBB.PopCount;
         white += RelativeValue(b.WPawnBB, Piece.wPawn);
         white += RelativeValue(b.WRookBB, Piece.wRook);
@@ -24,12 +24,12 @@ static class Eval
         white += RelativeValue(b.WKnightBB, Piece.wKnight);
         white += RelativeValue(b.WQueenBB, Piece.wQueen);
 
-        float black = 0;
-        black += b.BKingBB.PopCount * 10000f;
-        black += b.BRookBB.PopCount * 5f;
-        black += b.BBishopBB.PopCount * 3f;
-        black += b.BKnightBB.PopCount * 2.8f;
-        black += b.BQueenBB.PopCount * 9f;
+        int black = 0;
+        black += b.BKingBB.PopCount * 1_000_000;
+        black += b.BRookBB.PopCount * 500;
+        black += b.BBishopBB.PopCount * 300;
+        black += b.BKnightBB.PopCount * 280;
+        black += b.BQueenBB.PopCount * 900;
         black +=b.BPawnBB.PopCount;
         black += RelativeValue(b.BPawnBB, Piece.bPawn);
         black += RelativeValue(b.BRookBB, Piece.bRook);
@@ -38,7 +38,7 @@ static class Eval
         black += RelativeValue(b.BKnightBB, Piece.bKnight);
         black += RelativeValue(b.BQueenBB, Piece.bQueen);
 
-        return white - black;
+        return new Score(ScoreType.Centipawns, white - black);
     }
 
     /*private static Dictionary<Piece, BitBoard> pieceMasks1 = new Dictionary<Piece, BitBoard>{
@@ -84,31 +84,31 @@ static class Eval
             0, 0, 0, 0, 0, // other pieces
     };
 
-    private static float[] pieceFightValue = new float[]
+    private static int[] pieceFightValue = new int[]
     {
-            1f,
-            3f,
-            2.7f,
-            5f,
-            2f,
-            9f,
-            0f,// padding, think twice before removing!
-            0f,// padding, think twice before removing!
-            1f,
-            3f,
-            2.7f,
-            5f,
-            2f,
-            9f
+            100,
+            300,
+            270,
+            500,
+            200,
+            900,
+            0,// padding, think twice before removing!
+            0,// padding, think twice before removing!
+            100,
+            300,
+            270,
+            500,
+            200,
+            900
     };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static float RelativeValue(BitBoard bb, Piece type)
+    static int RelativeValue(BitBoard bb, Piece type)
     {
-        float value = (bb & pieceMasks1[(int)type]).PopCount * pieceFightValue[(int)type] * 0.1f;
+        int value = (bb & pieceMasks1[(int)type]).PopCount * pieceFightValue[(int)type] * 10;
 
         // branchless durch lut
-        value += (bb & pieceMasks2[(int)type]).PopCount * pieceFightValue[(int)type] * 0.1f;
+        value += (bb & pieceMasks2[(int)type]).PopCount * pieceFightValue[(int)type] * 10;
 
         return value;
     }
