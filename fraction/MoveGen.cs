@@ -519,16 +519,6 @@ public class MoveGen {
         return ret[0..index];
     }
 
-    public Chessboard[] GenerateBoards() {
-        Span<Move> moves = this.GenerateMoves();
-        Chessboard[] ret = new Chessboard[moves.Length];
-        for (int i = 0; i < ret.Length; i++) {
-            ret[i] = this.Board.Clone();
-            ret[i].MakeMove(moves[i]);
-        }
-        return ret;
-    }
-
     private static bool IsPromoting(int end, Piece type) {
         return type switch {
             Piece.wPawn => end > 55,

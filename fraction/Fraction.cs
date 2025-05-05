@@ -17,7 +17,7 @@ public class Fraction : UciEngine {
     private CancellationTokenSource cts = new();
     private Task? bestMove = null;
 
-    private Chessboard board = new();
+    private Chessboard board = new(Chessboard.Startpos);
     private bool WhitesTurn = true;
 
     public Fraction() : base() { }
@@ -146,7 +146,7 @@ public class Fraction : UciEngine {
                         goto default;
                     }
                 } else {
-                    this.board = new();
+                    this.board = new(Chessboard.Startpos);
                     this.WhitesTurn = true;
                 }
 

@@ -61,12 +61,11 @@ public sealed class Minimax {
         //fifty move rule is enforced
         if (pos.FiftyMovePlys >= 50) return 0;
 
-        Chessboard copy = pos.Clone();
 
         if (whitesTurn) {
             float maxEval = float.MinValue;
             foreach (var move in moves) {
-                copy.Copy(pos);
+                Chessboard copy = new(pos);
                 bool isCapture = copy.MakeMove(move);
                 float eval = Run(copy, depth - 1, alpha, beta, false, isCapture, quiescenceSearchPlies);
                 maxEval = Math.Max(maxEval, eval);
@@ -81,7 +80,7 @@ public sealed class Minimax {
         } else {
             float minEval = float.MaxValue;
             foreach (var move in moves) {
-                copy.Copy(pos);
+                Chessboard copy = new(pos);
                 bool isCapture = copy.MakeMove(move);
                 float eval = Run(copy, depth - 1, alpha, beta, true, isCapture, quiescenceSearchPlies);
                 minEval = Math.Min(minEval, eval);
@@ -103,7 +102,7 @@ public sealed class Minimax {
         Span<Move> children = (new MoveGen(cb, whitesTurn)).GenerateMoves();
 
         foreach (Move currMove in children) {
-            Chessboard nextPos = cb.Clone();
+            Chessboard nextPos = new(cb);
             bool isCapture = nextPos.MakeMove(currMove);
             Minimax m = new(cancellationToken);
             float eval = m.Run(nextPos, depth - 1, !whitesTurn, isCapture);

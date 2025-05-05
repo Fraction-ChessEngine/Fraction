@@ -7,6 +7,8 @@ using System.Reflection;
 namespace fraction;
 
 public class Chessboard {
+    public static readonly Chessboard Startpos = new();
+
     public int FiftyMovePlys { get; private set; } = 0;
 
     private BitBoard bRookBB = 0b10000001ul << 56;
@@ -122,6 +124,26 @@ public class Chessboard {
         }
     }
 
+    private Chessboard() { }
+
+    public Chessboard(Chessboard board) {
+        this.wPawnBB = board.wPawnBB;
+        this.wRookBB = board.wRookBB;
+        this.wKnightBB = board.wKnightBB;
+        this.wBishopBB = board.wBishopBB;
+        this.wQueenBB = board.wQueenBB;
+        this.wKingBB = board.wKingBB;
+        this.bPawnBB = board.bPawnBB;
+        this.bRookBB = board.bRookBB;
+        this.bKnightBB = board.bKnightBB;
+        this.bBishopBB = board.bBishopBB;
+        this.bQueenBB = board.bQueenBB;
+        this.bKingBB = board.bKingBB;
+        this.FiftyMovePlys = board.FiftyMovePlys;
+        this.EnPassantSqr = board.EnPassantSqr;
+        this.Rights = board.Rights;
+    }
+
     public Chessboard(FEN fen) {
         BPawnBB = fen[Piece.bPawn];
         WPawnBB = fen[Piece.wPawn];
@@ -143,8 +165,6 @@ public class Chessboard {
         if (!fen.CastleRights.BK) SetCastlingRightsNullAt(CastleRights.BKingSide);
         if (!fen.CastleRights.BQ) SetCastlingRightsNullAt(CastleRights.BQueenSide);
     }
-
-    public Chessboard() { }
 
     /// <summary>
     /// Returnt immer ein Piece, dh davor muss überprüft werden ob hier überhaupt ein Piece existiert
@@ -182,36 +202,6 @@ public class Chessboard {
             return Piece.bBishop;
 
         return 0;
-    }
-
-    private static int _canary = typeof(Chessboard).GetRuntimeFields().Count();
-    public void Copy(Chessboard board) {
-        // please add all fields here, otherwise, the canary will die
-        if (_canary != 16)
-            throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
-        this.FiftyMovePlys = board.FiftyMovePlys;
-        this.Rights = board.Rights;
-        this.bKingBB = board.bKingBB;
-        this.bPawnBB = board.bPawnBB;
-        this.bRookBB = board.bRookBB;
-        this.wKingBB = board.wKingBB;
-        this.wPawnBB = board.wPawnBB;
-        this.wRookBB = board.wRookBB;
-        this.bQueenBB = board.bQueenBB;
-        this.wQueenBB = board.wQueenBB;
-        this.bBishopBB = board.bBishopBB;
-        this.bKnightBB = board.bKnightBB;
-        this.wBishopBB = board.wBishopBB;
-        this.wKnightBB = board.wKnightBB;
-        this.EnPassantSqr = board.EnPassantSqr;
-    }
-
-    public Chessboard Clone() {
-        // please add all fields here, otherwise, the canary will die
-        if (_canary != 16)
-            throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
-        Chessboard board = (Chessboard)this.MemberwiseClone();
-        return board;
     }
 
     public void MakeSimpleMove(int start, int end, Piece type, Piece? promotion = null) {
@@ -385,7 +375,7 @@ public class Chessboard {
     /// <param name="startIndex"></param>
     /// <param name="endIndex"></param>
     public Chessboard GenerateBoardWithMove(int startIndex, int endIndex, Piece type, Piece? promotion = null) {
-        Chessboard board = Clone();
+        Chessboard board = new(this);
         board.MakeMove(startIndex, endIndex, type, promotion);
 
         return board;
@@ -399,7 +389,7 @@ public class Chessboard {
     //usecase:  a double pawn move was just made, therefore we need to make sure the EP sqr is valid
     //its not valid if capturing it reveals an attack at the enemys king
     private bool hasSussyEnpassantPin(bool forWhite, int endIndexPawn) {
-        Chessboard cb = Clone();
+        Chessboard cb = new(this);
         ulong enemyPawnBB;
 
         //  Utility.PrintBitBoard(cb.wPawnBB);
