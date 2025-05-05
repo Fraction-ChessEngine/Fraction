@@ -1,19 +1,40 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-
+using System.Diagnostics;
 
 namespace fraction;
-public sealed class Minimax {
+public sealed class Minimax : Search {
+    private object lck = new();
+    private ulong nodes = 0;
+    private int depth = 0;
+    private Move currMove = Move.Null;
+    private Stopwatch sw = new();
+
     public bool AlphaBetaPruning { get; init; } = true;
     public int MaxQuiescenceSearchPlies { get; init; } = 3;
-    public int Positions { get; private set; } = 0;
     public int NonQuietEndNodes { get; private set; } = 0;
-    public CancellationToken CancellationToken { get; set; }
 
+    public override SearchHeuristics SearchHeuristics {
+        get {
+            ulong nodes;
+            int depth;
+            long time;
+            Move move;
+            lock (this.lck) {
+                nodes = this.nodes;
+                depth = this.depth;
+                time = sw.ElapsedMilliseconds;
+                move = this.currMove;
+            }
+            return new SearchHeuristics { Nodes = nodes, Depth = depth, Time = time, CurrMove = currMove };
+        }
+    }
     public Minimax() { }
-    public Minimax(CancellationToken ct) {
-        CancellationToken = ct;
+
+    protected override void Reset() {
+        this.nodes = 0;
+        this.depth = 0;
+        this.currMove = Move.Null;
+        this.sw.Reset();
     }
 
     public Score Run(Position pos, int depth, bool afterCapture)
@@ -28,7 +49,7 @@ public sealed class Minimax {
         int quiescenceSearchPlies
     ) {
 
-        CancellationToken.ThrowIfCancellationRequested();
+        this.CancellationToken.ThrowIfCancellationRequested();
 
         //quiescence search, 3 as hard limit for depth increase
         if (afterCapture && quiescenceSearchPlies < MaxQuiescenceSearchPlies) {
@@ -40,7 +61,9 @@ public sealed class Minimax {
         Score staticEval = Eval.BasicStaticEval(pos.Board);
 
         if (depth == 0) {
-            Positions++;
+            lock (lck) {
+                this.nodes++;
+            }
             return staticEval;
         }
 
@@ -103,17 +126,19 @@ public sealed class Minimax {
         }
     }
 
-    public static Move BestMove(Position pos, int depth, CancellationToken cancellationToken = new()) {
+    public Move BestMove(Position pos, int depth) {
         Move currBestMove = Move.Null;
         Score currBestEval = pos.WhitesTurn ? Score.MinValue : Score.MaxValue;
 
         Span<Move> children = (new MoveGen(pos)).GenerateMoves();
 
         foreach (Move currMove in children) {
+            lock (this.lck) {
+                this.currMove = currMove;
+            }
             Position nextPos = new(pos);
             bool isCapture = nextPos.MakeMove(currMove);
-            Minimax m = new(cancellationToken);
-            Score eval = m.Run(nextPos, depth - 1, isCapture);
+            Score eval = this.Run(nextPos, depth - 1, isCapture);
 
             if (pos.WhitesTurn) {//we want to maximize eval
                 if (eval > currBestEval) {
@@ -131,17 +156,27 @@ public sealed class Minimax {
         return currBestMove;
     }
 
-    public static Task<Move> BestMoveAsync(Position pos, int depth, CancellationToken ct) {
-        return Task<Move>.Run(() => {
-            Move bestMove = Move.Null;
+    protected override void Run(SearchArgs args) {
+        lock (this.lck) { this.sw.Start(); }
+        Move bestMove = Move.Null;
 
-            for (int i = 1; !ct.IsCancellationRequested && (depth == -1 || i < depth); i++) {
-                try {
-                    bestMove = BestMove(pos, i, ct);
-                } catch (OperationCanceledException) { }
+        for (
+                int i = 1;
+                !this.CancellationToken.IsCancellationRequested &&
+                (args.Depth == -1 || i < args.Depth);
+                i++) {
+
+            lock (this.lck) {
+                depth = i;
             }
-            return bestMove;
-        }, ct);
+
+            try {
+                bestMove = this.BestMove(args.pos, i);
+            } catch (OperationCanceledException) { }
+        }
+
+        lock (this.lck) { this.sw.Stop(); }
+        this.OnFinished(new(bestMove));
     }
 }
 

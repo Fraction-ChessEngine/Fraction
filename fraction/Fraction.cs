@@ -15,14 +15,55 @@ public class Fraction : UciEngine {
     private const string name = "fraction";
     private const string author = "ValleAkaJesus";
 
+    private Search search = null!;
+    private Search Search {
+        get => this.search;
+        set {
+            this.search.Finished -= SearchFinishedHandler;
+            this.search = value;
+            this.search.Finished += SearchFinishedHandler;
+        }
+    }
+
     private CancellationTokenSource cts = new();
-    private Task? bestMove = null;
+    private Task? heuristics = null;
 
     private Position pos = new(Position.Startpos);
 
-    public Fraction() : base() { }
+    public Fraction() : base() {
+        this.search = new Minimax();
+        this.search.Finished += SearchFinishedHandler;
+    }
 
     public bool Debug { get; private set; } = false;
+
+    private void SearchFinishedHandler(Object? sender, SearchResult e) {
+        if (this.heuristics is not null) {
+            this.cts.Cancel();
+            this.heuristics.GetAwaiter().GetResult();
+            this.heuristics.Dispose();
+            this.heuristics = null;
+            this.cts.Dispose();
+            this.cts = new();
+        }
+
+        Move result = e.BestMove;
+        result = result with { Promotion = result.Promotion | (Piece)8 };
+        this.Send(new BestMove(result.ToString()));
+    }
+
+    private async Task Heuristics(CancellationToken ct) {
+        ulong lastNodes = 0;
+        long lastTime = -1;
+        while (!ct.IsCancellationRequested) {
+            var sh = this.search.SearchHeuristics;
+            ulong nps = ((sh.Nodes.Value - lastNodes) * 1000) / (ulong)(sh.Time.Value - lastTime);
+            lastNodes = sh.Nodes.Value;
+            lastTime = sh.Time.Value;
+            this.Send(new Info($"depth {sh.Depth} time {sh.Time} nodes {sh.Nodes} currmove {sh.CurrMove} nps {nps}"));
+            await Task.Delay(1000);
+        }
+    }
 
     private void HandleUci() {
         this.Send(new Id(Id.Type.Name, name));
@@ -46,19 +87,21 @@ public class Fraction : UciEngine {
     }
 
     private void HandleIsReady() {
-        if (cts.IsCancellationRequested) {
-            bestMove?.Wait();
-            bestMove = null;
-        }
         this.Send(new ReadyOk());
     }
 
     private void HandleGo(IEnumerable<Go.ICommand> args) {
+        if (search.IsRunning) {
+            this.Log(LogLevel.Warning, "There is already a search running");
+            return;
+        }
+
         bool infinite = false;
         int? moves = null;
         int? depth = null;
         int? time = null;
         int? etime = null;
+
         foreach (var arg in args) {
             switch (arg) {
                 case Infinite:
@@ -81,36 +124,23 @@ public class Fraction : UciEngine {
             }
         }
 
-        if (bestMove is null) {
-            bestMove = Minimax.BestMoveAsync(this.pos, depth ?? -1, cts.Token)
-                .ContinueWith((t) => {
-                    Move result = t.GetAwaiter().GetResult();
-                    result = result with { Promotion = result.Promotion | (Piece)8 };
-                    this.bestMove = null;
-                    this.Send(new BestMove(result.ToString()));
-                    if (!cts.TryReset()) {
-                        cts.Dispose();
-                        cts = new();
-                    }
-                });
+        search.Start(new(this.pos, depth ?? -1, -1, -1, []));
+        this.heuristics = this.Heuristics(cts.Token);
 
-            if (!infinite && time is not null) {
-                int x = time.Value;
-                if (moves is not null) {
-                    x /= moves.Value;
-                }else if (etime is not null) {
-                    x -= etime.Value;
-                } else x = -1;
-                if (x <= 0) x = 200;
-                this.cts.CancelAfter(x);
-            }
+        if (!infinite && time is not null) {
+            int x = time.Value;
+            if (moves is not null) {
+                x /= moves.Value;
+            } else if (etime is not null) {
+                x -= etime.Value;
+            } else x = -1;
+            if (x <= 0) x = 200;
+            Task.Delay(x).ContinueWith(_ => this.search.Stop());
         }
     }
 
     private void HandleStop() {
-        if (bestMove is not null) {
-            cts.Cancel();
-        }
+        search.Stop();
     }
 
     protected override void Handle(ICommand command) {
@@ -137,6 +167,10 @@ public class Fraction : UciEngine {
                 break;
 
             case PositionCommand c:
+                if (search.IsRunning) {
+                    this.Log(LogLevel.Warning, "wait until the search is complete");
+                    break;
+                }
                 if (c.Fen is not null) {
                     if (FEN.TryParse(c.Fen, out FEN? fen)) {
                         this.pos = new(fen);
