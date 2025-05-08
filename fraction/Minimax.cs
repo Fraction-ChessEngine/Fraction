@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+
 using static System.Threading.Interlocked;
 
 namespace fraction;
@@ -122,6 +123,7 @@ public sealed class Minimax : Search {
 
         foreach (Move currMove in children) {
             this.currMove = currMove;
+            this.OnNewHeuristics(new() { Time = this.Time, Depth = (int)this.depth, Nodes = this.nodes, CurrMove = currMove });
             Position nextPos = new(pos);
             bool isCapture = nextPos.MakeMove(currMove);
             Score eval = this.Run(nextPos, depth - 1, isCapture);
@@ -138,6 +140,7 @@ public sealed class Minimax : Search {
                 }
             }
         }
+        this.OnNewHeuristics(new() { Time = this.Time, Depth = (int)this.depth, Nodes = this.nodes, Score = currBestEval });
 
         return currBestMove;
     }
@@ -153,6 +156,7 @@ public sealed class Minimax : Search {
                 i++) {
 
             Exchange(ref this.depth, i);
+            this.OnNewHeuristics(new() { Time = this.Time, Depth = (int)this.depth, Nodes = this.nodes });
 
             try {
                 bestMove = this.BestMove(args.pos, i);

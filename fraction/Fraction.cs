@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Fraction.UCI;
 using UciEngine = Fraction.UCI.Engine;
 using PositionCommand = Fraction.UCI.Position;
+using System.Text;
 
 namespace fraction;
 public class Fraction : UciEngine {
@@ -19,20 +20,24 @@ public class Fraction : UciEngine {
     private Search Search {
         get => this.search;
         set {
-            this.search.Finished -= SearchFinishedHandler;
+            this.search.Finished -= this.SearchFinishedHandler;
+            this.search.NewHeuristics -= this.HandleNewHeuristics;
             this.search = value;
-            this.search.Finished += SearchFinishedHandler;
+            this.search.NewHeuristics += this.HandleNewHeuristics;
+            this.search.Finished += this.SearchFinishedHandler;
         }
     }
 
     private CancellationTokenSource cts = new();
+    private Queue<Task> hq = new();
     private Task? heuristics = null;
 
     private Position pos = new(Position.Startpos);
 
     public Fraction() : base() {
         this.search = new Minimax();
-        this.search.Finished += SearchFinishedHandler;
+        this.search.Finished += this.SearchFinishedHandler;
+        this.search.NewHeuristics += this.HandleNewHeuristics;
     }
 
     public bool Debug { get; private set; } = false;
@@ -47,9 +52,28 @@ public class Fraction : UciEngine {
             this.cts = new();
         }
 
+        Task.WaitAll(hq.ToArray());
+        hq.Clear();
+
         Move result = e.BestMove;
         result = result with { Promotion = result.Promotion | (Piece)8 };
         this.Send(new BestMove(result.ToString()));
+    }
+
+    private void HandleNewHeuristics(object? sender, Heuristics h) {
+        Task t = Task.Run(() => {
+            StringBuilder sb = new();
+            if (h.Depth is not null) sb.Append($"depth {h.Depth} ");
+            if (h.Time is not null) sb.Append($"time {h.Time} ");
+            if (h.Nodes is not null) sb.Append($"nodes {h.Nodes} ");
+            if (h.Score is not null) {
+                Score score = !this.pos.WhitesTurn ? h.Score.Value with { Value = -h.Score.Value.Value } : h.Score.Value;
+                sb.Append($"score {score} ");
+            }
+            if (h.CurrMove is not null) sb.Append($"currmove {h.CurrMove} ");
+            this.Send(new Info(sb.ToString()));
+        });
+        hq.Enqueue(t);
     }
 
     private async Task Heuristics(CancellationToken ct) {

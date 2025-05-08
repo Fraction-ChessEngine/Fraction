@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 
 namespace fraction;
 
@@ -24,6 +25,14 @@ public readonly struct Score {
         return x < y ? x : y;
     }
 
+    public override string ToString() {
+            StringBuilder sb = new();
+            if (this.Type.HasFlag(ScoreType.Bound))
+                sb.Append(this.Type.HasFlag(ScoreType.UpperBound) ? "upperbound " : "lowerbound ");
+            sb.Append(this.Type.HasFlag(ScoreType.Mate) ? "mate " : "cp ");
+            sb.Append(this.Value);
+            return sb.ToString();
+        }
     public static bool operator <(Score lhs, Score rhs) {
         return (lhs.Type, rhs.Type) switch {
             (ScoreType.Centipawns, ScoreType.Centipawns) => lhs.Value < rhs.Value,
