@@ -5,16 +5,23 @@ namespace fraction;
 
 public abstract class Search {
     private CancellationTokenSource cts = null!;
-
-    protected SearchResult? SearchResult { get; set; }
     protected CancellationToken CancellationToken => cts.Token;
 
+    public abstract long Depth { get; }
+    public abstract long Nodes { get; }
+    public abstract long Time { get; }
+
     public Thread? MainThread { get; private set; }
+
     public bool IsRunning => this.MainThread is not null;
 
-    public event EventHandler<SearchResult>? Finished;
+    public event EventHandler<Heuristics>? NewHeuristics;
 
-    public abstract SearchHeuristics SearchHeuristics { get;}
+    protected virtual void OnNewHeuristics(Heuristics e) {
+        this.NewHeuristics?.Invoke(this, e);
+    }
+
+    public event EventHandler<SearchResult>? Finished;
 
     protected virtual void OnFinished(SearchResult e) {
         this.Finished?.Invoke(this, e);

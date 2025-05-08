@@ -1,40 +1,30 @@
 using System;
 using System.Diagnostics;
+using static System.Threading.Interlocked;
 
 namespace fraction;
 public sealed class Minimax : Search {
     private object lck = new();
-    private ulong nodes = 0;
-    private int depth = 0;
+    private long nodes = 0;
+    private long depth = 0;
+    private long starttime = -1;
     private Move currMove = Move.Null;
-    private Stopwatch sw = new();
+
+    public override long Nodes => Read(ref this.nodes);
+    public override long Depth => Read(ref this.depth);
+    public override long Time => (Stopwatch.GetTimestamp() - this.starttime) * 1000 / Stopwatch.Frequency;
 
     public bool AlphaBetaPruning { get; init; } = true;
     public int MaxQuiescenceSearchPlies { get; init; } = 3;
     public int NonQuietEndNodes { get; private set; } = 0;
 
-    public override SearchHeuristics SearchHeuristics {
-        get {
-            ulong nodes;
-            int depth;
-            long time;
-            Move move;
-            lock (this.lck) {
-                nodes = this.nodes;
-                depth = this.depth;
-                time = sw.ElapsedMilliseconds;
-                move = this.currMove;
-            }
-            return new SearchHeuristics { Nodes = nodes, Depth = depth, Time = time, CurrMove = currMove };
-        }
-    }
     public Minimax() { }
 
     protected override void Reset() {
         this.nodes = 0;
         this.depth = 0;
         this.currMove = Move.Null;
-        this.sw.Reset();
+        this.starttime = -1;
     }
 
     public Score Run(Position pos, int depth, bool afterCapture)
@@ -61,9 +51,7 @@ public sealed class Minimax : Search {
         Score staticEval = Eval.BasicStaticEval(pos.Board);
 
         if (depth == 0) {
-            lock (lck) {
-                this.nodes++;
-            }
+            Increment(ref this.nodes);
             return staticEval;
         }
 
@@ -133,9 +121,7 @@ public sealed class Minimax : Search {
         Span<Move> children = (new MoveGen(pos)).GenerateMoves();
 
         foreach (Move currMove in children) {
-            lock (this.lck) {
-                this.currMove = currMove;
-            }
+            this.currMove = currMove;
             Position nextPos = new(pos);
             bool isCapture = nextPos.MakeMove(currMove);
             Score eval = this.Run(nextPos, depth - 1, isCapture);
@@ -157,7 +143,7 @@ public sealed class Minimax : Search {
     }
 
     protected override void Run(SearchArgs args) {
-        lock (this.lck) { this.sw.Start(); }
+        this.starttime = Stopwatch.GetTimestamp();
         Move bestMove = Move.Null;
 
         for (
@@ -166,16 +152,13 @@ public sealed class Minimax : Search {
                 (args.Depth == -1 || i < args.Depth);
                 i++) {
 
-            lock (this.lck) {
-                depth = i;
-            }
+            Exchange(ref this.depth, i);
 
             try {
                 bestMove = this.BestMove(args.pos, i);
             } catch (OperationCanceledException) { }
         }
 
-        lock (this.lck) { this.sw.Stop(); }
         this.OnFinished(new(bestMove));
     }
 }

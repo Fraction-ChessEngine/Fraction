@@ -53,14 +53,17 @@ public class Fraction : UciEngine {
     }
 
     private async Task Heuristics(CancellationToken ct) {
-        ulong lastNodes = 0;
+        long lastNodes = 0;
         long lastTime = -1;
+        await Task.Delay(50);
         while (!ct.IsCancellationRequested) {
-            var sh = this.search.SearchHeuristics;
-            ulong nps = ((sh.Nodes.Value - lastNodes) * 1000) / (ulong)(sh.Time.Value - lastTime);
-            lastNodes = sh.Nodes.Value;
-            lastTime = sh.Time.Value;
-            this.Send(new Info($"depth {sh.Depth} time {sh.Time} nodes {sh.Nodes} currmove {sh.CurrMove} nps {nps}"));
+            long time = search.Time;
+            long depth = search.Depth;
+            long nodes = search.Nodes;
+            long nps = ((nodes - lastNodes) * 1000) / (time - lastTime);
+            lastNodes = nodes;
+            lastTime = time;
+            this.Send(new Info($"depth {depth} time {time} nodes {nodes} nps {nps}"));
             await Task.Delay(1000);
         }
     }
