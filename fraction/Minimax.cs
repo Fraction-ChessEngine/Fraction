@@ -129,11 +129,19 @@ public sealed class Minimax : Search {
             Score eval = this.Run(nextPos, depth - 1, isCapture);
 
             if (pos.WhitesTurn) {//we want to maximize eval
+                if (eval.IsMate)
+                    eval = eval.Value >= 0 ?
+                        eval with { Value = eval.Value + 1 } :
+                        eval with { Value = eval.Value - 1 };
                 if (eval > currBestEval) {
                     currBestEval = eval;
                     currBestMove = currMove;
                 }
             } else {//we want to minimize eval
+                if (eval.IsMate)
+                    eval = eval.Value <= 0 ?
+                        eval with { Value = eval.Value - 1 } :
+                        eval with { Value = eval.Value + 1 };
                 if (eval < currBestEval) {
                     currBestEval = eval;
                     currBestMove = currMove;

@@ -105,10 +105,10 @@ static class Eval
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static int RelativeValue(BitBoard bb, Piece type)
     {
-        int value = (bb & pieceMasks1[(int)type]).PopCount * pieceFightValue[(int)type] * 10;
+        int value = (bb & pieceMasks1[(int)type]).PopCount * pieceFightValue[(int)type] / 10;
 
         // branchless durch lut
-        value += (bb & pieceMasks2[(int)type]).PopCount * pieceFightValue[(int)type] * 10;
+        value += (bb & pieceMasks2[(int)type]).PopCount * pieceFightValue[(int)type] / 10;
 
         return value;
     }
