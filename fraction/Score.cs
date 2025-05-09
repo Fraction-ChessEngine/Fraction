@@ -36,7 +36,7 @@ public readonly struct Score {
     public static bool operator <(Score lhs, Score rhs) {
         return (lhs.Type, rhs.Type) switch {
             (ScoreType.Centipawns, ScoreType.Centipawns) => lhs.Value < rhs.Value,
-            (ScoreType.Mate, ScoreType.Mate) => int.MaxValue / lhs.Value < int.MaxValue / rhs.Value,
+            (ScoreType.Mate, ScoreType.Mate) => int.MaxValue - lhs.Value < int.MaxValue - rhs.Value,
             (ScoreType.Mate, ScoreType.Centipawns) => (Math.Sign(lhs.Value) * 2) < Math.Sign(rhs.Value),
             (ScoreType.Centipawns, ScoreType.Mate) => Math.Sign(lhs.Value) < (Math.Sign(rhs.Value) * 2),
             _ => throw new NotImplementedException(),
