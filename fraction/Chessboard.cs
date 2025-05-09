@@ -1,11 +1,32 @@
 using System;
+using System.Linq;
 using System.Diagnostics;
 
 namespace fraction;
 
 public class Chessboard {
-    public static readonly Chessboard Startpos = new();
+    // for every piece on every square
+    private static readonly Zobrist zobrist;
+    private const int wPawnZO = 0 * 64;
+    private const int wRookZO = 1 * 64;
+    private const int wKnightZO = 2 * 64;
+    private const int wBishopZO = 3 * 64;
+    private const int wQueenZO = 4 * 64;
+    private const int wKingZO = 5 * 64;
+    private const int bPawnZO = 6 * 64;
+    private const int bRookZO = 7 * 64;
+    private const int bKnightZO = 8 * 64;
+    private const int bBishopZO = 9 * 64;
+    private const int bQueenZO = 10 * 64;
+    private const int bKingZO = 11 * 64;
 
+    static Chessboard() {
+        zobrist = new(12 * 64);
+        Startpos = new();
+    }
+    public static readonly Chessboard Startpos ;
+
+    private int hashcode;
     private BitBoard bRookBB = 0b10000001ul << 56;
     private BitBoard wRookBB = 0b10000001ul;
     private BitBoard bBishopBB = 0b0100100ul << 56;
@@ -54,51 +75,75 @@ public class Chessboard {
         set {
             switch (type) {
                 case Piece.wPawn:
+                    this.hashcode ^= CalculateBitBoardHash(wPawnBB, wPawnZO);
                     wPawnBB = value;
+                    this.hashcode ^= CalculateBitBoardHash(wPawnBB, wPawnZO);
                     break;
 
                 case Piece.wBishop:
+                    this.hashcode ^= CalculateBitBoardHash(wBishopBB, wBishopZO);
                     wBishopBB = value;
+                    this.hashcode ^= CalculateBitBoardHash(wBishopBB, wBishopZO);
                     break;
 
                 case Piece.wKnight:
+                    this.hashcode ^= CalculateBitBoardHash(wKnightBB, wKnightZO);
                     wKnightBB = value;
+                    this.hashcode ^= CalculateBitBoardHash(wKnightBB, wKnightZO);
                     break;
 
                 case Piece.wRook:
+                    this.hashcode ^= CalculateBitBoardHash(wRookBB, wRookZO);
                     wRookBB = value;
+                    this.hashcode ^= CalculateBitBoardHash(wRookBB, wRookZO);
                     break;
 
                 case Piece.wKing:
+                    this.hashcode ^= CalculateBitBoardHash(wKingBB, wKingZO);
                     wKingBB = value;
+                    this.hashcode ^= CalculateBitBoardHash(wKingBB, wKingZO);
                     break;
 
                 case Piece.wQueen:
+                    this.hashcode ^= CalculateBitBoardHash(wQueenBB, wQueenZO);
                     wQueenBB = value;
+                    this.hashcode ^= CalculateBitBoardHash(wQueenBB, wQueenZO);
                     break;
 
                 case Piece.bPawn:
+                    this.hashcode ^= CalculateBitBoardHash(bPawnBB, bPawnZO);
                     bPawnBB = value;
+                    this.hashcode ^= CalculateBitBoardHash(bPawnBB, bPawnZO);
                     break;
 
                 case Piece.bBishop:
+                    this.hashcode ^= CalculateBitBoardHash(bBishopBB, bBishopZO);
                     bBishopBB = value;
+                    this.hashcode ^= CalculateBitBoardHash(bBishopBB, bBishopZO);
                     break;
 
                 case Piece.bKnight:
+                    this.hashcode ^= CalculateBitBoardHash(bKnightBB, bKnightZO);
                     bKnightBB = value;
+                    this.hashcode ^= CalculateBitBoardHash(bKnightBB, bKnightZO);
                     break;
 
                 case Piece.bRook:
+                    this.hashcode ^= CalculateBitBoardHash(bRookBB, bRookZO);
                     bRookBB = value;
+                    this.hashcode ^= CalculateBitBoardHash(bRookBB, bRookZO);
                     break;
 
                 case Piece.bKing:
+                    this.hashcode ^= CalculateBitBoardHash(bKingBB, bKingZO);
                     bKingBB = value;
+                    this.hashcode ^= CalculateBitBoardHash(bKingBB, bKingZO);
                     break;
 
                 case Piece.bQueen:
+                    this.hashcode ^= CalculateBitBoardHash(bQueenBB, bQueenZO);
                     bQueenBB = value;
+                    this.hashcode ^= CalculateBitBoardHash(bQueenBB, bQueenZO);
                     break;
                 default:
                     throw new UnreachableException();
@@ -106,7 +151,9 @@ public class Chessboard {
         }
     }
 
-    private Chessboard() { }
+    private Chessboard() {
+        this.hashcode = this.CalculateHash();
+    }
 
     public Chessboard(Chessboard board) {
         this.wPawnBB = board.wPawnBB;
@@ -121,6 +168,7 @@ public class Chessboard {
         this.bBishopBB = board.bBishopBB;
         this.bQueenBB = board.bQueenBB;
         this.bKingBB = board.bKingBB;
+        this.hashcode = board.hashcode;
     }
 
     public Chessboard(FEN fen) {
@@ -136,6 +184,31 @@ public class Chessboard {
         WKnightBB = fen[Piece.wKnight];
         BRookBB = fen[Piece.bRook];
         WRookBB = fen[Piece.wRook];
+        this.hashcode = this.CalculateHash();
+    }
+
+    private static Piece[] allPieces = [
+        Piece.wPawn, Piece.wRook, Piece.wKnight, Piece.wBishop, Piece.wQueen, Piece.wKing,
+        Piece.bPawn, Piece.bRook, Piece.bKnight, Piece.bBishop, Piece.bQueen, Piece.bKing,
+    ];
+
+    private static int CalculateBitBoardHash(BitBoard bb, int segment) {
+        int hash = 0;
+        while (bb.PopCount > 0) {
+            var offset = bb.LowestOne;
+            bb[offset] = false;
+            hash ^= zobrist[segment + offset];
+        }
+        return hash;
+    }
+
+    private int CalculateHash() {
+        int hash = 0;
+        for (int i = 0; i < 12; i++) {
+            var segment = i * 64;
+            hash = CalculateBitBoardHash(this[allPieces[i]], segment);
+        }
+        return hash;
     }
 
     /// <summary>
@@ -177,6 +250,9 @@ public class Chessboard {
     }
 
     public void MakeSimpleMove(int start, int end, Piece type, Piece? promotion = null) {
+        for (int i = 0; i < 12; i++) {
+            if (this[allPieces[i]][end]) this.hashcode ^= zobrist[i * 64 + end];
+        }
         wKnightBB[end] = false;
         bKnightBB[end] = false;
         wQueenBB[end] = false;
@@ -191,7 +267,9 @@ public class Chessboard {
         switch (type) {
             case Piece.wPawn:
                 wPawnBB[start] = false;
+                this.hashcode ^= zobrist[wPawnZO + start];
                 wPawnBB[end] = true;
+                this.hashcode ^= zobrist[wPawnZO + end];
                 //promotion
                 if (end >= 56) {
                     PromoteTo(end, (promotion & (Piece)~8) ?? Piece.wQueen);
@@ -200,7 +278,9 @@ public class Chessboard {
 
             case Piece.bPawn:
                 bPawnBB[start] = false;
+                this.hashcode ^= zobrist[bPawnZO + start];
                 bPawnBB[end] = true;
+                this.hashcode ^= zobrist[bPawnZO + end];
 
                 if (end < 8) {
                     PromoteTo(end, (promotion | (Piece)8) ?? Piece.bQueen);
@@ -209,58 +289,90 @@ public class Chessboard {
 
             //funktioniert weil es nur einen king geben darf
             case Piece.wKing:
+                this.hashcode ^= zobrist[wKingZO + start];
                 wKingBB = 1ul << end;
+                this.hashcode ^= zobrist[wKingZO + end];
                 break;
 
             case Piece.bKing:
+                this.hashcode ^= zobrist[bKingZO + start];
                 bKingBB = 1ul << end;
+                this.hashcode ^= zobrist[bKingZO + end];
                 break;
 
             default:
                 BitBoard bb = this[type];
+                var zoi = Array.IndexOf(allPieces, type) * 64;
                 bb[start] = false;
+                this.hashcode ^= zobrist[zoi + start];
                 bb[end] = true;
+                this.hashcode ^= zobrist[zoi + end];
                 this[type] = bb;
                 break;
         }
     }
 
     private void PromoteTo(int end, Piece type) {
+        this.hashcode ^= zobrist[wPawnZO + end];
+        wPawnBB[end] = false;
+
         switch (type) {
             case Piece.wBishop:
-                wPawnBB[end] = false;
                 wBishopBB[end] = true;
+                this.hashcode ^= zobrist[wBishopZO + end];
                 break;
             case Piece.wQueen:
-                wPawnBB[end] = false;
                 wQueenBB[end] = true;
+                this.hashcode ^= zobrist[wQueenZO + end];
                 break;
             case Piece.wRook:
-                wPawnBB[end] = false;
                 wRookBB[end] = true;
+                this.hashcode ^= zobrist[wRookZO + end];
                 break;
             case Piece.wKnight:
-                wPawnBB[end] = false;
                 wKnightBB[end] = true;
+                this.hashcode ^= zobrist[wKnightZO + end];
                 break;
             case Piece.bBishop:
-                bPawnBB[end] = false;
                 bBishopBB[end] = true;
+                this.hashcode ^= zobrist[bBishopZO + end];
                 break;
             case Piece.bQueen:
-                bPawnBB[end] = false;
                 bQueenBB[end] = true;
+                this.hashcode ^= zobrist[bQueenZO + end];
                 break;
             case Piece.bRook:
-                bPawnBB[end] = false;
                 bRookBB[end] = true;
+                this.hashcode ^= zobrist[bRookZO + end];
                 break;
             case Piece.bKnight:
-                bPawnBB[end] = false;
                 bKnightBB[end] = true;
+                this.hashcode ^= zobrist[bKnightZO + end];
                 break;
             default:
                 throw new ArgumentException("Invalid piece entered for promotion", nameof(type));
         }
+    }
+
+    public override bool Equals(object? obj) {
+        if (obj is not Chessboard) return false;
+        if (obj.GetHashCode() != this.GetHashCode()) return false;
+        Chessboard board = (Chessboard)obj;
+        foreach (var piece in allPieces) {
+            if (this[piece] != board[piece]) return false;
+        }
+        return true;
+    }
+
+    public override int GetHashCode() {
+        return this.hashcode;
+    }
+
+    public static bool operator ==(Chessboard lhs, Chessboard rhs) {
+        return lhs.Equals(rhs);
+    }
+
+    public static bool operator !=(Chessboard lhs, Chessboard rhs) {
+        return !lhs.Equals(rhs);
     }
 }
