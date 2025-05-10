@@ -4,7 +4,7 @@ using System.Threading;
 namespace fraction;
 
 public abstract class Search {
-    private CancellationTokenSource cts = null!;
+    private CancellationTokenSource cts = new();
     protected CancellationToken CancellationToken => cts.Token;
 
     public abstract long Depth { get; }
@@ -47,7 +47,7 @@ public abstract class Search {
         this.MainThread?.Join();
         this.MainThread = null;
         this.cts.Dispose();
-        this.cts = null!;
+        this.cts = new();
         this.Reset();
     }
 }

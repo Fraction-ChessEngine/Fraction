@@ -21,7 +21,7 @@ public class MoveGenTest {
             var isCapture = b.MakeMove(m);
             Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
             _ = minimax.Run(b, depth - 1, isCapture);
-            sum += (long)minimax.Positions;
+            sum += (long)minimax.Nodes;
         }
         return sum;
     }
