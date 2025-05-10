@@ -40,18 +40,102 @@ public class Chessboard {
     private BitBoard bPawnBB = 0b11111111ul << 48;
     private BitBoard wPawnBB = 0b11111111ul << 8;
 
-    public BitBoard BRookBB { get => bRookBB; set => bRookBB = value; }
-    public BitBoard WRookBB { get => wRookBB; set => wRookBB = value; }
-    public BitBoard BBishopBB { get => bBishopBB; set => bBishopBB = value; }
-    public BitBoard WBishopBB { get => wBishopBB; set => wBishopBB = value; }
-    public BitBoard BKnightBB { get => bKnightBB; set => bKnightBB = value; }
-    public BitBoard WKnightBB { get => wKnightBB; set => wKnightBB = value; }
-    public BitBoard WQueenBB { get => wQueenBB; set => wQueenBB = value; }
-    public BitBoard BQueenBB { get => bQueenBB; set => bQueenBB = value; }
-    public BitBoard WKingBB { get => wKingBB; set => wKingBB = value; }
-    public BitBoard BKingBB { get => bKingBB; set => bKingBB = value; }
-    public BitBoard WPawnBB { get => wPawnBB; set => wPawnBB = value; }
-    public BitBoard BPawnBB { get => bPawnBB; set => bPawnBB = value; }
+    public BitBoard BRookBB {
+        get => bRookBB;
+        set {
+            this.hashcode ^= CalculateBitBoardHash(bRookBB, bRookZO);
+            bRookBB = value;
+            this.hashcode ^= CalculateBitBoardHash(bRookBB, bRookZO);
+        }
+    }
+    public BitBoard WRookBB {
+        get => wRookBB;
+        set {
+            this.hashcode ^= CalculateBitBoardHash(wRookBB, wRookZO);
+            wRookBB = value;
+            this.hashcode ^= CalculateBitBoardHash(wRookBB, wRookZO);
+        }
+    }
+    public BitBoard BBishopBB {
+        get => bBishopBB;
+        set {
+            this.hashcode ^= CalculateBitBoardHash(bBishopBB, bBishopZO);
+            bBishopBB = value;
+            this.hashcode ^= CalculateBitBoardHash(bBishopBB, bBishopZO);
+        }
+    }
+    public BitBoard WBishopBB {
+        get => wBishopBB;
+        set {
+            this.hashcode ^= CalculateBitBoardHash(wBishopBB, wBishopZO);
+            wBishopBB = value;
+            this.hashcode ^= CalculateBitBoardHash(wBishopBB, wBishopZO);
+        }
+    }
+    public BitBoard BKnightBB {
+        get => bKnightBB;
+        set {
+            this.hashcode ^= CalculateBitBoardHash(bKnightBB, bKnightZO);
+            bKnightBB = value;
+            this.hashcode ^= CalculateBitBoardHash(bKnightBB, bKnightZO);
+        }
+    }
+    public BitBoard WKnightBB {
+        get => wKnightBB;
+        set {
+            this.hashcode ^= CalculateBitBoardHash(wKnightBB, wKnightZO);
+            wKnightBB = value;
+            this.hashcode ^= CalculateBitBoardHash(wKnightBB, wKnightZO);
+        }
+    }
+    public BitBoard WQueenBB {
+        get => wQueenBB;
+        set {
+            this.hashcode ^= CalculateBitBoardHash(wQueenBB, wQueenZO);
+            wQueenBB = value;
+            this.hashcode ^= CalculateBitBoardHash(wQueenBB, wQueenZO);
+        }
+    }
+    public BitBoard BQueenBB {
+        get => bQueenBB;
+        set {
+            this.hashcode ^= CalculateBitBoardHash(bQueenBB, bQueenZO);
+            bQueenBB = value;
+            this.hashcode ^= CalculateBitBoardHash(bQueenBB, bQueenZO);
+        }
+    }
+    public BitBoard WKingBB {
+        get => wKingBB;
+        set {
+            this.hashcode ^= CalculateBitBoardHash(wKingBB, wKingZO);
+            wKingBB = value;
+            this.hashcode ^= CalculateBitBoardHash(wKingBB, wKingZO);
+        }
+    }
+    public BitBoard BKingBB {
+        get => bKingBB;
+        set {
+            this.hashcode ^= CalculateBitBoardHash(bKingBB, bKingZO);
+            bKingBB = value;
+            this.hashcode ^= CalculateBitBoardHash(bKingBB, bKingZO);
+        }
+    }
+    public BitBoard WPawnBB {
+        get => wPawnBB;
+        set {
+            this.hashcode ^= CalculateBitBoardHash(wPawnBB, wPawnZO);
+            wPawnBB = value;
+            this.hashcode ^= CalculateBitBoardHash(wPawnBB, wPawnZO);
+        }
+    }
+    public BitBoard BPawnBB {
+        get => bPawnBB;
+        set {
+            this.hashcode ^= CalculateBitBoardHash(bPawnBB, bPawnZO);
+            bPawnBB = value;
+            this.hashcode ^= CalculateBitBoardHash(bPawnBB, bPawnZO);
+        }
+    }
 
     public BitBoard WhitePiecesBB => wPawnBB | wBishopBB | wRookBB | wKnightBB | wKingBB | wQueenBB;
     public BitBoard BlackPiecesBB => bPawnBB | bBishopBB | bRookBB | bKnightBB | bKingBB | bQueenBB;
@@ -302,11 +386,8 @@ public class Chessboard {
 
             default:
                 BitBoard bb = this[type];
-                var zoi = Array.IndexOf(allPieces, type) * 64;
                 bb[start] = false;
-                this.hashcode ^= zobrist[zoi + start];
                 bb[end] = true;
-                this.hashcode ^= zobrist[zoi + end];
                 this[type] = bb;
                 break;
         }
@@ -318,7 +399,7 @@ public class Chessboard {
             this.hashcode ^= zobrist[wPawnZO + end];
             wPawnBB[end] = false;
         } else {
-        this.hashcode ^= zobrist[bPawnZO + end];
+            this.hashcode ^= zobrist[bPawnZO + end];
             bPawnBB[end] = false;
         }
 
