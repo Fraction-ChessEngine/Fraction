@@ -24,7 +24,7 @@ public class Chessboard {
         zobrist = new(12 * 64);
         Startpos = new();
     }
-    public static readonly Chessboard Startpos ;
+    public static readonly Chessboard Startpos;
 
     private int hashcode;
     private BitBoard bRookBB = 0b10000001ul << 56;
@@ -314,7 +314,13 @@ public class Chessboard {
 
     private void PromoteTo(int end, Piece type) {
         this.hashcode ^= zobrist[wPawnZO + end];
-        wPawnBB[end] = false;
+        if (type.IsWhite()) {
+            this.hashcode ^= zobrist[wPawnZO + end];
+            wPawnBB[end] = false;
+        } else {
+        this.hashcode ^= zobrist[bPawnZO + end];
+            bPawnBB[end] = false;
+        }
 
         switch (type) {
             case Piece.wBishop:
@@ -365,6 +371,7 @@ public class Chessboard {
     }
 
     public override int GetHashCode() {
+        Debug.Assert(this.hashcode == CalculateHash());
         return this.hashcode;
     }
 
