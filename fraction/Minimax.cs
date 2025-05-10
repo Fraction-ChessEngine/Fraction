@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 using static System.Threading.Interlocked;
@@ -10,6 +11,9 @@ public sealed class Minimax : Search {
     private long depth = 0;
     private long starttime = -1;
     private Move currMove = Move.Null;
+
+    // this might be enough. in Case depth 100 is reached, maybe update this size
+    private List<Move> currLine = new(100);
 
     public override long Nodes => Read(ref this.nodes);
     public override long Depth => Read(ref this.depth);
@@ -26,6 +30,7 @@ public sealed class Minimax : Search {
         this.depth = 0;
         this.currMove = Move.Null;
         this.starttime = -1;
+        this.currLine.Clear();
     }
 
     public Score Run(Position pos, int depth, bool afterCapture)
@@ -39,7 +44,6 @@ public sealed class Minimax : Search {
         bool afterCapture,
         int quiescenceSearchPlies
     ) {
-
         this.CancellationToken.ThrowIfCancellationRequested();
 
         //quiescence search, 3 as hard limit for depth increase
@@ -73,6 +77,7 @@ public sealed class Minimax : Search {
         if (pos.WhitesTurn) {
             Score maxEval = Score.MinValue;
             foreach (var move in moves) {
+                currLine.Add(move);
                 Position copy = new(pos);
                 bool isCapture = copy.MakeMove(move);
                 Score eval = Run(copy, depth - 1, alpha, beta, isCapture, quiescenceSearchPlies);
@@ -89,11 +94,13 @@ public sealed class Minimax : Search {
 
                     if (!(beta > alpha)) break;
                 }
+                currLine.RemoveAt(currLine.Count - 1);
             }
             return maxEval;
         } else {
             Score minEval = Score.MaxValue;
             foreach (var move in moves) {
+                currLine.Add(move);
                 Position copy = new(pos);
                 bool isCapture = copy.MakeMove(move);
                 Score eval = Run(copy, depth - 1, alpha, beta, isCapture, quiescenceSearchPlies);
@@ -110,6 +117,7 @@ public sealed class Minimax : Search {
 
                     if (!(beta > alpha)) break;
                 }
+                currLine.RemoveAt(currLine.Count - 1);
             }
             return minEval;
         }
