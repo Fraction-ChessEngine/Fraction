@@ -5,7 +5,7 @@ using BenchmarkDotNet.Running;
 
 using fraction;
 
-namespace fractionBenchmarks;
+namespace fraction.Benchmarks;
 
 public class PerftBenchmark {
     [Params(3, 4)]
