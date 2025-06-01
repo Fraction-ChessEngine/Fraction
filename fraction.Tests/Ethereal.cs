@@ -2,13 +2,13 @@ using System.Collections;
 
 namespace fraction.Tests;
 
-public class Ethereal : IEnumerable<TheoryDataRow<string, int, long>> {
+public class Ethereal : IEnumerable<TheoryDataRow<string, int, ulong>> {
     private const string fileName = "ethereal.txt";
-    public IEnumerator<TheoryDataRow<string, int, long>> GetData() {
+    public IEnumerator<TheoryDataRow<string, int, ulong>> GetData() {
         string[] lines = File.ReadAllLines(fileName);
 
 
-        var list = new List<TheoryDataRow<string, int, long>>();
+        var list = new List<TheoryDataRow<string, int, ulong>>();
 
         foreach (var line in lines) {
             var data = line.Split(';');
@@ -16,7 +16,7 @@ public class Ethereal : IEnumerable<TheoryDataRow<string, int, long>> {
             foreach (var pair in data[1..]) {
                 var split = pair.Split(' ');
                 var depth = int.Parse(split[0][1..]);
-                var sum = long.Parse(split[1]);
+                var sum = ulong.Parse(split[1]);
                 list.Add(new(fen, depth, sum));
             }
         }
@@ -25,7 +25,7 @@ public class Ethereal : IEnumerable<TheoryDataRow<string, int, long>> {
         return list.GetEnumerator();
     }
 
-    public IEnumerator<TheoryDataRow<string, int, long>> GetEnumerator() {
+    public IEnumerator<TheoryDataRow<string, int, ulong>> GetEnumerator() {
         return GetData();
     }
 

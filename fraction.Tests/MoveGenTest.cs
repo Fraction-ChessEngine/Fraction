@@ -9,27 +9,14 @@ public class MoveGenTest {
     [InlineData(5, 4865609ul)]
     [InlineData(6, 119060324ul)]
     //[InlineData(7, 3195901860ul)]
-    public void perft(int depth, long expectedSum) {
-        Assert.Equal(expectedSum, perftSum(new(Position.Startpos), depth));
-    }
-
-    public static long perftSum(Position pos, int depth) {
-        Span<Move> moves = (new MoveGen(pos)).GenerateMoves();
-        long sum = 0;
-        foreach (Move m in moves) {
-            Position b = new(pos);
-            var isCapture = b.MakeMove(m);
-            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
-            _ = minimax.Run(b, depth - 1, isCapture);
-            sum += (long)minimax.Nodes;
-        }
-        return sum;
+    public void perft(int depth, ulong expectedSum) {
+        Assert.Equal(expectedSum, Search.Perft(new(Position.Startpos), depth));
     }
 
     [Theory]
     [ClassData(typeof(Ethereal))]
-    public void ethereal(string fen, int depth, long expectedSum) {
+    public void ethereal(string fen, int depth, ulong expectedSum) {
         Assert.True(FEN.TryParse(fen, out var f));
-        Assert.Equal(expectedSum, perftSum(new(f), depth));
+        Assert.Equal(expectedSum, Search.Perft(new(f), depth));
     }
 }

@@ -27,7 +27,7 @@ public abstract class Search {
         this.Finished?.Invoke(this, e);
     }
 
-    protected virtual void Run(object? args) => Run((SearchArgs) args!);
+    protected virtual void Run(object? args) => Run((SearchArgs)args!);
 
     protected abstract void Run(SearchArgs args);
     protected abstract void Reset();
@@ -49,5 +49,20 @@ public abstract class Search {
         this.cts.Dispose();
         this.cts = new();
         this.Reset();
+    }
+
+    public static ulong Perft(Position pos, int depth) {
+        if (depth <= 0) return 1;
+        MoveGen moveGen = new(pos);
+        Span<Move> moves = moveGen.GenerateMoves();
+
+        ulong sum = 0;
+        Position next = new(pos);
+        foreach (var move in moves) {
+            next.Copy(pos);
+            next.MakeMove(move);
+            sum += Perft(next, depth - 1);
+        }
+        return sum;
     }
 }

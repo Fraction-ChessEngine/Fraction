@@ -271,6 +271,22 @@ public class Chessboard {
         this.hashcode = this.CalculateHash();
     }
 
+    public void Copy(Chessboard board) {
+        this.hashcode = board.hashcode;
+        this.bRookBB = board.bRookBB;
+        this.wRookBB = board.wRookBB;
+        this.bBishopBB = board.bBishopBB;
+        this.wBishopBB = board.wBishopBB;
+        this.bKnightBB = board.bKnightBB;
+        this.wKnightBB = board.wKnightBB;
+        this.bQueenBB = board.bQueenBB;
+        this.wQueenBB = board.wQueenBB;
+        this.bKingBB = board.bKingBB;
+        this.wKingBB = board.wKingBB;
+        this.bPawnBB = board.bPawnBB;
+        this.wPawnBB = board.wPawnBB;
+    }
+
     private static Piece[] allPieces = [
         Piece.wPawn, Piece.wRook, Piece.wKnight, Piece.wBishop, Piece.wQueen, Piece.wKing,
         Piece.bPawn, Piece.bRook, Piece.bKnight, Piece.bBishop, Piece.bQueen, Piece.bKing,

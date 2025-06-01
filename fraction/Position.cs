@@ -5,6 +5,7 @@ namespace fraction;
 public class Position {
     public static readonly Position Startpos = new();
 
+    public string Name { get; set; } = "";
     public Chessboard Board { get; }
     public bool WhitesTurn { get; private set; }
     public int EnPassantSqr { get; private set; }
@@ -51,6 +52,14 @@ public class Position {
         this.EnPassantSqr = enPassantSqr;
         this.Rights = rights;
         this.FiftyMovePlys = fiftyMovePlys;
+    }
+
+    public void Copy(Position pos) {
+        this.Board.Copy(pos.Board);
+        this.WhitesTurn = pos.WhitesTurn;
+        this.EnPassantSqr = pos.EnPassantSqr;
+        this.Rights = pos.Rights;
+        this.FiftyMovePlys = pos.FiftyMovePlys;
     }
 
     public void ClearRights(CastleRights side) {
@@ -208,5 +217,9 @@ public class Position {
             63 => CastleRights.BKingSide,
             _ => CastleRights.None,
         };
+    }
+
+    public override string ToString() {
+        return this.Name;
     }
 }
