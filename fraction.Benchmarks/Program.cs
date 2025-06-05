@@ -2,13 +2,15 @@
 
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Engines;
 
 using fraction;
 
 namespace fraction.Benchmarks;
 
+[SimpleJob(RunStrategy.Throughput)]
 public class PerftBenchmark {
-    [Params(3, 4)]
+    [Params(4)]
     public int Depth { get; set; }
     [ParamsSource(nameof(Positions))]
     public Position Pos { get; set; }
