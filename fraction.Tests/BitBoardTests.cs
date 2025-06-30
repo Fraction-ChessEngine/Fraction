@@ -134,6 +134,31 @@ public class BitBoardTests {
     public void VerticalLines_Files_SetsVerticalLines(byte files, ulong expected) {
         BitBoard actual = BitBoard.VerticalLines(files);
 
-        Assert.Equal(expected, (ulong)actual);
+        Assert.Equal<ulong>(expected, actual);
     }
+
+    [Fact]
+    public void Flip_Pattern_Flips() {
+        BitBoard input = new(0x1d, 0x4f, 0x1b, 0xaa, 0xbc, 0xe8, 0xd3, 0xa2);
+        BitBoard expected = new(0xa2, 0xd3, 0xe8, 0xbc, 0xaa, 0x1b, 0x4f, 0x1d);
+        BitBoard actual = input.Flip();
+        Assert.Equal<ulong>(expected, actual);
+    }
+
+    [Fact]
+    public void Mirror_Pattern_Mirrors() {
+        BitBoard input = new(0x1d, 0x4f, 0x1b, 0xaa, 0xbc, 0xe8, 0xd3, 0xa2);
+        BitBoard expected = 0x1d4f1baabce8d3a2ul;
+        BitBoard actual = input.Mirror();
+        Assert.Equal<ulong>(expected, actual);
+    }
+
+    [Fact]
+    public void Rot180_Pattern_Rotates180deg() {
+        BitBoard input = new(0x1d, 0x4f, 0x1b, 0xaa, 0xbc, 0xe8, 0xd3, 0xa2);
+        BitBoard expected = 0xa2d3e8bcaa1b4f1dul;
+        BitBoard actual = input.Rot180();
+        Assert.Equal<ulong>(expected, actual);
+    }
+
 }

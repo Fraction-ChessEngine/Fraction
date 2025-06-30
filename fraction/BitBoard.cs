@@ -2,6 +2,7 @@ using System;
 using System.Text;
 
 using static System.Numerics.BitOperations;
+using static System.Buffers.Binary.BinaryPrimitives;
 
 namespace fraction;
 
@@ -57,6 +58,34 @@ public struct BitBoard {
         _value += Reverse(b);
         _value <<= 8;
         _value += Reverse(a);
+    }
+
+    public BitBoard LSB() {
+        return this | (~this + 1);
+    }
+
+    public BitBoard MSB() {
+        return this.Rot180().LSB().Rot180();
+    }
+
+    public BitBoard Flip() {
+        return ReverseEndianness(this);
+    }
+
+    public BitBoard Mirror() {
+        const ulong mask4 = 0x0f0f0f0f0f0f0f0ful;
+        const ulong mask2 = 0x3333333333333333ul;
+        const ulong mask1 = 0x5555555555555555ul;
+
+        ulong val = this;
+        val = ((val & mask4) << 4) | ((val >> 4) & mask4);
+        val = ((val & mask2) << 2) | ((val >> 2) & mask2);
+        val = ((val & mask1) << 1) | ((val >> 1) & mask1);
+        return val;
+    }
+
+    public BitBoard Rot180() {
+        return this.Flip().Mirror();
     }
 
 
