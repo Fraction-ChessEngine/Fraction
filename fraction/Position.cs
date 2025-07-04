@@ -3,9 +3,15 @@ using System;
 namespace fraction;
 
 public class Position {
-    public static readonly Position Startpos = new();
+    private static Zobrist zobrist;
 
-    public string Name { get; set; } = "";
+    public static readonly Position Startpos;
+
+    static Position() {
+        zobrist = new(13);
+        Startpos = new();
+    }
+
     public Chessboard Board { get; }
     public bool WhitesTurn { get; private set; }
     public int EnPassantSqr { get; private set; }
@@ -219,7 +225,36 @@ public class Position {
         };
     }
 
-    public override string ToString() {
-        return this.Name;
+    public override int GetHashCode() {
+        int hash = this.Board.GetHashCode();
+        if (!this.WhitesTurn) hash ^= zobrist[0];
+        if (this.Rights.HasFlag(CastleRights.WKingSide)) hash ^= zobrist[1];
+        if (this.Rights.HasFlag(CastleRights.WQueenSide)) hash ^= zobrist[2];
+        if (this.Rights.HasFlag(CastleRights.BKingSide)) hash ^= zobrist[3];
+        if (this.Rights.HasFlag(CastleRights.BQueenSide)) hash ^= zobrist[4];
+        if (this.EnPassantSqr != -1) hash ^= zobrist[5 + (this.EnPassantSqr & 7)];
+        return hash;
     }
+
+    public override bool Equals(object? obj) {
+        if (obj is null) return false;
+        if (obj is Position pos) {
+            if (this.GetHashCode() != pos.GetHashCode()) return false;
+            if (this.Board != pos.Board) return false;
+            if (this.WhitesTurn != pos.WhitesTurn) return false;
+            if (this.EnPassantSqr != pos.EnPassantSqr) return false;
+            if (this.Rights != pos.Rights) return false;
+            return true;
+        }
+        return false;
+    }
+
+    public static bool operator ==(Position lhs, Position rhs) {
+        return lhs.Equals(rhs);
+    }
+
+    public static bool operator !=(Position lhs, Position rhs) {
+        return !lhs.Equals(rhs);
+    }
+
 }
