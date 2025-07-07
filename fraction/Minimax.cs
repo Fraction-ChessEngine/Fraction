@@ -11,6 +11,7 @@ public sealed class Minimax : Search {
     private long depth = 0;
     private long starttime = -1;
     private Move currMove = Move.Null;
+    private Transpostable hashtable = new();
 
     // this might be enough. in Case depth 100 is reached, maybe update this size
     private List<Move> currLine = new(100);
@@ -33,6 +34,12 @@ public sealed class Minimax : Search {
         this.currLine.Clear();
     }
 
+    private void UpdateHash(Position pos, Score score, int depth) {
+        if (!this.hashtable.TryAdd(pos, new(score, depth))) {
+            this.hashtable[pos].UpdateScore(score, depth);
+        }
+    }
+
     public Score Run(Position pos, int depth, bool afterCapture)
         => Run(pos, depth, Score.MinValue, Score.MaxValue, afterCapture, 0);
 
@@ -44,6 +51,10 @@ public sealed class Minimax : Search {
         bool afterCapture,
         int quiescenceSearchPlies
     ) {
+        if (this.hashtable.TryGetValue(pos, out var info)) {
+            if (depth <= info.Depth) return info.Score;
+        }
+
         this.CancellationToken.ThrowIfCancellationRequested();
 
         //quiescence search, 3 as hard limit for depth increase
@@ -57,6 +68,7 @@ public sealed class Minimax : Search {
 
         if (depth == 0) {
             Increment(ref this.nodes);
+            this.UpdateHash(pos, staticEval, 0);
             return staticEval;
         }
 
@@ -65,13 +77,25 @@ public sealed class Minimax : Search {
 
         //only true, if i didnt find any legal moves and i am in check
         //It is my turn, i realise its mate, this is very bad
-        if (moveGen.IsCheckMate) return new Score(ScoreType.Mate, 0);
+        if (moveGen.IsCheckMate) {
+            Score score = new(ScoreType.Mate, 0);
+            this.UpdateHash(pos, score, int.MaxValue);
+            return score;
+        }
 
         //no legal moves, therefore draw, should be null values
-        if (moves.Length == 0) return new Score(ScoreType.Centipawns, 0);
+        if (moves.Length == 0) {
+            Score score = new(ScoreType.Centipawns, 0);
+            this.UpdateHash(pos, score, int.MaxValue);
+            return score;
+        }
 
         //fifty move rule is enforced
-        if (pos.FiftyMovePlys >= 50) return new Score(ScoreType.Centipawns, 0);
+        if (pos.FiftyMovePlys >= 50) {
+            Score score =  new(ScoreType.Centipawns, 0);
+            this.UpdateHash(pos, score, int.MaxValue);
+            return score;
+        }
 
 
         if (pos.WhitesTurn) {
@@ -96,6 +120,7 @@ public sealed class Minimax : Search {
                 }
                 currLine.RemoveAt(currLine.Count - 1);
             }
+            this.UpdateHash(pos, maxEval, depth);
             return maxEval;
         } else {
             Score minEval = Score.MaxValue;
@@ -119,6 +144,7 @@ public sealed class Minimax : Search {
                 }
                 currLine.RemoveAt(currLine.Count - 1);
             }
+            this.UpdateHash(pos, minEval, depth);
             return minEval;
         }
     }

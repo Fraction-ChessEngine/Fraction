@@ -21,6 +21,7 @@ public class Transpostable : IDictionary<Position, Transposinfo> {
 
     public bool IsReadOnly => ((ICollection<KeyValuePair<Position, Transposinfo>>)dict).IsReadOnly;
 
+
     public void Add(Position key, Transposinfo value) {
         this.dict.Add(key, value);
     }
