@@ -15,21 +15,28 @@ public class MiniMaxBenchmark {
     private Minimax normal = new() {
         AlphaBetaPruning = false,
         MaxQuiescenceSearchPlies = 0,
+        perft=true
     };
 
     private Minimax alphaBetaPruning = new() {
         AlphaBetaPruning = true,
         MaxQuiescenceSearchPlies = 0,
+                perft=true
+
     };
 
     private Minimax qsp = new() {
         AlphaBetaPruning = false,
         MaxQuiescenceSearchPlies = maxQSP,
+                perft=true
+
     };
 
     private Minimax both = new() {
         AlphaBetaPruning = true,
         MaxQuiescenceSearchPlies = maxQSP,
+                perft=true
+
     };
 
     private float Perft(Minimax m) {

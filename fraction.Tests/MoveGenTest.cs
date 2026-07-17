@@ -13,7 +13,7 @@ public class MoveGenTest {
         Span<Chessboard> boards = MoveGen.GenerateBoards(new(), true, true);
         ulong sum = 0;
         foreach (Chessboard board in boards) {
-            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
+            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false , perft=true};
             _ = minimax.Run(board, depth - 1, false);
             sum += (ulong)minimax.Positions;
         }
