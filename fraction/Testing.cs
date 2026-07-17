@@ -386,7 +386,11 @@ public static class Testing {
         return b;
     }
 
-    public static void BenchmarkPERFT(int depth = 6) {
+    public static void BenchmarkPERFT(int depth = 5) {
+        for (int i = 0; i < 64; i++)
+        {
+            Minimax.boardBuffer[i]=new();
+        }
         Stopwatch sw = new Stopwatch();
 
         sw.Start();
@@ -396,8 +400,8 @@ public static class Testing {
 
         long sum = 0;
         for (int i = 0; i < boards.Length; i++) {
-            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
-            minimax.Run(boards[i], depth - 1, false);
+            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false,perft=true };
+            minimax.runPerft(boards[i], depth - 1, false);
             sum += minimax.Positions;
         }
 
@@ -479,14 +483,21 @@ public static class Testing {
     public static long perftSum(Chessboard b, int d, bool whitesTurn) {
         Span<Chessboard> boards = MoveGen.GenerateBoards(b, whitesTurn);
 
+       
+
         long sum = 0;
         for (int i = 0; i < boards.Length; i++) {
-            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false };
-            minimax.Run(boards[i], d - 1, !whitesTurn);
+            for (int u = 0; u < 64; u++)
+            {
+                Minimax.boardBuffer[u]=new();
+            }
+            Minimax minimax = new() { MaxQuiescenceSearchPlies = 0, AlphaBetaPruning = false, perft=true };
+            minimax.runPerft(boards[i], d - 1, !whitesTurn);
             sum += minimax.Positions;
         }
         return sum;
     }
+
 
     public static void LoadAndTest() {
         string[] lines = File.ReadAllLines("ethereal.txt");

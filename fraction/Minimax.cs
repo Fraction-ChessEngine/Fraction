@@ -15,6 +15,7 @@ public sealed class Minimax {
     public int Positions { get; private set; } = 0;
     public int NonQuietEndNodes { get; private set; } = 0;
     public CancellationToken CancellationToken { get; set; }
+    public bool perft=false;
 
     // HashSet<Chessboard>
 
@@ -37,22 +38,27 @@ public sealed class Minimax {
 
         CancellationToken.ThrowIfCancellationRequested();
 
-        Span<Move> moves = MoveGen.GenerateMoves(pos, whitesTurn);
+        
+
+        bool isCheck=!pos.getCheckPiecesEmpty();
 
         //quiescence search, 3 as hard limit for depth increase
-        if (!pos.getCheckPiecesEmpty() || (pos.AfterCapturePly && quiescenceSearchPlies < MaxQuiescenceSearchPlies)) {
+        if ((isCheck || (pos.AfterCapturePly && quiescenceSearchPlies < MaxQuiescenceSearchPlies))&&!perft) {
             NonQuietEndNodes++;
             quiescenceSearchPlies++;
             depth++;
         }
 
-        float staticEval = Eval.BasicStaticEval(pos);
-
         if (depth == 0) {
             Positions++;
+            float staticEval = Eval.BasicStaticEval(pos);
             return staticEval;
         }
 
+        //KEIN moveBuffers[depth]: die quiescence extension oben macht depth++, dh ein kind
+        //kann den gleichen index kriegen wie sein parent, der seine moves noch iteriert.
+        //braucht einen echten ply-zaehler bevor das hier einen shared buffer benutzen darf
+        Span<Move> moves = MoveGen.GenerateMoves(pos, whitesTurn, new Move[256]);
         //only true, if i didnt find any legal moves and i am in check
         //It is my turn, i realise its mate, this is very bad
         if (pos.IsCheckMate) return whitesTurn ? int.MinValue : int.MaxValue;
@@ -96,6 +102,59 @@ public sealed class Minimax {
             }
             return minEval;
         }
+    }
+
+    //one row per recursion depth, weil der parent seine moves noch iteriert waehrend das kind generiert
+    public readonly Move[][] moveBuffers = CreateMoveBuffers();
+    public static readonly Chessboard[] boardBuffer=new Chessboard[64];
+
+    //218 ist das maximum an legalen moves in einer legalen stellung, 256 als puffer
+    private static Move[][] CreateMoveBuffers() {
+        var buffers = new Move[64][];
+        for (int i = 0; i < buffers.Length; i++) buffers[i] = new Move[256];
+        return buffers;
+    }
+    public float runPerft(
+        Chessboard pos,
+        int depth,
+        bool whitesTurn) {
+          //  CancellationToken.ThrowIfCancellationRequested();
+
+        
+
+        if (depth <= 0) {
+            Positions++;
+            return 0;
+        }
+        
+        Span<Move> moves = MoveGen.GenerateMoves(pos, whitesTurn,moveBuffers[depth]);
+
+        if (pos.IsCheckMate) return whitesTurn ? int.MinValue : int.MaxValue;
+        if (moves.Length == 0) return 0;
+        if (pos.FiftyMovePlys >= 50) return 0;
+
+       Chessboard copy=boardBuffer[depth];
+
+        if (whitesTurn) {
+            float maxEval = float.MinValue;
+            foreach (var move in moves) {
+                copy.Copy(pos);
+                copy.MakeMove(move);
+                float eval = runPerft(copy, depth - 1, false);
+                maxEval = Math.Max(maxEval, eval);
+            }
+            return maxEval;
+        } else {
+            float minEval = float.MaxValue;
+            foreach (var move in moves) {
+                copy.Copy(pos);
+                copy.MakeMove(move);
+                float eval = runPerft(copy, depth - 1, true);
+                minEval = Math.Min(minEval, eval);
+            }
+            return minEval;
+        }
+        
     }
 
     public static Move BestMove(Chessboard cb, bool whitesTurn, int depth, CancellationToken cancellationToken = new()) {

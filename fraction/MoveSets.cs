@@ -39,7 +39,7 @@ public static class MoveSets {
 
                     //BitBoard attackSqrs = 0b101ul << (posIndex + 7);//covered die 2 sqrs die diagonal vor dem pawn liegen
                     BitBoard attackSqrs = BB_Lookup.GetPawnAttackSqrs(x, y, true);
-                    BitBoard allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
+                    BitBoard allPiecesBB = board.AllPiecesBB;
 
                     BitBoard enemyPiecesBB = allPiecesBB & ~sameColorPieces;
 
@@ -65,7 +65,7 @@ public static class MoveSets {
 
                     //BitBoard attackSqrs = 0b101ul << (posIndex - 9);//covered die 2 sqrs die diagonal vor dem pawn liegen
                     BitBoard attackSqrs = BB_Lookup.GetPawnAttackSqrs(x, y, false);
-                    BitBoard allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
+                    BitBoard allPiecesBB = board.AllPiecesBB;
 
                     BitBoard enemyPiecesBB = allPiecesBB & ~sameColorPieces;
 
@@ -101,7 +101,7 @@ public static class MoveSets {
                 //enemy pieces prevent the king from castling through controlled sqrs
 
                 //king cant castle through check, or through pieces
-                ulong castleBlockerPiece = board.WhitePiecesBB | board.BlackPiecesBB;
+                ulong castleBlockerPiece = board.AllPiecesBB;
                 ulong castleBlockerAttack = enemyControlSqrs;
                 ulong castleSqrs = 0;
 
@@ -193,8 +193,7 @@ public static class MoveSets {
         BitBoard patternBB = BB_Lookup.GetBBforPieceAtSqr(type, posIndex);
 
 
-
-        BitBoard allPiecesBB = board.WhitePiecesBB | board.BlackPiecesBB;
+        BitBoard allPiecesBB = board.AllPiecesBB;
 
         // enemyKing does not block a sliders sightline at the sqrs behind him
         //since he has to move by definition to avoid being in the sightline

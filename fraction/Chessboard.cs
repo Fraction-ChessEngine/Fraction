@@ -50,27 +50,41 @@ public class Chessboard {
     public static readonly ulong[] CastleSqrs = {
         0b01000000ul,0b100ul,0b01000000ul << 56, 0b100ul << 56, 0//null wert für optimisation
     };
-    //private BitBoard whitePiecesBB = 0b0000000000000000000000000000000000000000000000001111111111111111;
-    //private BitBoard blackPiecesBB = 0b1111111111111111000000000000000000000000000000000000000000000000;
+    //occupancy: wird einmal pro move neu berechnet (RefreshOccupancy) statt bei jedem zugriff
+    private BitBoard whitePiecesBB;
+    private BitBoard blackPiecesBB;
+    private BitBoard allPiecesBB;
 
     //0 ist ganz rechts, 63 ist ganz links, 0=a1, 63=h8
-    public BitBoard BRookBB { get => bRookBB; set => bRookBB = value; }
-    public BitBoard WRookBB { get => wRookBB; set => wRookBB = value; }
-    public BitBoard BBishopBB { get => bBishopBB; set => bBishopBB = value; }
-    public BitBoard WBishopBB { get => wBishopBB; set => wBishopBB = value; }
-    public BitBoard BKnightBB { get => bKnightBB; set => bKnightBB = value; }
-    public BitBoard WKnightBB { get => wKnightBB; set => wKnightBB = value; }
-    public BitBoard WQueenBB { get => wQueenBB; set => wQueenBB = value; }
-    public BitBoard BQueenBB { get => bQueenBB; set => bQueenBB = value; }
-    public BitBoard WKingBB { get => wKingBB; set => wKingBB = value; }
-    public BitBoard BKingBB { get => bKingBB; set => bKingBB = value; }
-    public BitBoard WPawnBB { get => wPawnBB; set => wPawnBB = value; }
-    public BitBoard BPawnBB { get => bPawnBB; set => bPawnBB = value; }
+    //die 12 piece-setter sind cold (FEN, tests), deswegen ist das refresh hier egal
+    public BitBoard BRookBB { get => bRookBB; set { bRookBB = value; RefreshOccupancy(); } }
+    public BitBoard WRookBB { get => wRookBB; set { wRookBB = value; RefreshOccupancy(); } }
+    public BitBoard BBishopBB { get => bBishopBB; set { bBishopBB = value; RefreshOccupancy(); } }
+    public BitBoard WBishopBB { get => wBishopBB; set { wBishopBB = value; RefreshOccupancy(); } }
+    public BitBoard BKnightBB { get => bKnightBB; set { bKnightBB = value; RefreshOccupancy(); } }
+    public BitBoard WKnightBB { get => wKnightBB; set { wKnightBB = value; RefreshOccupancy(); } }
+    public BitBoard WQueenBB { get => wQueenBB; set { wQueenBB = value; RefreshOccupancy(); } }
+    public BitBoard BQueenBB { get => bQueenBB; set { bQueenBB = value; RefreshOccupancy(); } }
+    public BitBoard WKingBB { get => wKingBB; set { wKingBB = value; RefreshOccupancy(); } }
+    public BitBoard BKingBB { get => bKingBB; set { bKingBB = value; RefreshOccupancy(); } }
+    public BitBoard WPawnBB { get => wPawnBB; set { wPawnBB = value; RefreshOccupancy(); } }
+    public BitBoard BPawnBB { get => bPawnBB; set { bPawnBB = value; RefreshOccupancy(); } }
     public BitBoard WControlledSqrBB { get => wControlledSqrBB; set => wControlledSqrBB = value; }
     public BitBoard BControlledSqrBB { get => bControlledSqrBB; set => bControlledSqrBB = value; }
 
-    public BitBoard WhitePiecesBB => wPawnBB | wBishopBB | wRookBB | wKnightBB | wKingBB | wQueenBB;
-    public BitBoard BlackPiecesBB => bPawnBB | bBishopBB | bRookBB | bKnightBB | bKingBB | bQueenBB;
+    public BitBoard WhitePiecesBB => whitePiecesBB;
+    public BitBoard BlackPiecesBB => blackPiecesBB;
+    public BitBoard AllPiecesBB => allPiecesBB;
+
+    /// <summary>
+    /// Muss nach JEDER mutation der 12 piece-BBs gecalled werden.
+    /// Wird am ende von MakeSimpleMove und MakeMove gecalled, dh der ganze search-pfad ist abgedeckt.
+    /// </summary>
+    private void RefreshOccupancy() {
+        whitePiecesBB = wPawnBB | wBishopBB | wRookBB | wKnightBB | wKingBB | wQueenBB;
+        blackPiecesBB = bPawnBB | bBishopBB | bRookBB | bKnightBB | bKingBB | bQueenBB;
+        allPiecesBB = whitePiecesBB | blackPiecesBB;
+    }
 
     public bool AfterCapturePly { get; set; } = false;
 
@@ -142,6 +156,8 @@ public class Chessboard {
                 default:
                     throw new UnreachableException();
             }
+            //KEIN RefreshOccupancy hier: MakeSimpleMove benutzt diesen setter im hot path
+            //und refresht selbst am ende. cold caller (ctors) refreshen explizit.
         }
     }
 
@@ -165,6 +181,8 @@ public class Chessboard {
         if (!fen.CastleRights.WQ) SetCastlingRightsNullAt(WQueenSide);
         if (!fen.CastleRights.BK) SetCastlingRightsNullAt(BKingSide);
         if (!fen.CastleRights.BQ) SetCastlingRightsNullAt(BQueenSide);
+
+        RefreshOccupancy();
     }
 
     /// <summary>
@@ -176,9 +194,24 @@ public class Chessboard {
 
         //whitePiecesBB = wPawnBB | wBishopBB | wKingBB | wKnightBB | wRookBB | wQueenBB;
         //blackPiecesBB = bPawnBB | bBishopBB | bKingBB | bKnightBB | bRookBB | bQueenBB;
+        //die felder initialisieren auf die startposition, müssen also erst geleert werden
+        wPawnBB = 0; wKnightBB = 0; wBishopBB = 0; wRookBB = 0; wQueenBB = 0; wKingBB = 0;
+        bPawnBB = 0; bKnightBB = 0; bBishopBB = 0; bRookBB = 0; bQueenBB = 0; bKingBB = 0;
+
+        foreach (var (pos, type) in pieces_) {
+            BitBoard bb = this[type];
+            bb[pos] = true;
+            this[type] = bb;
+        }
+
+        RefreshOccupancy();
     }
 
-    public Chessboard() { }
+
+    //die BB-felder initialisieren auf die startposition, occupancy muss dazu passen
+    public Chessboard() {
+        RefreshOccupancy();
+    }
 
     //calculates new BBs for the controlled sqrs of the given color
     public void UpdateAttackedSqrBB(Span<Vision> visions, bool forWhite) {
@@ -334,7 +367,7 @@ public class Chessboard {
 
     //kein unterschied zwischen weißen und schwarzen pins, weil sowieso nach jedem zug das BB aktualisiert werden muss
     /// <summary>
-    /// forWhite = white is pinned
+    /// forWhite = white is pinned; updates pinLines as side effect
     /// </summary>
     /// <param name="forWhite"></param>
     public BitBoard GetPinnedPieceBB(bool forWhite) {
@@ -450,7 +483,7 @@ public class Chessboard {
     private static int _canary = typeof(Chessboard).GetRuntimeFields().Count();
     public void Copy(Chessboard board) {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 31)
+        if (_canary != 34)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         this.FiftyMovePlys = board.FiftyMovePlys;
         this.BoardIndex = board.BoardIndex;
@@ -473,11 +506,15 @@ public class Chessboard {
         this.EnPassantSqr = board.EnPassantSqr;
         this.bControlledSqrBB = board.bControlledSqrBB;
         this.wControlledSqrBB = board.wControlledSqrBB;
+        //kopieren statt RefreshOccupancy(): 3 loads sind billiger als 10 ORs
+        this.whitePiecesBB = board.whitePiecesBB;
+        this.blackPiecesBB = board.blackPiecesBB;
+        this.allPiecesBB = board.allPiecesBB;
     }
 
     public Chessboard Clone() {
         // please add all fields here, otherwise, the canary will die
-        if (_canary != 31)
+        if (_canary != 34)
             throw new NotImplementedException($"A canary died at age of {_canary}, please revive it");
         Chessboard board = (Chessboard)this.MemberwiseClone();
         board.BoardIndex = BoardCount++;
@@ -534,6 +571,10 @@ public class Chessboard {
                 this[type] = bb;
                 break;
         }
+
+        //hier und nicht erst am ende von MakeMove, damit hasSussyEnpassantPin
+        //eine aktuelle occupancy sieht
+        RefreshOccupancy();
     }
 
     public void MakeMove(Move move)
@@ -545,7 +586,10 @@ public class Chessboard {
 
         this.LastMove = new(start, end, promotion);
 
-        bool isCapture = type.IsWhite() ? BlackPiecesBB[end] : WhitePiecesBB[end];
+        //NICHT BlackPiecesBB[end] testen: MakeSimpleMove hat das geschlagene piece schon
+        //gekillt, dh der test war immer false. AfterCapturePly wird in MakeSimpleMove
+        //VOR dem loeschen gesetzt und ist der wert den wir hier eig wollen
+        bool isCapture = AfterCapturePly;
         if (isCapture) {
             FiftyMovePlys = 0;
         } else {
@@ -606,6 +650,8 @@ public class Chessboard {
                     } else {
                         this.wPawnBB &= bb;
                     }
+                    //einziger BB-write in MakeMove der nicht ueber MakeSimpleMove laeuft
+                    RefreshOccupancy();
                 }
                 break;
             default:
@@ -738,6 +784,7 @@ public class Chessboard {
 
     /// <summary>
     /// Generiert stumpf ein Board wo das Piece von StartIndex zu EndIndex bewegt wurde
+    /// Ineffizient und slow
     /// </summary>
     /// <param name="startIndex"></param>
     /// <param name="endIndex"></param>
@@ -756,35 +803,45 @@ public class Chessboard {
     //usecase:  a double pawn move was just made, therefore we need to make sure the EP sqr is valid
     //its not valid if capturing it reveals an attack at the enemys king
     private bool hasSussyEnpassantPin(bool forWhite, int endIndexPawn) {
-        Chessboard cb = Clone();
-        ulong enemyPawnBB;
+        ulong enemyPawnBB, tmp;
 
-        //  Utility.PrintBitBoard(cb.wPawnBB);
         //pawn is nulled
+        //necessary for GetPinnedPieceBB which uses this CB's BBs
         if (forWhite) {
-            cb.wPawnBB &= ~(1ul << endIndexPawn);
+            tmp=wPawnBB;
+            wPawnBB &= ~(1ul << endIndexPawn);
             enemyPawnBB = bPawnBB;
         } else {
-            cb.bPawnBB &= ~(1ul << endIndexPawn);
+            tmp=bPawnBB;
+            bPawnBB &= ~(1ul << endIndexPawn);
             enemyPawnBB = wPawnBB;
         }
 
         //is the enemy now pinned without the doubleMovePawn?
         //then they cannot capture
-        cb.GetPinnedPieceBB(!forWhite);
+        this.GetPinnedPieceBB(!forWhite);
 
-        for (int i = 0; i < 2; i++) {
+
+        bool retValue=false;
+        for (int i = 0; i <= 1; i++) {
             //contains the whole line between king and slider
             //set to zero if more than one piece on this line
-            BitBoard pinLine = cb.pinLines[i * 4 + 2];
+            BitBoard pinLine = this.pinLines[i * 4 + 2];//2 and 6
             //there is a intersection, so without the doubleMovepawn, there would be a pinned pawn
             //the doubleMovePawn also needs be on the pinLine
             if ((pinLine & enemyPawnBB) != 0 && ((1ul << endIndexPawn) & pinLine) != 0) {
-                return true;
+                retValue= true;
+                break;
             }
         }
 
-        return false;
+        if (forWhite) {
+            wPawnBB=tmp;
+        } else {
+            bPawnBB=tmp;
+        }
+
+        return retValue;
         /* 
         Idea: build version of this chessboard without this pawn, 
         see if now theres a pinline with a enemyPawn next to this missing pawn*/
