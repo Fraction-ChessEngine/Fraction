@@ -296,39 +296,28 @@ public class Chessboard {
     }
 
     /// <summary>
-    /// Returnt immer ein Piece, dh davor muss überprüft werden ob hier überhaupt ein Piece existiert
-    /// | Sehr ineffiziente Funktion
+    /// Returnt 0 wenn auf dem sqr kein piece steht
     /// </summary>
     /// <param name="posIndex"></param>
     /// <returns></returns>
     public Piece GetPieceAt(int posIndex) {
-        //kann optimiert werden mit blackPiecesBB und whitePiecesBB,
-        //aber diese funktion ist nicht dafür gedacht in performance-critical
-        //teilen des bots ausgeführt zu werden
-        if (WPawnBB[posIndex])
-            return Piece.wPawn;
-        if (BPawnBB[posIndex])
-            return Piece.bPawn;
-        if (WKingBB[posIndex])
-            return Piece.wKing;
-        if (BKingBB[posIndex])
-            return Piece.bKing;
-        if (WKnightBB[posIndex])
-            return Piece.wKnight;
-        if (BKnightBB[posIndex])
-            return Piece.bKnight;
-        if (WQueenBB[posIndex])
-            return Piece.wQueen;
-        if (BQueenBB[posIndex])
-            return Piece.bQueen;
-        if (WRookBB[posIndex])
-            return Piece.wRook;
-        if (BRookBB[posIndex])
-            return Piece.bRook;
-        if (WBishopBB[posIndex])
-            return Piece.wBishop;
-        if (BBishopBB[posIndex])
-            return Piece.bBishop;
+        //occupancy entscheidet die farbe, danach reichen 6 statt 12 probes.
+        //pawns zuerst weil am häufigsten
+        if (whitePiecesBB[posIndex]) {
+            if (wPawnBB[posIndex]) return Piece.wPawn;
+            if (wKnightBB[posIndex]) return Piece.wKnight;
+            if (wBishopBB[posIndex]) return Piece.wBishop;
+            if (wRookBB[posIndex]) return Piece.wRook;
+            if (wQueenBB[posIndex]) return Piece.wQueen;
+            if (wKingBB[posIndex]) return Piece.wKing;
+        } else {
+            if (bPawnBB[posIndex]) return Piece.bPawn;
+            if (bKnightBB[posIndex]) return Piece.bKnight;
+            if (bBishopBB[posIndex]) return Piece.bBishop;
+            if (bRookBB[posIndex]) return Piece.bRook;
+            if (bQueenBB[posIndex]) return Piece.bQueen;
+            if (bKingBB[posIndex]) return Piece.bKing;
+        }
 
         return 0;
     }
@@ -523,18 +512,28 @@ public class Chessboard {
 
     public void MakeSimpleMove(int start, int end, Piece type, Piece? promotion = null) {
 
-        AfterCapturePly = BlackPiecesBB[end] || WhitePiecesBB[end];
+        bool capturedBlack=BlackPiecesBB[end];
+        bool capturedWhite=WhitePiecesBB[end];
+        AfterCapturePly = capturedBlack || capturedWhite;
 
-        wKnightBB[end] = false;
-        bKnightBB[end] = false;
-        wQueenBB[end] = false;
-        bQueenBB[end] = false;
-        wRookBB[end] = false;
-        bRookBB[end] = false;
-        wBishopBB[end] = false;
-        bBishopBB[end] = false;
-        wPawnBB[end] = false;
-        bPawnBB[end] = false;
+        //optimization: we only need to clear if its a capture 
+        //and if its the right color
+        if (AfterCapturePly) {
+            if (capturedBlack) {
+                bKnightBB[end] = false;
+                bQueenBB[end] = false;
+                bRookBB[end] = false;
+                bBishopBB[end] = false;
+                bPawnBB[end] = false;
+            } else {
+                wKnightBB[end] = false;
+                wQueenBB[end] = false;
+                wRookBB[end] = false;
+                wBishopBB[end] = false;
+                wPawnBB[end] = false;
+            }
+        }
+        
 
         switch (type) {
             case Piece.wPawn:
@@ -617,7 +616,6 @@ public class Chessboard {
 
                 if (!isCastling) return;
 
-
                 this.MakeSimpleMove(rookStartIndex, rookEndIndex, rook);
                 break;
 
@@ -635,7 +633,6 @@ public class Chessboard {
                 if (IsDoubleMove(start, end)) {
                     //if king is separated from a horizontal slider by only this pawn and an enemy pawn
                     //--> this must become -1 again
-                    //can be made ineffient as this is an edge case
                     if (!this.hasSussyEnpassantPin(type.IsWhite(), end)) {
                         this.EnPassantSqr = (start + end) / 2; //yes this works, i am a genius
                         break;
@@ -799,10 +796,15 @@ public class Chessboard {
     removes pawn, finds king has an pinnned pawn  despite the removed pawn not being part of the pin
      */
 
-    //can technically be optimized, but not a bottlenecking function
     //usecase:  a double pawn move was just made, therefore we need to make sure the EP sqr is valid
     //its not valid if capturing it reveals an attack at the enemys king
     private bool hasSussyEnpassantPin(bool forWhite, int endIndexPawn) {
+        //early return, if no king/ slider on the rank, there cant be a discovered check
+        BitBoard rank = BitBoard.HorizontalLine(endIndexPawn >> 3);
+        BitBoard victimKing = forWhite ? bKingBB : wKingBB;
+        BitBoard mySliders = forWhite ? (wRookBB | wQueenBB) : (bRookBB | bQueenBB);
+        if ((rank & victimKing) == 0 || (rank & mySliders) == 0) return false;
+
         ulong enemyPawnBB, tmp;
 
         //pawn is nulled

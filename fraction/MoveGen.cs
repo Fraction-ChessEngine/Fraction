@@ -50,17 +50,16 @@ public static class MoveGen {
     private static void GenerateMovesForPawns(
             Chessboard b, BitBoard pawnBB, ref Vision[] possibleMoves,
             ref int currIndex, Piece pawn,BitBoard pinBB, bool includeCoverage = false) {
+        
+        BitBoard bb=pawnBB;
 
-        Span<int> pawns = stackalloc int[pawnBB.PopCount];
-        _ = pawnBB.FindOnes(pawns);
+        while(bb!=0){
+            int end=bb.TrailingZeroCount;
+            bb&=bb-1;//clearing the LSB
+            Vision v = GetVisionForPieceAt(b, end, pawn,pinBB, includeCoverage);
 
-        for (int i = 0; i < pawns.Length; i++) {
-            int posIndex = pawns[i];
-            Vision v = GetVisionForPieceAt(b, posIndex, pawn,pinBB, includeCoverage);
+            if (v.MoveBB == 0) continue;
 
-            if (v.MoveBB == 0) {
-                continue;
-            }
             possibleMoves[currIndex] = v;
             currIndex++;
         }
@@ -69,12 +68,14 @@ public static class MoveGen {
 
     private static void GenerateMovesForPiece(Chessboard b, BitBoard pieceBB,
             ref Vision[] possibleMoves, ref int currIndex, Piece type, BitBoard pinBB, bool includeCoverage = false) {
+        
+        BitBoard bb=pieceBB;
 
-        Span<int> pieces = stackalloc int[pieceBB.PopCount];
-        _ = pieceBB.FindOnes(pieces);
+        while(bb!=0){
+            int end=bb.TrailingZeroCount;
+            bb&=bb-1;//clearing the LSB
 
-        for (int i = 0; i < pieces.Length; i++) {
-            Vision v = GetVisionForPieceAt(b, pieces[i], type,pinBB, includeCoverage);
+            Vision v = GetVisionForPieceAt(b, end, type,pinBB, includeCoverage);
 
             if (v.MoveBB == 0) continue;
 
@@ -274,41 +275,53 @@ public static class MoveGen {
 
         Span<Vision> visions = isCheck ? GenerateMovesForCheck(b, whitesTurn) : GenerateVisions(b, whitesTurn);
 
-       // Move[] ret = new Move[96];
         int index = 0;
+
+        //die promotion-pieces haengen nur an whitesTurn, dh loop-invariant
+        Piece qu, ro, bi, kn;
+        if (whitesTurn) {
+            qu = Piece.wQueen; ro = Piece.wRook; bi = Piece.wBishop; kn = Piece.wKnight;
+        } else {
+            qu = Piece.bQueen; ro = Piece.bRook; bi = Piece.bBishop; kn = Piece.bKnight;
+        }
+        //stay the same since the color of pieces doesnt change
+        BitBoard enemyPieces=whitesTurn ? b.BlackPiecesBB : b.WhitePiecesBB;
+
+        
 
         for (int i = 0; i < visions.Length; i++) {
             Vision v = visions[i];
-            Span<int> moves = intBuffer;//stackalloc int[v.MoveBB.PopCount];
-            _ = v.MoveBB.FindOnes(moves);
+            BitBoard bb=v.MoveBB;
 
-            for (int j = 0; j < v.MoveBB.PopCount; j++) {
-                int end = moves[j];
+            //check if its even a pawn, if yes, check if its promoting
+            BitBoard promoRank = v.PieceType switch {
+                Piece.wPawn => BitBoard.HorizontalLine(7),   // 0xFF00000000000000
+                Piece.bPawn => BitBoard.HorizontalLine(0),   // 0x00000000000000FF
+                _ => 0,
+            };
 
-                bool promo = IsPromoting(end, v.PieceType);
-                bool isCapture;
+            while(bb!=0){
+                int end=bb.TrailingZeroCount;
+                bb&=bb-1;//clearing the LSB
 
-                if (whitesTurn) {
-                    isCapture = HandleMoveBuilding(buffer, end, Piece.wQueen, Piece.wRook, Piece.wBishop, Piece.wKnight, promo, b,ref index, v);
-                } else {
-                    isCapture = HandleMoveBuilding(buffer, end, Piece.bQueen, Piece.bRook, Piece.bBishop, Piece.bKnight, promo, b,ref index, v);
-                }
+                bool promo = promoRank[end];  
 
-                //frisst hoffentlich nicht zu viel performance
-                /* if (perft) {
-                    Testing.perftmoves[index - 1] = new Move(v.PosIndex, end).ToString();
-                } */
+                //return value (isCapture) wird nirgends gelesen
+                //kann man später für move sorting nutzen
+                _ = HandleMoveBuilding(buffer, end, qu, ro, bi, kn, promo, b, 
+                ref index, v, enemyPieces);
             }
         }
 
         return buffer[0..index];
-       // return moveBuffer.AsSpan(0..index);
     }
 
-    static bool HandleMoveBuilding(Span<Move> moves, int end, Piece queen, Piece rook,
-        Piece bishop, Piece knight, bool promo, Chessboard b, ref int index, Vision v) {
+    static bool HandleMoveBuilding(
+        Span<Move> moves, int end, Piece queen, Piece rook,
+        Piece bishop, Piece knight, bool promo, Chessboard b, 
+        ref int index, Vision v, BitBoard enemyPieces) {
 
-        BitBoard enemyPieces=v.PieceType.IsWhite() ? b.BlackPiecesBB : b.WhitePiecesBB;
+       // BitBoard enemyPieces=/* v.PieceType.IsWhite() */isWhite ? b.BlackPiecesBB : b.WhitePiecesBB;
         bool isCapture = ((1ul << end) & enemyPieces) != 0;
 
         if (promo) {
