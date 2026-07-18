@@ -60,6 +60,9 @@ public class Fraction : UciEngine {
         int? depth = null;
         int? time = null;
         int? etime = null;
+        int? movetime = null;
+        int? inc = null;
+
         foreach (var arg in args) {
             switch (arg) {
                 case Infinite:
@@ -71,10 +74,17 @@ public class Fraction : UciEngine {
                 case Depth a:
                     depth = depth ?? a.X;
                     break;
+                case MoveTime a:
+                    movetime = movetime ?? a.X;
+                    break;
                 case Time a:
                     if (a.Turn == (this.WhitesTurn ? Color.White : Color.Black))
-                        time = time ?? a.TimeLeft;
-                    else etime = etime ?? a.TimeLeft;
+                        time ??= a.TimeLeft;
+                    else etime ??= a.TimeLeft;
+                    break;
+                case Inc a:
+                    if (a.Turn == (this.WhitesTurn ? Color.White : Color.Black))
+                        inc = inc ?? a.Increment;
                     break;
                 default:
                     this.Log(LogLevel.Warning, $"Not Handling {arg.Serialize()}");
@@ -95,15 +105,24 @@ public class Fraction : UciEngine {
                     }
                 });
 
-            if (!infinite && time is not null) {
-                int x = time.Value;
-                if (moves is not null) {
-                    x /= moves.Value;
-                } else if (etime is not null) {
-                    x -= etime.Value;
-                } else x = -1;
-                if (x <= 0) x = 200;
-                this.cts.CancelAfter(x);
+            if (!infinite) {
+                int? budget = null;
+
+                if (movetime is not null) {
+                    budget = movetime.Value;                 // exact budget from GUI
+                } else if (time is not null) {
+                    int t = time.Value;
+                    int i = inc ?? 0;
+                    int div = moves ?? 20;                   // spread over moves-to-go, else assume ~20
+                    // 5% of clock time (or however many moves weve got left)+80% of increment
+                    int b = t / (div + 1) + (i * 4) / 5;     
+                    b = Math.Min(b, t / 2);                  // never commit more than half the clock
+                    budget = Math.Max(b, 50);                // floor so we always move
+                }
+
+                if (budget is not null) {
+                    this.cts.CancelAfter(budget.Value);
+                }
             }
         }
     }
